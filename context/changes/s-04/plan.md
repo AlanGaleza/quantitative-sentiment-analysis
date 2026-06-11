@@ -461,31 +461,31 @@ No database migration is planned in this contract/UI pass. If `S-02` introduces 
 
 #### Automated
 
-- [x] 1.1 Dependency lock is valid: `uv lock --check`
-- [x] 1.2 Backend dependencies install with dev tools: `UV_LINK_MODE=copy uv sync --locked --dev`
-- [x] 1.3 Schema tests pass: `uv run pytest tests/backtest_quality/test_schemas.py`
-- [x] 1.4 Source and tests compile: `uv run python -m compileall src tests`
+- [x] 1.1 Dependency lock is valid: `uv lock --check` — 5e64a85
+- [x] 1.2 Backend dependencies install with dev tools: `UV_LINK_MODE=copy uv sync --locked --dev` — 5e64a85
+- [x] 1.3 Schema tests pass: `uv run pytest tests/backtest_quality/test_schemas.py` — 5e64a85
+- [x] 1.4 Source and tests compile: `uv run python -m compileall src tests` — 5e64a85
 
 #### Manual
 
-- [x] 1.5 Report fields are reviewed against `AGENTS.md` data-contract requirements and PRD FR-015
-- [x] 1.6 The `S-02` handoff fields are explicit enough for a future deterministic dataset implementation
+- [x] 1.5 Report fields are reviewed against `AGENTS.md` data-contract requirements and PRD FR-015 — 5e64a85
+- [x] 1.6 The `S-02` handoff fields are explicit enough for a future deterministic dataset implementation — 5e64a85
 
 ### Phase 2: Metric Engine and Quality API
 
 #### Automated
 
-- [ ] 2.1 Backend quality tests pass: `uv run pytest tests/backtest_quality`
-- [ ] 2.2 Full backend test suite passes: `uv run pytest`
-- [ ] 2.3 Source and tests compile: `uv run python -m compileall src tests`
-- [ ] 2.4 Local API still starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
-- [ ] 2.5 Health endpoint still responds: `curl -fsS http://127.0.0.1:8000/health`
+- [x] 2.1 Backend quality tests pass: `uv run pytest tests/backtest_quality`
+- [x] 2.2 Full backend test suite passes: `uv run pytest`
+- [x] 2.3 Source and tests compile: `uv run python -m compileall src tests`
+- [x] 2.4 Local API still starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
+- [x] 2.5 Health endpoint still responds: `curl -fsS http://127.0.0.1:8000/health`
 
 #### Manual
 
-- [ ] 2.6 A fixture-backed quality report returns correlation, hit rate, chart points, counts, warnings, and report metadata
-- [ ] 2.7 Missing later price movement is visibly counted as a miss in the returned report
-- [ ] 2.8 API errors do not reveal cross-workspace data or imply live trading behavior
+- [x] 2.6 A fixture-backed quality report returns correlation, hit rate, chart points, counts, warnings, and report metadata
+- [x] 2.7 Missing later price movement is visibly counted as a miss in the returned report
+- [x] 2.8 API errors do not reveal cross-workspace data or imply live trading behavior
 
 ### Phase 3: React/Vite Quality View
 

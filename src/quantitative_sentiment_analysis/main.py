@@ -3,12 +3,14 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from quantitative_sentiment_analysis import __version__
+from quantitative_sentiment_analysis.backtest_quality.router import router as quality_router
 
 app = FastAPI(
     title="Quantitative Sentiment Analysis",
     version=__version__,
     description="BACKTEST-only API for deterministic BTCUSD sentiment datasets.",
 )
+app.include_router(quality_router)
 
 
 @app.get("/")
