@@ -75,3 +75,11 @@ This plan defines the provider boundary that later consumes `S-02` completed BAC
 - The backend returns a deterministic full quality report from injected fixtures and returns explicit not-ready behavior for real run data until `S-02` is integrated.
 - The React/Vite UI renders correlation, hit rate, sentiment-vs-return plot, warnings, missing-as-miss counts, and report metadata from the report API contract.
 - Automated pytest and Vitest/RTL tests cover metric determinism, schema bounds, API errors, and visible safety wording.
+
+## Handoff Checklist
+
+- Real production quality reports remain gated on `S-02`: completed BACKTEST run storage must supply workspace/run ownership, deterministic later BTCUSD movement fields, model/config metadata, and relevance labels before the default provider can return real data.
+- The current deliverable is contract/UI-complete only: backend schemas, metric semantics, provider boundary, fixture-backed API tests, React/Vite UI, CORS/deployment wiring, and docs are in place.
+- Agreed decisions to preserve in later integration: full report object, 4-hour default horizon, missing later movement counted as miss, noise preserved but excluded from denominators, React/Vite frontend, pytest plus Vitest/RTL, and explicit BACKTEST-only analytical wording.
+- Verification commands for reviewers: `uv run pytest`, `npm --prefix frontend run test`, `npm --prefix frontend run build`, `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`, and `curl -fsS http://127.0.0.1:8000/health`.
+- Deployment handoff: Render keeps the Python API service with `/health` and adds a static frontend service rooted at `frontend/`; deployed frontend builds must set `VITE_API_BASE_URL`, and the API must list the frontend origin in `QSA_CORS_ALLOWED_ORIGINS`.

@@ -507,30 +507,30 @@ No database migration is planned in this contract/UI pass. If `S-02` introduces 
 
 #### Automated
 
-- [x] 4.1 Backend lock remains valid: `uv lock --check`
-- [x] 4.2 Backend tests pass: `uv run pytest`
-- [x] 4.3 Frontend tests pass: `npm --prefix frontend run test`
-- [x] 4.4 Frontend build succeeds: `npm --prefix frontend run build`
-- [x] 4.5 Render blueprint parses as YAML
+- [x] 4.1 Backend lock remains valid: `uv lock --check` — 4372950
+- [x] 4.2 Backend tests pass: `uv run pytest` — 4372950
+- [x] 4.3 Frontend tests pass: `npm --prefix frontend run test` — 4372950
+- [x] 4.4 Frontend build succeeds: `npm --prefix frontend run build` — 4372950
+- [x] 4.5 Render blueprint parses as YAML — 4372950
 
 #### Manual
 
-- [x] 4.6 README local setup commands are sufficient to start FastAPI and Vite in separate terminals
-- [x] 4.7 Render service changes are reviewed so the existing API health service is not accidentally replaced
-- [x] 4.8 No frontend environment variable contains secrets or real workspace identifiers
+- [x] 4.6 README local setup commands are sufficient to start FastAPI and Vite in separate terminals — 4372950
+- [x] 4.7 Render service changes are reviewed so the existing API health service is not accidentally replaced — 4372950
+- [x] 4.8 No frontend environment variable contains secrets or real workspace identifiers — 4372950
 
 ### Phase 5: Contract/UI Verification and Handoff
 
 #### Automated
 
-- [ ] 5.1 Full backend test suite passes: `uv run pytest`
-- [ ] 5.2 Frontend test suite passes: `npm --prefix frontend run test`
-- [ ] 5.3 Frontend build succeeds: `npm --prefix frontend run build`
-- [ ] 5.4 FastAPI app starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
-- [ ] 5.5 Health endpoint responds: `curl -fsS http://127.0.0.1:8000/health`
+- [x] 5.1 Full backend test suite passes: `uv run pytest`
+- [x] 5.2 Frontend test suite passes: `npm --prefix frontend run test`
+- [x] 5.3 Frontend build succeeds: `npm --prefix frontend run build`
+- [x] 5.4 FastAPI app starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
+- [x] 5.5 Health endpoint responds: `curl -fsS http://127.0.0.1:8000/health`
 
 #### Manual
 
-- [ ] 5.6 The quality view is checked in a browser against deterministic fixture-backed data
-- [ ] 5.7 The view is confirmed to be contract/UI-complete but blocked from real production run data until the later `S-02` integration pass supplies deterministic later price movement fields
-- [ ] 5.8 The final UI copy is reviewed for BACKTEST-only analytical wording and absence of broker/order/recommendation language
+- [x] 5.6 The quality view is checked in a browser against deterministic fixture-backed data
+- [x] 5.7 The view is confirmed to be contract/UI-complete but blocked from real production run data until the later `S-02` integration pass supplies deterministic later price movement fields
+- [x] 5.8 The final UI copy is reviewed for BACKTEST-only analytical wording and absence of broker/order/recommendation language
