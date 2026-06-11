@@ -92,6 +92,18 @@ def test_input_record_rejects_confidence_outside_bounds(confidence: float) -> No
         make_record(confidence=confidence)
 
 
+@pytest.mark.parametrize("later_return", [float("nan"), float("inf"), float("-inf")])
+def test_input_record_rejects_non_finite_later_return(later_return: float) -> None:
+    with pytest.raises(ValidationError):
+        make_record(later_return=later_return)
+
+
+@pytest.mark.parametrize("later_return", [float("nan"), float("inf"), float("-inf")])
+def test_chart_point_rejects_non_finite_later_return(later_return: float) -> None:
+    with pytest.raises(ValidationError):
+        make_chart_point(later_return=later_return)
+
+
 @pytest.mark.parametrize(
     "directional_bias",
     [DirectionalBias.LONG, DirectionalBias.SHORT, DirectionalBias.FLAT],

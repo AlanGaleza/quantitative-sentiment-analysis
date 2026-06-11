@@ -66,7 +66,7 @@ class QualityInputRecord(BaseModel):
     directional_bias: DirectionalBias
     confidence: float = Field(ge=0, le=1)
     relevance: RelevanceLabel = RelevanceLabel.RELEVANT
-    later_return: float | None = None
+    later_return: float | None = Field(default=None, allow_inf_nan=False)
     realized_direction: RealizedDirection | None = None
     model_version: str = Field(min_length=1)
     config_version: str = Field(min_length=1)
@@ -88,7 +88,7 @@ class QualityChartPoint(BaseModel):
 
     event_timestamp: datetime
     sentiment_score: float = Field(ge=-1, le=1)
-    later_return: float | None = None
+    later_return: float | None = Field(default=None, allow_inf_nan=False)
     directional_bias: DirectionalBias
     realized_direction: RealizedDirection | None = None
     confidence: float = Field(ge=0, le=1)

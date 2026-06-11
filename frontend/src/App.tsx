@@ -14,10 +14,14 @@ export function parseQualityRoute(pathname: string): QualityRoute | null {
     return null;
   }
 
-  return {
-    workspaceId: decodeURIComponent(match[1]),
-    runId: decodeURIComponent(match[2]),
-  };
+  try {
+    return {
+      workspaceId: decodeURIComponent(match[1]),
+      runId: decodeURIComponent(match[2]),
+    };
+  } catch {
+    return null;
+  }
 }
 
 export default function App() {

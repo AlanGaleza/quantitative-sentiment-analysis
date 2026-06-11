@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from quantitative_sentiment_analysis.main import create_app
+from quantitative_sentiment_analysis.main import (
+    QSA_CORS_ALLOWED_ORIGINS,
+    configured_cors_allowed_origins,
+    create_app,
+)
 
 
 def test_health_endpoint_keeps_smoke_contract() -> None:
@@ -50,3 +54,37 @@ def test_cors_rejects_unconfigured_frontend_origin() -> None:
 
     assert response.status_code == 400
     assert "access-control-allow-origin" not in response.headers
+
+
+def test_cors_env_rejects_wildcard_origin(monkeypatch) -> None:
+    monkeypatch.setenv(QSA_CORS_ALLOWED_ORIGINS, "*")
+
+    try:
+        configured_cors_allowed_origins()
+    except ValueError as exc:
+        assert "wildcard" in str(exc)
+    else:
+        raise AssertionError("wildcard CORS origin should be rejected")
+
+
+def test_cors_env_rejects_non_http_origin(monkeypatch) -> None:
+    monkeypatch.setenv(QSA_CORS_ALLOWED_ORIGINS, "file:///tmp/index.html")
+
+    try:
+        configured_cors_allowed_origins()
+    except ValueError as exc:
+        assert "http" in str(exc)
+    else:
+        raise AssertionError("non-http CORS origin should be rejected")
+
+
+def test_cors_env_normalizes_trailing_slashes(monkeypatch) -> None:
+    monkeypatch.setenv(
+        QSA_CORS_ALLOWED_ORIGINS,
+        "https://frontend.example.test/, http://localhost:5173/",
+    )
+
+    assert configured_cors_allowed_origins() == [
+        "https://frontend.example.test",
+        "http://localhost:5173",
+    ]

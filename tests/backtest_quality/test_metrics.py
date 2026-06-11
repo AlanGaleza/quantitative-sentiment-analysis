@@ -7,6 +7,7 @@ from quantitative_sentiment_analysis.backtest_quality import (
     RelevanceLabel,
 )
 from quantitative_sentiment_analysis.backtest_quality.metrics import (
+    MAX_REPRESENTATIVE_RECORDS,
     QualityReportInputError,
     build_quality_report,
 )
@@ -43,6 +44,30 @@ def test_build_quality_report_is_deterministic() -> None:
     second = build_quality_report(list(reversed(quality_records()))).model_dump(mode="json")
 
     assert first == second
+
+
+def test_representative_records_are_deterministically_capped() -> None:
+    records = [
+        make_quality_record(
+            index,
+            sentiment_score=0.5,
+            directional_bias=DirectionalBias.LONG,
+            later_return=0.01,
+            realized_direction=RealizedDirection.UP,
+        )
+        for index in range(1, 151)
+    ]
+
+    report = build_quality_report(records)
+
+    assert report.metrics.sample_count == 150
+    assert len(report.chart_points) == 150
+    assert len(report.representative_records) == MAX_REPRESENTATIVE_RECORDS
+    assert report.representative_records[0].record_id == "record-001"
+    assert report.representative_records[-1].record_id == "record-150"
+    assert report.model_dump(mode="json") == build_quality_report(
+        list(reversed(records))
+    ).model_dump(mode="json")
 
 
 def test_missing_later_movement_counts_as_miss() -> None:

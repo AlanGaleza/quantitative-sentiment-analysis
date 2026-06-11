@@ -2,7 +2,11 @@
 
 from quantitative_sentiment_analysis.backtest_quality.metrics import build_quality_report
 from quantitative_sentiment_analysis.backtest_quality.repository import (
+    LOCAL_FIXTURE_PROVIDER,
+    LocalFixtureQualityInputProvider,
     NotReadyQualityInputProvider,
+    QSA_BACKTEST_QUALITY_PROVIDER,
+    QSA_RUNTIME_ENV,
     QualityInputProvider,
     QualityRunIncompleteError,
     QualityRunNotFoundError,
@@ -28,7 +32,11 @@ __all__ = [
     "DirectionalBias",
     "EvaluationOutcome",
     "HorizonUnit",
+    "LOCAL_FIXTURE_PROVIDER",
+    "LocalFixtureQualityInputProvider",
     "NotReadyQualityInputProvider",
+    "QSA_BACKTEST_QUALITY_PROVIDER",
+    "QSA_RUNTIME_ENV",
     "QualityChartPoint",
     "QualityHorizon",
     "QualityInputProvider",

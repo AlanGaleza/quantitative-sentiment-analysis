@@ -15,6 +15,8 @@ from quantitative_sentiment_analysis.backtest_quality.schemas import (
     RelevanceLabel,
 )
 
+MAX_REPRESENTATIVE_RECORDS = 100
+
 
 class QualityReportInputError(ValueError):
     """Raised when records cannot form a deterministic quality report."""
@@ -103,7 +105,7 @@ def build_quality_report(
         metrics=metrics,
         warnings=_build_warnings(metrics),
         chart_points=chart_points,
-        representative_records=list(ordered_records),
+        representative_records=_sample_representative_records(ordered_records),
     )
 
 
@@ -152,6 +154,24 @@ def _pearson_correlation(pairs: Sequence[tuple[float, float]]) -> float | None:
     if denominator == 0:
         return None
     return numerator / denominator
+
+
+def _sample_representative_records(
+    records: Sequence[QualityInputRecord],
+    max_records: int = MAX_REPRESENTATIVE_RECORDS,
+) -> list[QualityInputRecord]:
+    if len(records) <= max_records:
+        return list(records)
+    if max_records <= 0:
+        return []
+    if max_records == 1:
+        return [records[0]]
+
+    last_index = len(records) - 1
+    return [
+        records[(sample_index * last_index) // (max_records - 1)]
+        for sample_index in range(max_records)
+    ]
 
 
 def _build_warnings(metrics: QualityMetrics) -> list[str]:

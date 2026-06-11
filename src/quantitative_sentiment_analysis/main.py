@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
+from urllib.parse import urlparse
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +39,7 @@ def create_app(cors_allowed_origins: Sequence[str] | None = None) -> FastAPI:
         version=__version__,
         description="BACKTEST-only API for deterministic BTCUSD sentiment datasets.",
     )
-    allowed_origins = list(
+    allowed_origins = normalize_cors_allowed_origins(
         cors_allowed_origins
         if cors_allowed_origins is not None
         else configured_cors_allowed_origins()
@@ -57,13 +58,29 @@ def create_app(cors_allowed_origins: Sequence[str] | None = None) -> FastAPI:
     return application
 
 
-def configured_cors_allowed_origins() -> tuple[str, ...]:
-    configured_origins = tuple(
-        origin.strip().rstrip("/")
+def configured_cors_allowed_origins() -> list[str]:
+    configured_origins = normalize_cors_allowed_origins(
+        origin.strip()
         for origin in os.getenv(QSA_CORS_ALLOWED_ORIGINS, "").split(",")
         if origin.strip()
     )
-    return configured_origins or DEFAULT_LOCAL_CORS_ORIGINS
+    return configured_origins or list(DEFAULT_LOCAL_CORS_ORIGINS)
+
+
+def normalize_cors_allowed_origins(origins: Iterable[str]) -> list[str]:
+    return [_normalize_cors_origin(origin) for origin in origins]
+
+
+def _normalize_cors_origin(origin: str) -> str:
+    normalized = origin.strip().rstrip("/")
+    parsed = urlparse(normalized)
+    if normalized == "*" or parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError(
+            "CORS origins must be explicit http(s) origins; wildcard origins are not allowed"
+        )
+    if parsed.path or parsed.params or parsed.query or parsed.fragment:
+        raise ValueError("CORS origins must not include paths, queries, or fragments")
+    return normalized
 
 
 app = create_app()

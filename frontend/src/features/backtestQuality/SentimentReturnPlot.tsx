@@ -116,8 +116,12 @@ function buildReturnDomain(values: number[]): [number, number] {
     return [-0.01, 0.01];
   }
 
-  const min = Math.min(0, ...values);
-  const max = Math.max(0, ...values);
+  let min = 0;
+  let max = 0;
+  for (const value of values) {
+    min = Math.min(min, value);
+    max = Math.max(max, value);
+  }
   if (min === max) {
     return [min - 0.01, max + 0.01];
   }
