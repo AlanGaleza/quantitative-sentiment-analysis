@@ -523,14 +523,14 @@ No database migration is planned in this contract/UI pass. If `S-02` introduces 
 
 #### Automated
 
-- [x] 5.1 Full backend test suite passes: `uv run pytest`
-- [x] 5.2 Frontend test suite passes: `npm --prefix frontend run test`
-- [x] 5.3 Frontend build succeeds: `npm --prefix frontend run build`
-- [x] 5.4 FastAPI app starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
-- [x] 5.5 Health endpoint responds: `curl -fsS http://127.0.0.1:8000/health`
+- [x] 5.1 Full backend test suite passes: `uv run pytest` — 9c92e92
+- [x] 5.2 Frontend test suite passes: `npm --prefix frontend run test` — 9c92e92
+- [x] 5.3 Frontend build succeeds: `npm --prefix frontend run build` — 9c92e92
+- [x] 5.4 FastAPI app starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000` — 9c92e92
+- [x] 5.5 Health endpoint responds: `curl -fsS http://127.0.0.1:8000/health` — 9c92e92
 
 #### Manual
 
-- [x] 5.6 The quality view is checked in a browser against deterministic fixture-backed data
-- [x] 5.7 The view is confirmed to be contract/UI-complete but blocked from real production run data until the later `S-02` integration pass supplies deterministic later price movement fields
-- [x] 5.8 The final UI copy is reviewed for BACKTEST-only analytical wording and absence of broker/order/recommendation language
+- [x] 5.6 The quality view is checked in a browser against deterministic fixture-backed data — 9c92e92
+- [x] 5.7 The view is confirmed to be contract/UI-complete but blocked from real production run data until the later `S-02` integration pass supplies deterministic later price movement fields — 9c92e92
+- [x] 5.8 The final UI copy is reviewed for BACKTEST-only analytical wording and absence of broker/order/recommendation language — 9c92e92
