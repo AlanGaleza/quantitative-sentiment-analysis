@@ -380,28 +380,28 @@ No database migration is planned. Existing S-04 JSON response shape should remai
 
 #### Automated
 
-- [x] 1.1 Foundation contract document exists and is non-empty: `test -s context/foundation/quality-contracts.md`
-- [x] 1.2 Repository guideline file still exists and is non-empty: `test -s AGENTS.md`
-- [x] 1.3 No archived context files are modified by this change: `git diff --name-only -- context/archive`
+- [x] 1.1 Foundation contract document exists and is non-empty: `test -s context/foundation/quality-contracts.md` — fdeac52
+- [x] 1.2 Repository guideline file still exists and is non-empty: `test -s AGENTS.md` — fdeac52
+- [x] 1.3 No archived context files are modified by this change: `git diff --name-only -- context/archive` — fdeac52
 
 #### Manual
 
-- [x] 1.4 `quality-contracts.md` is reviewed against PRD FR-001, FR-003, FR-012, FR-013, FR-014 and the reproducibility/auditability/workspace/privacy/safety NFRs.
-- [x] 1.5 The document clearly separates F-01 contracts from blocked F-02 source/scoring/visualization decisions.
-- [x] 1.6 The document captures the S-04 large-run payload observation as a downstream guard for real S-02 integration.
+- [x] 1.4 `quality-contracts.md` is reviewed against PRD FR-001, FR-003, FR-012, FR-013, FR-014 and the reproducibility/auditability/workspace/privacy/safety NFRs. — fdeac52
+- [x] 1.5 The document clearly separates F-01 contracts from blocked F-02 source/scoring/visualization decisions. — fdeac52
+- [x] 1.6 The document captures the S-04 large-run payload observation as a downstream guard for real S-02 integration. — fdeac52
 
 ### Phase 2: Shared Contract Package
 
 #### Automated
 
-- [ ] 2.1 Shared contract package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.contracts"`
-- [ ] 2.2 Source compiles: `uv run python -m compileall src`
-- [ ] 2.3 Existing backend tests still pass after adding the package: `uv run pytest tests/test_main.py tests/backtest_quality`
+- [x] 2.1 Shared contract package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.contracts"`
+- [x] 2.2 Source compiles: `uv run python -m compileall src`
+- [x] 2.3 Existing backend tests still pass after adding the package: `uv run pytest tests/test_main.py tests/backtest_quality`
 
 #### Manual
 
-- [ ] 2.4 The shared package does not depend on S-04 or any future S-02 storage implementation.
-- [ ] 2.5 Field names and enum values match `context/foundation/quality-contracts.md`.
+- [x] 2.4 The shared package does not depend on S-04 or any future S-02 storage implementation.
+- [x] 2.5 Field names and enum values match `context/foundation/quality-contracts.md`.
 
 ### Phase 3: Contract Verification Tests
 
