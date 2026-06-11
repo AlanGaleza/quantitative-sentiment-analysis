@@ -27,6 +27,7 @@ htmlcov/
 # Environment variables
 .env
 .env.*
+!frontend/.env.example
 
 # IDE / editor files
 .idea/

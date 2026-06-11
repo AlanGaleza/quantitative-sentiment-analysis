@@ -491,33 +491,33 @@ No database migration is planned in this contract/UI pass. If `S-02` introduces 
 
 #### Automated
 
-- [x] 3.1 Frontend dependencies install from lockfile: `npm --prefix frontend ci`
-- [x] 3.2 Frontend tests pass: `npm --prefix frontend run test`
-- [x] 3.3 Frontend build succeeds: `npm --prefix frontend run build`
-- [x] 3.4 Backend tests still pass: `uv run pytest`
+- [x] 3.1 Frontend dependencies install from lockfile: `npm --prefix frontend ci` — 5964502
+- [x] 3.2 Frontend tests pass: `npm --prefix frontend run test` — 5964502
+- [x] 3.3 Frontend build succeeds: `npm --prefix frontend run build` — 5964502
+- [x] 3.4 Backend tests still pass: `uv run pytest` — 5964502
 
 #### Manual
 
-- [x] 3.5 With FastAPI and Vite dev servers running, the run-scoped quality view renders a fixture-backed report
-- [x] 3.6 The UI shows correlation, hit rate, sentiment-vs-return plot, report metadata, warnings, and missing movement counted as a miss
-- [x] 3.7 The UI includes explicit BACKTEST-only analytical wording and avoids investment-recommendation language
-- [x] 3.8 Mobile and desktop widths keep metric cards, chart labels, and warning text readable without overlap
+- [x] 3.5 With FastAPI and Vite dev servers running, the run-scoped quality view renders a fixture-backed report — 5964502
+- [x] 3.6 The UI shows correlation, hit rate, sentiment-vs-return plot, report metadata, warnings, and missing movement counted as a miss — 5964502
+- [x] 3.7 The UI includes explicit BACKTEST-only analytical wording and avoids investment-recommendation language — 5964502
+- [x] 3.8 Mobile and desktop widths keep metric cards, chart labels, and warning text readable without overlap — 5964502
 
 ### Phase 4: Frontend/Backend Deployment Integration
 
 #### Automated
 
-- [ ] 4.1 Backend lock remains valid: `uv lock --check`
-- [ ] 4.2 Backend tests pass: `uv run pytest`
-- [ ] 4.3 Frontend tests pass: `npm --prefix frontend run test`
-- [ ] 4.4 Frontend build succeeds: `npm --prefix frontend run build`
-- [ ] 4.5 Render blueprint parses as YAML
+- [x] 4.1 Backend lock remains valid: `uv lock --check`
+- [x] 4.2 Backend tests pass: `uv run pytest`
+- [x] 4.3 Frontend tests pass: `npm --prefix frontend run test`
+- [x] 4.4 Frontend build succeeds: `npm --prefix frontend run build`
+- [x] 4.5 Render blueprint parses as YAML
 
 #### Manual
 
-- [ ] 4.6 README local setup commands are sufficient to start FastAPI and Vite in separate terminals
-- [ ] 4.7 Render service changes are reviewed so the existing API health service is not accidentally replaced
-- [ ] 4.8 No frontend environment variable contains secrets or real workspace identifiers
+- [x] 4.6 README local setup commands are sufficient to start FastAPI and Vite in separate terminals
+- [x] 4.7 Render service changes are reviewed so the existing API health service is not accidentally replaced
+- [x] 4.8 No frontend environment variable contains secrets or real workspace identifiers
 
 ### Phase 5: Contract/UI Verification and Handoff
 

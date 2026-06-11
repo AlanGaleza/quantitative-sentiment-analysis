@@ -20,4 +20,5 @@ packages = ["src/quantitative_sentiment_analysis"]
 dev = [
     "httpx>=0.28.1",
     "pytest>=9.0.3",
+    "pyyaml>=6.0.3",
 ]
