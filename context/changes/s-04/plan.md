@@ -475,33 +475,33 @@ No database migration is planned in this contract/UI pass. If `S-02` introduces 
 
 #### Automated
 
-- [x] 2.1 Backend quality tests pass: `uv run pytest tests/backtest_quality`
-- [x] 2.2 Full backend test suite passes: `uv run pytest`
-- [x] 2.3 Source and tests compile: `uv run python -m compileall src tests`
-- [x] 2.4 Local API still starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
-- [x] 2.5 Health endpoint still responds: `curl -fsS http://127.0.0.1:8000/health`
+- [x] 2.1 Backend quality tests pass: `uv run pytest tests/backtest_quality` — 0acc304
+- [x] 2.2 Full backend test suite passes: `uv run pytest` — 0acc304
+- [x] 2.3 Source and tests compile: `uv run python -m compileall src tests` — 0acc304
+- [x] 2.4 Local API still starts: `uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000` — 0acc304
+- [x] 2.5 Health endpoint still responds: `curl -fsS http://127.0.0.1:8000/health` — 0acc304
 
 #### Manual
 
-- [x] 2.6 A fixture-backed quality report returns correlation, hit rate, chart points, counts, warnings, and report metadata
-- [x] 2.7 Missing later price movement is visibly counted as a miss in the returned report
-- [x] 2.8 API errors do not reveal cross-workspace data or imply live trading behavior
+- [x] 2.6 A fixture-backed quality report returns correlation, hit rate, chart points, counts, warnings, and report metadata — 0acc304
+- [x] 2.7 Missing later price movement is visibly counted as a miss in the returned report — 0acc304
+- [x] 2.8 API errors do not reveal cross-workspace data or imply live trading behavior — 0acc304
 
 ### Phase 3: React/Vite Quality View
 
 #### Automated
 
-- [ ] 3.1 Frontend dependencies install from lockfile: `npm --prefix frontend ci`
-- [ ] 3.2 Frontend tests pass: `npm --prefix frontend run test`
-- [ ] 3.3 Frontend build succeeds: `npm --prefix frontend run build`
-- [ ] 3.4 Backend tests still pass: `uv run pytest`
+- [x] 3.1 Frontend dependencies install from lockfile: `npm --prefix frontend ci`
+- [x] 3.2 Frontend tests pass: `npm --prefix frontend run test`
+- [x] 3.3 Frontend build succeeds: `npm --prefix frontend run build`
+- [x] 3.4 Backend tests still pass: `uv run pytest`
 
 #### Manual
 
-- [ ] 3.5 With FastAPI and Vite dev servers running, the run-scoped quality view renders a fixture-backed report
-- [ ] 3.6 The UI shows correlation, hit rate, sentiment-vs-return plot, report metadata, warnings, and missing movement counted as a miss
-- [ ] 3.7 The UI includes explicit BACKTEST-only analytical wording and avoids investment-recommendation language
-- [ ] 3.8 Mobile and desktop widths keep metric cards, chart labels, and warning text readable without overlap
+- [x] 3.5 With FastAPI and Vite dev servers running, the run-scoped quality view renders a fixture-backed report
+- [x] 3.6 The UI shows correlation, hit rate, sentiment-vs-return plot, report metadata, warnings, and missing movement counted as a miss
+- [x] 3.7 The UI includes explicit BACKTEST-only analytical wording and avoids investment-recommendation language
+- [x] 3.8 Mobile and desktop widths keep metric cards, chart labels, and warning text readable without overlap
 
 ### Phase 4: Frontend/Backend Deployment Integration
 
