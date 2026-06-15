@@ -16,6 +16,7 @@ dist/
 .eggs/
 frontend/node_modules/
 node_modules/
+frontend/.vite/
 frontend/dist/
 frontend/coverage/
 frontend/*.tsbuildinfo
@@ -43,5 +44,6 @@ Thumbs.db
 
 .clinerules/
 .agents/
+.codex/
 
 RENDER_API_KEY.txt
