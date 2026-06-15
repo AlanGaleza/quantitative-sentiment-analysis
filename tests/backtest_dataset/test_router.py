@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import json
 
 from fastapi.testclient import TestClient
 
@@ -199,6 +200,110 @@ def test_dataset_preview_is_bounded() -> None:
     assert len(data["records"]) == 100
 
 
+def test_export_dataset_jsonl_returns_full_completed_dataset_with_download_headers() -> None:
+    shell_repository, _completed_repository = setup_dependencies(
+        provider=FixtureNewsProvider(fixture_records(count=105))
+    )
+    create_draft(shell_repository)
+    client = TestClient(app)
+
+    post_response = client.post(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/run"
+    )
+    assert post_response.status_code == 200
+    assert len(post_response.json()["records"]) == 100
+
+    response = client.get(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/export.jsonl"
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/x-ndjson")
+    assert response.headers["content-disposition"] == (
+        'attachment; filename="workspace-alpha-draft-run-fixed-dataset.jsonl"'
+    )
+    assert response.headers["x-qsa-workspace-id"] == "workspace-alpha"
+    assert response.headers["x-qsa-run-id"] == "draft-run-fixed"
+    assert response.headers["x-qsa-config-version"] == "news-sentiment-policy-v1"
+    assert response.content.endswith(b"\n")
+
+    lines = response.content.decode("utf-8").splitlines()
+    assert len(lines) == 105
+    payloads = [json.loads(line) for line in lines]
+    assert payloads[0]["record_id"] == "fixturenews:record-000"
+    assert payloads[-1]["record_id"] == "fixturenews:record-104"
+    assert all(payload["run_id"] == "draft-run-fixed" for payload in payloads)
+    assert all(payload["config_version"] == "news-sentiment-policy-v1" for payload in payloads)
+    assert "provider_name" not in payloads[0]
+
+
+def test_export_dataset_jsonl_returns_404_for_missing_completed_dataset_without_provider_call() -> None:
+    class ProviderShouldNotBeCalled:
+        provider_name = "UnexpectedProvider"
+
+        def fetch_historical_news(
+            self,
+            request: ProviderFetchRequest,
+        ) -> tuple[ProviderRawRecord, ...]:
+            raise AssertionError("export must not trigger dataset generation")
+
+    setup_dependencies(provider=ProviderShouldNotBeCalled())
+    client = TestClient(app)
+
+    response = client.get(
+        "/api/workspaces/workspace-alpha/backtests/missing-run/dataset/export.jsonl"
+    )
+
+    assert response.status_code == 404
+    assert "completed BACKTEST dataset" in response.json()["detail"]
+
+
+def test_export_dataset_jsonl_uses_workspace_boundary() -> None:
+    shell_repository, _completed_repository = setup_dependencies()
+    create_draft(shell_repository)
+    client = TestClient(app)
+    post_response = client.post(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/run"
+    )
+    assert post_response.status_code == 200
+
+    response = client.get(
+        "/api/workspaces/workspace-beta/backtests/draft-run-fixed/dataset/export.jsonl"
+    )
+
+    assert response.status_code == 404
+
+
+def test_export_dataset_jsonl_returns_409_for_provider_limited_dataset() -> None:
+    class ProviderLimited:
+        provider_name = "CryptoPanic"
+
+        def fetch_historical_news(
+            self,
+            request: ProviderFetchRequest,
+        ) -> tuple[ProviderRawRecord, ...]:
+            raise DatasetProviderLimitationError(
+                provider_name=self.provider_name,
+                reason="missing provider configuration",
+                detail="Set CRYPTOPANIC_API_KEY locally for a BACKTEST smoke check.",
+            )
+
+    shell_repository, _completed_repository = setup_dependencies(provider=ProviderLimited())
+    create_draft(shell_repository)
+    client = TestClient(app)
+    post_response = client.post(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/run"
+    )
+    assert post_response.status_code == 409
+
+    response = client.get(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/export.jsonl"
+    )
+
+    assert response.status_code == 409
+    assert "COMPLETED deterministic dataset" in response.json()["detail"]
+
+
 def test_cors_preflight_allows_dataset_post_route() -> None:
     client = TestClient(
         create_app(cors_allowed_origins=["https://frontend.example.test"])
@@ -219,12 +324,21 @@ def test_cors_preflight_allows_dataset_post_route() -> None:
     )
 
 
-def test_no_dataset_export_endpoint_exists() -> None:
-    setup_dependencies()
-    client = TestClient(app)
-
-    response = client.get(
-        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/export"
+def test_cors_preflight_allows_dataset_export_route() -> None:
+    client = TestClient(
+        create_app(cors_allowed_origins=["https://frontend.example.test"])
     )
 
-    assert response.status_code == 404
+    response = client.options(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/export.jsonl",
+        headers={
+            "Origin": "https://frontend.example.test",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert (
+        response.headers["access-control-allow-origin"]
+        == "https://frontend.example.test"
+    )

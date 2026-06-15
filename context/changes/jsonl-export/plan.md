@@ -344,28 +344,28 @@ No database migration is required. Existing completed runs in the local/dev in-m
 
 #### Automated
 
-- [x] 1.1 Backend export unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_export.py`
-- [x] 1.2 Existing serialization contract tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/contracts/test_serialization.py`
-- [x] 1.3 Export output from the same stored records is byte-identical across repeated service calls.
+- [x] 1.1 Backend export unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_export.py` — b21e565
+- [x] 1.2 Existing serialization contract tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/contracts/test_serialization.py` — b21e565
+- [x] 1.3 Export output from the same stored records is byte-identical across repeated service calls. — b21e565
 
 #### Manual
 
-- [x] 1.4 Confirm the export service does not write `.jsonl` files or temporary durable export artifacts into the repo.
-- [x] 1.5 Confirm provider-limited stored summaries are treated as not exportable rather than as empty datasets.
+- [x] 1.4 Confirm the export service does not write `.jsonl` files or temporary durable export artifacts into the repo. — b21e565
+- [x] 1.5 Confirm provider-limited stored summaries are treated as not exportable rather than as empty datasets. — b21e565
 
 ### Phase 2: Backend Export API
 
 #### Automated
 
-- [ ] 2.1 Backend router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py`
-- [ ] 2.2 Backend export tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_export.py`
-- [ ] 2.3 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
+- [x] 2.1 Backend router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py`
+- [x] 2.2 Backend export tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_export.py`
+- [x] 2.3 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
 
 #### Manual
 
-- [ ] 2.4 `curl -i` against a completed dataset export returns an attachment-style JSONL response with expected headers.
-- [ ] 2.5 `curl` against a missing run returns `404` and does not generate a dataset run.
-- [ ] 2.6 `curl` against a provider-limited run returns `409` and no JSONL body pretending to be valid export data.
+- [x] 2.4 `curl -i` against a completed dataset export returns an attachment-style JSONL response with expected headers.
+- [x] 2.5 `curl` against a missing run returns `404` and does not generate a dataset run.
+- [x] 2.6 `curl` against a provider-limited run returns `409` and no JSONL body pretending to be valid export data.
 
 ### Phase 3: Frontend Download Flow
 
