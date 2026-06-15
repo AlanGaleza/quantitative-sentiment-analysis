@@ -320,9 +320,9 @@ No migration is required. The completed dataset repository is process-local in-m
 
 #### Automated
 
-- [x] 4.1 Focused backend gate passes
-- [x] 4.2 Full backend pytest is either passed or explicitly reported as skipped/blocked with reason
+- [x] 4.1 Focused backend gate passes — 3ef220a
+- [x] 4.2 Full backend pytest is either passed or explicitly reported as skipped/blocked with reason — 3ef220a
 
 #### Manual
 
-- [x] 4.3 Human confirms the rollout stayed within Phase 1 scope and did not pull in auth, frontend, quality dashboard, or provider pipeline behavior
+- [x] 4.3 Human confirms the rollout stayed within Phase 1 scope and did not pull in auth, frontend, quality dashboard, or provider pipeline behavior — 3ef220a
