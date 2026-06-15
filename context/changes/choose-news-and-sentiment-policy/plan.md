@@ -389,29 +389,29 @@ No database migration is planned. Existing `DatasetRecord` and S-04 response sha
 
 #### Automated
 
-- [x] 2.1 Policy package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.sentiment_policy"`
-- [x] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality`
-- [x] 2.3 Policy constants can be imported without network or environment secrets: `uv run python -c "from quantitative_sentiment_analysis.sentiment_policy import DEFAULT_POLICY_CONFIG; print(DEFAULT_POLICY_CONFIG.provider_name)"`
+- [x] 2.1 Policy package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.sentiment_policy"` — a0f9be0
+- [x] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality` — a0f9be0
+- [x] 2.3 Policy constants can be imported without network or environment secrets: `uv run python -c "from quantitative_sentiment_analysis.sentiment_policy import DEFAULT_POLICY_CONFIG; print(DEFAULT_POLICY_CONFIG.provider_name)"` — a0f9be0
 
 #### Manual
 
-- [x] 2.4 Module names and exports make it clear this is policy/scoring, not provider ingestion.
-- [x] 2.5 The executable constants match `context/foundation/news-sentiment-policy.md`.
-- [x] 2.6 No API token, endpoint secret, or production CryptoPanic request logic is introduced in this phase.
+- [x] 2.4 Module names and exports make it clear this is policy/scoring, not provider ingestion. — a0f9be0
+- [x] 2.5 The executable constants match `context/foundation/news-sentiment-policy.md`. — a0f9be0
+- [x] 2.6 No API token, endpoint secret, or production CryptoPanic request logic is introduced in this phase. — a0f9be0
 
 ### Phase 3: Policy Verification Tests
 
 #### Automated
 
-- [ ] 3.1 Sentiment policy tests pass: `uv run pytest tests/sentiment_policy`
-- [ ] 3.2 Contract and quality tests still pass with policy tests: `uv run pytest tests/contracts tests/backtest_quality tests/sentiment_policy`
-- [ ] 3.3 Determinism checks pass repeatedly: `uv run pytest tests/sentiment_policy/test_scoring.py tests/sentiment_policy/test_confidence.py`
+- [x] 3.1 Sentiment policy tests pass: `uv run pytest tests/sentiment_policy`
+- [x] 3.2 Contract and quality tests still pass with policy tests: `uv run pytest tests/contracts tests/backtest_quality tests/sentiment_policy`
+- [x] 3.3 Determinism checks pass repeatedly: `uv run pytest tests/sentiment_policy/test_scoring.py tests/sentiment_policy/test_confidence.py`
 
 #### Manual
 
-- [ ] 3.4 Test names and failure messages explain policy intent rather than implementation trivia.
-- [ ] 3.5 Tests do not require network access, CryptoPanic credentials, current time, or generated real-news datasets.
-- [ ] 3.6 Tests verify semantic-safety boundaries without introducing product-facing trading recommendation wording.
+- [x] 3.4 Test names and failure messages explain policy intent rather than implementation trivia.
+- [x] 3.5 Tests do not require network access, CryptoPanic credentials, current time, or generated real-news datasets.
+- [x] 3.6 Tests verify semantic-safety boundaries without introducing product-facing trading recommendation wording.
 
 ### Phase 4: Downstream S-02/S-04 Handoff
 
