@@ -88,6 +88,7 @@ class HistoricalNewsProvider(Protocol):
         request: ProviderFetchRequest,
     ) -> tuple[ProviderRawRecord, ...]:
         """Return raw historical provider records for deterministic BACKTEST use."""
+        ...
 
 
 class FixtureNewsProvider:

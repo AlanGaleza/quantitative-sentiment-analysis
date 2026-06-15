@@ -16,9 +16,31 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/quantitative_sentiment_analysis"]
 
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = [
+    "context/archive",
+    "frontend/dist",
+    "frontend/node_modules",
+]
+
+[tool.pyright]
+include = ["src"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "context/archive",
+    "frontend",
+]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+
 [dependency-groups]
 dev = [
     "httpx2>=2.4.0",
+    "pyright>=1.1.410",
     "pytest>=9.0.3",
     "pyyaml>=6.0.3",
+    "ruff>=0.15.17",
 ]

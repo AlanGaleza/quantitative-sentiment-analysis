@@ -31,9 +31,11 @@ class BacktestShellRepository(Protocol):
         request: CreateBacktestRunRequest,
     ) -> BacktestRunShell:
         """Create a draft run shell for one workspace."""
+        ...
 
     def get_run(self, workspace_id: str, run_id: str) -> BacktestRunShell:
         """Return one draft run shell by workspace and run ID."""
+        ...
 
 
 RunIdFactory = Callable[[str, CreateBacktestRunRequest], str]

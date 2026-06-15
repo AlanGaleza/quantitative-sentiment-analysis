@@ -38,9 +38,11 @@ class CompletedDatasetRepository(Protocol):
         records: tuple[DatasetRecord, ...] | list[DatasetRecord],
     ) -> DatasetRunPreview:
         """Persist a completed or provider-limited dataset run for one workspace."""
+        ...
 
     def get_run(self, workspace_id: str, run_id: str) -> DatasetRunPreview:
         """Return one stored dataset run by workspace and run ID."""
+        ...
 
     def list_records(
         self,
@@ -48,6 +50,7 @@ class CompletedDatasetRepository(Protocol):
         run_id: str,
     ) -> tuple[DatasetRecord, ...]:
         """Return all stored records for one completed dataset run."""
+        ...
 
 
 class InMemoryCompletedDatasetRepository:

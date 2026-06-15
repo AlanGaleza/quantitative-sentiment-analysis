@@ -47,6 +47,7 @@ class QualityInputProvider(Protocol):
         run_id: str,
     ) -> Sequence[QualityInputRecord]:
         """Return deterministic quality inputs for one completed BACKTEST run."""
+        ...
 
 
 class NotReadyQualityInputProvider:
