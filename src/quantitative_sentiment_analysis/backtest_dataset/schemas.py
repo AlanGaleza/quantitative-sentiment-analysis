@@ -106,7 +106,7 @@ class DatasetRunPreview(BaseModel):
 
     @model_validator(mode="after")
     def records_must_match_summary(self) -> Self:
-        relevance_counts = {
+        preview_relevance_counts = {
             RelevanceLabel.RELEVANT: 0,
             RelevanceLabel.NOISE: 0,
             RelevanceLabel.IRRELEVANT: 0,
@@ -124,15 +124,19 @@ class DatasetRunPreview(BaseModel):
                 raise ValueError("preview record model_version must match summary")
             if record.config_version != self.summary.config_version:
                 raise ValueError("preview record config_version must match summary")
-            relevance_counts[record.relevance] += 1
+            preview_relevance_counts[record.relevance] += 1
 
-        if self.summary.status is DatasetRunStatus.COMPLETED:
-            if self.summary.record_count != len(self.records):
-                raise ValueError("completed summary record_count must match preview records")
-            if self.summary.relevant_count != relevance_counts[RelevanceLabel.RELEVANT]:
-                raise ValueError("completed summary relevant_count must match records")
-            if self.summary.noise_count != relevance_counts[RelevanceLabel.NOISE]:
-                raise ValueError("completed summary noise_count must match records")
-            if self.summary.irrelevant_count != relevance_counts[RelevanceLabel.IRRELEVANT]:
-                raise ValueError("completed summary irrelevant_count must match records")
+        if len(self.records) > self.summary.record_count:
+            raise ValueError("preview records must not exceed summary record_count")
+        if preview_relevance_counts[RelevanceLabel.RELEVANT] > self.summary.relevant_count:
+            raise ValueError("preview relevant records must not exceed summary relevant_count")
+        if preview_relevance_counts[RelevanceLabel.NOISE] > self.summary.noise_count:
+            raise ValueError("preview noise records must not exceed summary noise_count")
+        if (
+            preview_relevance_counts[RelevanceLabel.IRRELEVANT]
+            > self.summary.irrelevant_count
+        ):
+            raise ValueError(
+                "preview irrelevant records must not exceed summary irrelevant_count"
+            )
         return self

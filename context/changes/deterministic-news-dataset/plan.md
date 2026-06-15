@@ -543,29 +543,29 @@ If a real HTTP client dependency is needed for CryptoPanic, add it through `uv a
 
 #### Automated
 
-- [x] 2.1 Provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_provider.py`
-- [x] 2.2 Normalization tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_normalization.py`
-- [x] 2.3 Sentiment policy tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/sentiment_policy`
+- [x] 2.1 Provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_provider.py` — 121633e
+- [x] 2.2 Normalization tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_normalization.py` — 121633e
+- [x] 2.3 Sentiment policy tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/sentiment_policy` — 121633e
 
 #### Manual
 
-- [x] 2.4 Real provider configuration is documented as an env-var smoke dependency, not committed as a secret.
-- [x] 2.5 Provider limitation wording is BACKTEST-only analytical and does not imply fallback or fabricated data.
-- [x] 2.6 Normalization preserves records for audit except exact repeated provider IDs.
+- [x] 2.4 Real provider configuration is documented as an env-var smoke dependency, not committed as a secret. — 121633e
+- [x] 2.5 Provider limitation wording is BACKTEST-only analytical and does not imply fallback or fabricated data. — 121633e
+- [x] 2.6 Normalization preserves records for audit except exact repeated provider IDs. — 121633e
 
 ### Phase 3: Deterministic Dataset Orchestration
 
 #### Automated
 
-- [ ] 3.1 Orchestration tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_orchestrator.py`
-- [ ] 3.2 Determinism tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_determinism.py`
-- [ ] 3.3 Contract serialization tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/contracts/test_serialization.py`
+- [x] 3.1 Orchestration tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_orchestrator.py`
+- [x] 3.2 Determinism tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_determinism.py`
+- [x] 3.3 Contract serialization tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/contracts/test_serialization.py`
 
 #### Manual
 
-- [ ] 3.4 Completed output uses the S-01 draft workspace/run/timeframe without re-deciding those fields.
-- [ ] 3.5 Relevance labels preserve noise and irrelevant records rather than hiding them.
-- [ ] 3.6 No wall-clock timestamp, random ID, provider ordering, or environment-specific value enters deterministic dataset content.
+- [x] 3.4 Completed output uses the S-01 draft workspace/run/timeframe without re-deciding those fields.
+- [x] 3.5 Relevance labels preserve noise and irrelevant records rather than hiding them.
+- [x] 3.6 No wall-clock timestamp, random ID, provider ordering, or environment-specific value enters deterministic dataset content.
 
 ### Phase 4: Backend API and Quality Adapter
 

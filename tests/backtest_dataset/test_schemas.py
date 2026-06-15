@@ -182,12 +182,22 @@ def test_preview_rejects_records_that_do_not_match_summary(
         DatasetRunPreview(summary=make_summary(), records=[make_record(**{field: value})])
 
 
-def test_preview_rejects_completed_count_mismatch() -> None:
+def test_preview_rejects_more_records_than_summary_count() -> None:
     with pytest.raises(ValidationError, match="record_count"):
         DatasetRunPreview(
             summary=make_summary(record_count=0, relevant_count=0),
             records=[make_record()],
         )
+
+
+def test_preview_allows_bounded_subset_of_larger_completed_dataset() -> None:
+    preview = DatasetRunPreview(
+        summary=make_summary(record_count=10, relevant_count=10),
+        records=[make_record()],
+    )
+
+    assert len(preview.records) == 1
+    assert preview.summary.record_count == 10
 
 
 def test_models_reject_unknown_fields() -> None:

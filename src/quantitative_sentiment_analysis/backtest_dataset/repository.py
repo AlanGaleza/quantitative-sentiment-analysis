@@ -4,6 +4,7 @@ from threading import Lock
 from typing import Protocol
 
 from quantitative_sentiment_analysis.backtest_dataset.schemas import (
+    MAX_DATASET_PREVIEW_RECORDS,
     DatasetRunPreview,
     DatasetRunStatus,
     DatasetRunSummary,
@@ -36,6 +37,13 @@ class CompletedDatasetRepository(Protocol):
     def get_run(self, workspace_id: str, run_id: str) -> DatasetRunPreview:
         """Return one stored dataset run by workspace and run ID."""
 
+    def list_records(
+        self,
+        workspace_id: str,
+        run_id: str,
+    ) -> tuple[DatasetRecord, ...]:
+        """Return all stored records for one completed dataset run."""
+
 
 class InMemoryCompletedDatasetRepository:
     """Non-production, process-local storage for S-02 completed dataset runs."""
@@ -47,6 +55,7 @@ class InMemoryCompletedDatasetRepository:
 
     def __init__(self) -> None:
         self._runs: dict[tuple[str, str], DatasetRunPreview] = {}
+        self._records: dict[tuple[str, str], tuple[DatasetRecord, ...]] = {}
         self._lock = Lock()
 
     def save_run(
@@ -55,10 +64,15 @@ class InMemoryCompletedDatasetRepository:
         records: tuple[DatasetRecord, ...] | list[DatasetRecord],
     ) -> DatasetRunPreview:
         self._ensure_terminal_state(summary)
-        preview = DatasetRunPreview(summary=summary, records=tuple(records))
+        stored_records = tuple(records)
+        preview = DatasetRunPreview(
+            summary=summary,
+            records=stored_records[:MAX_DATASET_PREVIEW_RECORDS],
+        )
         key = (summary.workspace_id, summary.run_id)
         with self._lock:
             self._runs[key] = preview
+            self._records[key] = stored_records
         return preview
 
     def get_run(self, workspace_id: str, run_id: str) -> DatasetRunPreview:
@@ -70,6 +84,20 @@ class InMemoryCompletedDatasetRepository:
                 f"run was not found for workspace {workspace_id!r} and run {run_id!r}"
             )
         return preview
+
+    def list_records(
+        self,
+        workspace_id: str,
+        run_id: str,
+    ) -> tuple[DatasetRecord, ...]:
+        with self._lock:
+            records = self._records.get((workspace_id, run_id))
+        if records is None:
+            raise CompletedDatasetRunNotFoundError(
+                "local/dev in-memory non-production completed BACKTEST dataset "
+                f"records were not found for workspace {workspace_id!r} and run {run_id!r}"
+            )
+        return records
 
     def _ensure_terminal_state(self, summary: DatasetRunSummary) -> None:
         if summary.status in {

@@ -31,6 +31,11 @@ from quantitative_sentiment_analysis.backtest_dataset.normalization import (
     ProviderNormalizationError,
     normalize_provider_records,
 )
+from quantitative_sentiment_analysis.backtest_dataset.orchestrator import (
+    DEFAULT_DATASET_SEED,
+    DatasetOrchestrator,
+    metadata_for_preview,
+)
 
 __all__ = [
     "CompletedDatasetRepository",
@@ -42,6 +47,7 @@ __all__ = [
     "DatasetProviderLimitationError",
     "DatasetProviderUnavailableError",
     "DatasetProviderUnsupportedScopeError",
+    "DatasetOrchestrator",
     "DatasetProviderLimitation",
     "DatasetRunPreview",
     "DatasetRunStatus",
@@ -50,10 +56,12 @@ __all__ = [
     "HistoricalNewsProvider",
     "InMemoryCompletedDatasetRepository",
     "MAX_DATASET_PREVIEW_RECORDS",
+    "DEFAULT_DATASET_SEED",
     "NormalizedNewsRecord",
     "ProviderFetchRequest",
     "ProviderNormalizationError",
     "ProviderRawRecord",
     "get_completed_dataset_repository",
+    "metadata_for_preview",
     "normalize_provider_records",
 ]

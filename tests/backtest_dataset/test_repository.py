@@ -71,6 +71,7 @@ def test_repository_saves_and_reads_completed_run_by_workspace_and_run() -> None
 
     assert saved.summary == summary
     assert saved.records == (record,)
+    assert repository.list_records("workspace-alpha", "draft-run-000001") == (record,)
     assert repository.get_run("workspace-alpha", "draft-run-000001") == saved
 
 
@@ -123,6 +124,9 @@ def test_repository_stores_preview_defensively_against_input_list_mutation() -> 
 
     assert saved.records == (make_record(),)
     assert repository.get_run("workspace-alpha", "draft-run-000001").records == (
+        make_record(),
+    )
+    assert repository.list_records("workspace-alpha", "draft-run-000001") == (
         make_record(),
     )
 
