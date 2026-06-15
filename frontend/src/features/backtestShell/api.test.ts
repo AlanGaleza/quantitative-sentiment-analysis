@@ -335,15 +335,15 @@ describe("backtest shell API client", () => {
       summary: {
         ...datasetPreview().summary,
         status: "FAILED_PROVIDER_LIMITATION",
-        provider_name: "CryptoPanic",
+        provider_name: "Sharpe Terminal",
         record_count: 0,
         relevant_count: 0,
         noise_count: 0,
         irrelevant_count: 0,
         provider_limitation: {
-          provider_name: "CryptoPanic",
+          provider_name: "Sharpe Terminal",
           reason: "missing provider configuration",
-          detail: "Set CRYPTOPANIC_API_KEY locally for a BACKTEST smoke check.",
+          detail: "Set SHARPE_API_KEY locally for a BACKTEST smoke check.",
         },
       },
       records: [],
@@ -363,7 +363,7 @@ describe("backtest shell API client", () => {
     ).rejects.toMatchObject({
       status: 409,
       detail:
-        "CryptoPanic: missing provider configuration: Set CRYPTOPANIC_API_KEY locally for a BACKTEST smoke check.",
+        "Sharpe Terminal: missing provider configuration: Set SHARPE_API_KEY locally for a BACKTEST smoke check.",
       payload: failedPreview,
     } satisfies Partial<BacktestShellApiError>);
   });

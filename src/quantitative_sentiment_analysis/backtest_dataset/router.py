@@ -9,8 +9,8 @@ from quantitative_sentiment_analysis.backtest_dataset.export import (
     DatasetExportNotReadyError,
     export_dataset_jsonl_bytes,
 )
-from quantitative_sentiment_analysis.backtest_dataset.cryptopanic import (
-    CryptoPanicClient,
+from quantitative_sentiment_analysis.backtest_dataset.sharpe import (
+    SharpeTerminalClient,
 )
 from quantitative_sentiment_analysis.backtest_dataset.orchestrator import (
     DatasetOrchestrator,
@@ -41,7 +41,7 @@ router = APIRouter(
 
 
 def get_historical_news_provider() -> HistoricalNewsProvider:
-    return CryptoPanicClient()
+    return SharpeTerminalClient()
 
 
 def get_dataset_orchestrator(

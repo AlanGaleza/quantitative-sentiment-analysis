@@ -32,7 +32,7 @@ This policy applies to:
 
 F-02 does not implement:
 
-- a production CryptoPanic API client;
+- a production Sharpe Terminal API client;
 - persistent run storage, workspace shell, or export endpoints;
 - multi-provider aggregation or provider fallback routing;
 - LIVE streaming, broker integration, order execution, or investment advice;
@@ -41,17 +41,17 @@ F-02 does not implement:
 
 ## Provider Policy
 
-V1 uses **CryptoPanic** as the single selected aggregated crypto-news feed for
+V1 uses **Sharpe Terminal** as the single selected aggregated crypto-news feed for
 MVP historical BTCUSD BACKTEST datasets.
 
-CryptoPanic is selected because it is crypto-focused and better aligned with a
+Sharpe Terminal is selected because it is crypto-focused and better aligned with a
 single-feed BTCUSD MVP than a broad general-news provider. S-02 must still treat
 provider access as a verified dependency, not as an assumed implementation
 detail: before production ingestion, S-02 must run a controlled token/API smoke
-test proving that the configured CryptoPanic access can support the selected
+test proving that the configured Sharpe Terminal access can support the selected
 BTCUSD BACKTEST use case and the required historical range.
 
-If the CryptoPanic smoke test fails, S-02 must fail explicitly and surface the
+If the Sharpe Terminal smoke test fails, S-02 must fail explicitly and surface the
 provider limitation. It must not silently switch to another provider, fabricate
 news records, or broaden the MVP into multi-source aggregation.
 
@@ -185,21 +185,21 @@ avoided phrases only to define or verify the semantic-safety boundary.
 
 ### S-02: Deterministic News Dataset
 
-S-02 should normalize CryptoPanic records into the F-01 `DatasetRecord` fields,
+S-02 should normalize Sharpe Terminal records into the F-01 `DatasetRecord` fields,
 preserve retrieved records with `relevance` labels, stamp the F-02 policy
 `model_version` and `config_version`, and compute `input_fingerprint` from
 normalized input content and deterministic run metadata.
 
-Before real ingestion, S-02 must run a controlled CryptoPanic token/API smoke
+Before real ingestion, S-02 must run a controlled Sharpe Terminal token/API smoke
 test. If the configured access cannot support the 30-day BTCUSD BACKTEST use
 case, S-02 must return an explicit provider limitation instead of silently
 switching providers or fabricating data.
 
 `deterministic-news-dataset` implements this as a provider boundary with
-CryptoPanic configured by `CRYPTOPANIC_API_KEY`, fixture-backed automated tests,
+Sharpe Terminal configured by `SHARPE_API_KEY`, fixture-backed automated tests,
 deterministic normalization, exact provider-ID dedupe, local rule/lexicon
 scoring, bounded preview responses, and typed provider-limitation failures.
-Automated verification remains offline; real CryptoPanic access is a controlled
+Automated verification remains offline; real Sharpe Terminal access is a controlled
 manual smoke dependency.
 
 ### S-03: JSONL Export
@@ -226,8 +226,8 @@ enrichment exists. JSONL/CSV export remains deferred to S-03.
 
 ## Acceptance Checklist
 
-- CryptoPanic is documented as the single MVP provider.
-- S-02 is required to smoke-test CryptoPanic access before real ingestion.
+- Sharpe Terminal is documented as the single MVP provider.
+- S-02 is required to smoke-test Sharpe Terminal access before real ingestion.
 - The default historical range is 30-day BTCUSD BACKTEST.
 - Retrieved records are preserved with `RELEVANT`, `NOISE`, or `IRRELEVANT`.
 - Sentiment scoring is deterministic local rule/lexicon scoring.

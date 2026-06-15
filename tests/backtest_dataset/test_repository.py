@@ -31,7 +31,7 @@ def make_summary(**overrides: object) -> DatasetRunSummary:
         "timeframe_start": TIMEFRAME_START,
         "timeframe_end": TIMEFRAME_END,
         "status": DatasetRunStatus.COMPLETED,
-        "provider_name": "CryptoPanic",
+        "provider_name": "Sharpe Terminal",
         "record_count": 1,
         "relevant_count": 1,
         "noise_count": 0,
@@ -48,10 +48,10 @@ def make_record(**overrides: object) -> DatasetRecord:
     payload: dict[str, object] = {
         "workspace_id": "workspace-alpha",
         "run_id": "draft-run-000001",
-        "record_id": "cryptopanic:1",
+        "record_id": "sharpe:1",
         "timestamp": EVENT_TIME,
         "headline": "Bitcoin ETF inflows support BTC price",
-        "source_name": "CryptoPanic",
+        "source_name": "Sharpe Terminal",
         "sentiment_score": 0.45,
         "directional_bias": DirectionalBias.LONG,
         "confidence": 0.72,
@@ -66,7 +66,7 @@ def make_record(**overrides: object) -> DatasetRecord:
 def make_records(count: int) -> list[DatasetRecord]:
     return [
         make_record(
-            record_id=f"cryptopanic:{index:03d}",
+            record_id=f"sharpe:{index:03d}",
             headline=f"Bitcoin dataset repository row {index}",
         )
         for index in range(count)
@@ -99,7 +99,7 @@ def test_repository_reads_are_isolated_by_workspace_and_run_id() -> None:
             make_record(
                 workspace_id="workspace-beta",
                 run_id="draft-run-000001",
-                record_id="cryptopanic:beta",
+                record_id="sharpe:beta",
             )
         ],
     )
@@ -113,7 +113,7 @@ def test_repository_reads_are_isolated_by_workspace_and_run_id() -> None:
         make_record(
             workspace_id="workspace-beta",
             run_id="draft-run-000001",
-            record_id="cryptopanic:beta",
+            record_id="sharpe:beta",
         ),
     )
 
@@ -138,7 +138,7 @@ def test_repository_rejects_full_record_identity_mismatch_outside_preview(
     repository = InMemoryCompletedDatasetRepository()
     records = make_records(MAX_DATASET_PREVIEW_RECORDS + 1)
     records[-1] = make_record(
-        record_id="cryptopanic:mismatch",
+        record_id="sharpe:mismatch",
         headline="Bitcoin mismatched record outside preview",
         **{field: value},
     )
@@ -175,7 +175,7 @@ def test_repository_rejects_full_relevance_count_mismatch_outside_preview() -> N
     repository = InMemoryCompletedDatasetRepository()
     records = make_records(MAX_DATASET_PREVIEW_RECORDS + 1)
     records[-1] = make_record(
-        record_id="cryptopanic:noise-outside-preview",
+        record_id="sharpe:noise-outside-preview",
         headline="Daily market newsletter roundup",
         relevance=RelevanceLabel.NOISE,
         sentiment_score=0.0,
@@ -233,9 +233,9 @@ def test_repository_accepts_provider_limited_terminal_state_with_no_records() ->
         record_count=0,
         relevant_count=0,
         provider_limitation=DatasetProviderLimitation(
-            provider_name="CryptoPanic",
+            provider_name="Sharpe Terminal",
             reason="missing configuration",
-            detail="Set CRYPTOPANIC_API_KEY for a manual BACKTEST smoke check.",
+            detail="Set SHARPE_API_KEY for a manual BACKTEST smoke check.",
         ),
     )
 
@@ -251,7 +251,7 @@ def test_repository_rejects_provider_limited_terminal_state_with_records() -> No
     summary = make_summary(
         status=DatasetRunStatus.FAILED_PROVIDER_LIMITATION,
         provider_limitation=DatasetProviderLimitation(
-            provider_name="CryptoPanic",
+            provider_name="Sharpe Terminal",
             reason="provider unavailable",
             detail="Temporary provider outage.",
         ),

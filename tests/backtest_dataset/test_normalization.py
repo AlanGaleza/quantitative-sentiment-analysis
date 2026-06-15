@@ -27,11 +27,11 @@ def test_normalization_sorts_output_stably_for_reordered_provider_input() -> Non
     second_order = list(reversed(first_order))
 
     normalized_first = normalize_provider_records(
-        provider_name="CryptoPanic",
+        provider_name="Sharpe Terminal",
         raw_records=first_order,
     )
     normalized_second = normalize_provider_records(
-        provider_name="CryptoPanic",
+        provider_name="Sharpe Terminal",
         raw_records=second_order,
     )
 
@@ -43,29 +43,29 @@ def test_normalization_sorts_output_stably_for_reordered_provider_input() -> Non
 
 def test_normalization_dedupes_only_exact_repeated_provider_ids() -> None:
     normalized = normalize_provider_records(
-        provider_name="CryptoPanic",
+        provider_name="Sharpe Terminal",
         raw_records=[
             {
                 "id": "same-id",
                 "published_at": "2026-06-01T10:00:00Z",
                 "title": "BTC rally extends",
-                "source_name": "CryptoPanic",
+                "source_name": "Sharpe Terminal",
             },
             {
                 "id": "same-id",
                 "published_at": "2026-06-01T10:05:00Z",
                 "title": "BTC rally extends with more detail",
-                "source_name": "CryptoPanic",
+                "source_name": "Sharpe Terminal",
             },
             {
                 "published_at": "2026-06-01T10:10:00Z",
                 "title": "BTC rally extends",
-                "source_name": "CryptoPanic",
+                "source_name": "Sharpe Terminal",
             },
             {
                 "published_at": "2026-06-01T10:11:00Z",
                 "title": "BTC rally extends",
-                "source_name": "CryptoPanic",
+                "source_name": "Sharpe Terminal",
             },
         ],
     )
@@ -84,7 +84,7 @@ def test_normalization_dedupes_only_exact_repeated_provider_ids() -> None:
 
 def test_normalization_preserves_source_identity_and_optional_body() -> None:
     normalized = normalize_provider_records(
-        provider_name="CryptoPanic",
+        provider_name="Sharpe Terminal",
         raw_records=[
             {
                 "id": 123,
@@ -97,7 +97,7 @@ def test_normalization_preserves_source_identity_and_optional_body() -> None:
     )
 
     record = normalized[0]
-    assert record.provider_name == "CryptoPanic"
+    assert record.provider_name == "Sharpe Terminal"
     assert record.provider_record_id == "123"
     assert record.timestamp == datetime(2026, 6, 1, 10, 0, tzinfo=UTC)
     assert record.headline == "Bitcoin ETF approval"
@@ -108,7 +108,7 @@ def test_normalization_preserves_source_identity_and_optional_body() -> None:
 
 def test_normalization_preserves_missing_source_identity_for_later_noise_labeling() -> None:
     normalized = normalize_provider_records(
-        provider_name="CryptoPanic",
+        provider_name="Sharpe Terminal",
         raw_records=[
             {
                 "id": "missing-source",
@@ -125,7 +125,7 @@ def test_normalization_preserves_missing_source_identity_for_later_noise_labelin
 def test_normalization_rejects_naive_timestamp() -> None:
     with pytest.raises(ProviderNormalizationError, match="timezone"):
         normalize_provider_records(
-            provider_name="CryptoPanic",
+            provider_name="Sharpe Terminal",
             raw_records=[
                 {
                     "id": "naive",
@@ -139,13 +139,13 @@ def test_normalization_rejects_naive_timestamp() -> None:
 def test_normalization_rejects_missing_timestamp_or_headline() -> None:
     with pytest.raises(ProviderNormalizationError, match="timestamp"):
         normalize_provider_records(
-            provider_name="CryptoPanic",
+            provider_name="Sharpe Terminal",
             raw_records=[{"id": "missing-timestamp", "title": "Bitcoin ETF approval"}],
         )
 
     with pytest.raises(ProviderNormalizationError, match="headline"):
         normalize_provider_records(
-            provider_name="CryptoPanic",
+            provider_name="Sharpe Terminal",
             raw_records=[
                 {
                     "id": "missing-headline",

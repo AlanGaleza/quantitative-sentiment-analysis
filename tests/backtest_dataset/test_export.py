@@ -30,7 +30,7 @@ def make_summary(**overrides: object) -> DatasetRunSummary:
         "timeframe_start": TIMEFRAME_START,
         "timeframe_end": TIMEFRAME_END,
         "status": DatasetRunStatus.COMPLETED,
-        "provider_name": "CryptoPanic",
+        "provider_name": "Sharpe Terminal",
         "record_count": 1,
         "relevant_count": 1,
         "noise_count": 0,
@@ -47,7 +47,7 @@ def make_record(**overrides: object) -> DatasetRecord:
     payload: dict[str, object] = {
         "workspace_id": "workspace-alpha",
         "run_id": "draft-run-000001",
-        "record_id": "cryptopanic:001",
+        "record_id": "sharpe:001",
         "timestamp": datetime(2026, 6, 2, 9, 0, tzinfo=UTC),
         "headline": "Bitcoin ETF inflows support BTC price",
         "source_id": "coinwire",
@@ -67,7 +67,7 @@ def test_export_jsonl_bytes_are_stable_utf8_records_without_metadata_line() -> N
     repository = InMemoryCompletedDatasetRepository()
     records = [
         make_record(
-            record_id="cryptopanic:002",
+            record_id="sharpe:002",
             timestamp=datetime(2026, 6, 2, 10, 0, tzinfo=UTC),
             headline="Bitcoin rally extends as zloto demand rises",
             source_id=None,
@@ -78,7 +78,7 @@ def test_export_jsonl_bytes_are_stable_utf8_records_without_metadata_line() -> N
             confidence=0.5,
         ),
         make_record(
-            record_id="cryptopanic:001",
+            record_id="sharpe:001",
             headline="Bitcoin ETF inflows support BTC price - Lodz desk",
         ),
     ]
@@ -106,8 +106,8 @@ def test_export_jsonl_bytes_are_stable_utf8_records_without_metadata_line() -> N
     assert len(lines) == 2
 
     payloads = [json.loads(line) for line in lines]
-    assert payloads[0]["record_id"] == "cryptopanic:001"
-    assert payloads[1]["record_id"] == "cryptopanic:002"
+    assert payloads[0]["record_id"] == "sharpe:001"
+    assert payloads[1]["record_id"] == "sharpe:002"
     assert all(payload["workspace_id"] == "workspace-alpha" for payload in payloads)
     assert all(payload["run_id"] == "draft-run-000001" for payload in payloads)
     assert all(payload["config_version"] == "news-policy-v1" for payload in payloads)
@@ -169,7 +169,7 @@ def test_export_keeps_all_records_not_only_bounded_preview() -> None:
     repository = InMemoryCompletedDatasetRepository()
     records = [
         make_record(
-            record_id=f"cryptopanic:{index:03d}",
+            record_id=f"sharpe:{index:03d}",
             headline=f"Bitcoin dataset export row {index}",
         )
         for index in range(105)
@@ -196,9 +196,9 @@ def test_export_rejects_provider_limited_terminal_run() -> None:
             record_count=0,
             relevant_count=0,
             provider_limitation=DatasetProviderLimitation(
-                provider_name="CryptoPanic",
+                provider_name="Sharpe Terminal",
                 reason="missing configuration",
-                detail="Set CRYPTOPANIC_API_KEY for a manual BACKTEST smoke check.",
+                detail="Set SHARPE_API_KEY for a manual BACKTEST smoke check.",
             ),
         ),
         [],

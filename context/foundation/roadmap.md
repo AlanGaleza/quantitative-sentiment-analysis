@@ -83,7 +83,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-01
 - **Blockers:** —
 - **Unknowns:** —
-- **Policy:** `context/foundation/news-sentiment-policy.md` locks CryptoPanic for MVP, a 30-day default range, deterministic rule/lexicon scoring, `>= 0.20 LONG`, `<= -0.20 SHORT`, otherwise `FLAT`, classification confidence, a 4 hours quality horizon, and correlation + hit rate + sampled sentiment-vs-return visualization.
+- **Policy:** `context/foundation/news-sentiment-policy.md` locks Sharpe Terminal for MVP, a 30-day default range, deterministic rule/lexicon scoring, `>= 0.20 LONG`, `<= -0.20 SHORT`, otherwise `FLAT`, classification confidence, a 4 hours quality horizon, and correlation + hit rate + sampled sentiment-vs-return visualization.
 - **Risk:** The selected blocker is decisions; implementing scoring or UI before these calls would hide product uncertainty inside code.
 - **Status:** ready
 
@@ -111,7 +111,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** —
 - **Blockers:** —
 - **Unknowns:**
-  - Run a controlled manual CryptoPanic token/API smoke test before trusting real ingestion beyond fixture-backed verification — Owner: user. Block: no for local/dev fixture-backed S-02 flow.
+  - Run a controlled manual Sharpe Terminal token/API smoke test before trusting real ingestion beyond fixture-backed verification — Owner: user. Block: no for local/dev fixture-backed S-02 flow.
 - **Handoff:** S-02 now supplies canonical `DatasetRecord` rows in local/dev completed-run storage, a `/dataset/run` start route, `/dataset` status/preview route, and a quality adapter that leaves movement fields missing until price enrichment exists.
 - **Risk:** This is the core data path; if it is not deterministic and auditable, both export and visualization become misleading.
 - **Status:** ready
@@ -156,7 +156,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Open Roadmap Questions
 
-1. **Resolved by F-02 policy:** CryptoPanic is locked as the MVP source, with S-02 required to smoke-test token/API access before real ingestion.
+1. **Resolved by F-02 policy:** Sharpe Terminal is locked as the MVP source, with S-02 required to smoke-test token/API access before real ingestion.
 2. **Resolved by F-02 policy:** deterministic rule/lexicon scoring maps `>= 0.20` to `LONG`, `<= -0.20` to `SHORT`, and the middle range to `FLAT`.
 3. **Resolved by F-02 policy:** the first quality view uses correlation, hit rate, and a sampled sentiment-vs-price-movement plot over a 4 hours horizon.
 
@@ -165,7 +165,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **LIVE streaming** — Why parked: PRD Non-Goals says v1 does not stream current news or directional bias in real time.
 - **Broker/order execution** — Why parked: PRD Non-Goals says v1 does not place orders, integrate with brokers, or automate trading.
 - **Multi-instrument support** — Why parked: PRD Non-Goals limits MVP to BTCUSD.
-- **Multi-source aggregation** — Why parked: PRD Non-Goals keeps v1 to CryptoPanic or one aggregated crypto-news feed.
+- **Multi-source aggregation** — Why parked: PRD Non-Goals keeps v1 to Sharpe Terminal or one aggregated crypto-news feed.
 - **Production-grade trading recommendations** — Why parked: PRD Non-Goals frame output as dataset and directional bias for analytical/ML use only.
 - **Advanced dashboard** — Why parked: the required frontend is limited to the smallest useful quality view; advanced dashboarding remains out of scope.
 - **Probabilistic multi-asset mapping** — Why parked: PRD Non-Goals defer mapping one news item to many assets.

@@ -164,7 +164,7 @@ def test_post_run_uses_workspace_boundary() -> None:
 
 def test_post_run_maps_provider_limitation_to_409_with_typed_failed_state() -> None:
     class ProviderLimited:
-        provider_name = "CryptoPanic"
+        provider_name = "Sharpe Terminal"
 
         def fetch_historical_news(
             self,
@@ -173,7 +173,7 @@ def test_post_run_maps_provider_limitation_to_409_with_typed_failed_state() -> N
             raise DatasetProviderLimitationError(
                 provider_name=self.provider_name,
                 reason="missing provider configuration",
-                detail="Set CRYPTOPANIC_API_KEY locally for a BACKTEST smoke check.",
+                detail="Set SHARPE_API_KEY locally for a BACKTEST smoke check.",
             )
 
     shell_repository, _completed_repository = setup_dependencies(provider=ProviderLimited())
@@ -187,7 +187,7 @@ def test_post_run_maps_provider_limitation_to_409_with_typed_failed_state() -> N
     assert response.status_code == 409
     detail = response.json()["detail"]
     assert detail["summary"]["status"] == "FAILED_PROVIDER_LIMITATION"
-    assert detail["summary"]["provider_limitation"]["provider_name"] == "CryptoPanic"
+    assert detail["summary"]["provider_limitation"]["provider_name"] == "Sharpe Terminal"
     assert detail["summary"]["provider_limitation"]["reason"] == (
         "missing provider configuration"
     )
@@ -341,7 +341,7 @@ def test_export_dataset_jsonl_uses_workspace_boundary() -> None:
 
 def test_export_dataset_jsonl_returns_409_for_provider_limited_dataset() -> None:
     class ProviderLimited:
-        provider_name = "CryptoPanic"
+        provider_name = "Sharpe Terminal"
 
         def fetch_historical_news(
             self,
@@ -350,7 +350,7 @@ def test_export_dataset_jsonl_returns_409_for_provider_limited_dataset() -> None
             raise DatasetProviderLimitationError(
                 provider_name=self.provider_name,
                 reason="missing provider configuration",
-                detail="Set CRYPTOPANIC_API_KEY locally for a BACKTEST smoke check.",
+                detail="Set SHARPE_API_KEY locally for a BACKTEST smoke check.",
             )
 
     shell_repository, _completed_repository = setup_dependencies(provider=ProviderLimited())

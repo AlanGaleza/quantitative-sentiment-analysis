@@ -152,7 +152,7 @@ def test_adapter_rejects_incomplete_or_provider_limited_runs() -> None:
             relevant_count=0,
             noise_count=0,
             provider_limitation=DatasetProviderLimitation(
-                provider_name="CryptoPanic",
+                provider_name="Sharpe Terminal",
                 reason="missing provider configuration",
             ),
         ),

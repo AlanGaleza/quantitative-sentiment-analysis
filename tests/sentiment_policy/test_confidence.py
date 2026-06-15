@@ -7,7 +7,7 @@ def test_classification_confidence_is_bounded() -> None:
         1.0,
         RelevanceLabel.RELEVANT,
         headline="Bitcoin rally",
-        source_id="cryptopanic-1",
+        source_id="sharpe-1",
     )
 
     assert 0 <= confidence <= 1
@@ -18,13 +18,13 @@ def test_stronger_score_has_no_lower_confidence_when_other_inputs_match() -> Non
         0.1,
         RelevanceLabel.RELEVANT,
         headline="Bitcoin market update",
-        source_id="cryptopanic-1",
+        source_id="sharpe-1",
     )
     strong = classification_confidence(
         0.8,
         RelevanceLabel.RELEVANT,
         headline="Bitcoin market update",
-        source_id="cryptopanic-1",
+        source_id="sharpe-1",
     )
 
     assert strong >= weak
@@ -35,7 +35,7 @@ def test_relevance_and_source_completeness_affect_confidence() -> None:
         0.4,
         RelevanceLabel.RELEVANT,
         headline="Bitcoin rally",
-        source_id="cryptopanic-1",
+        source_id="sharpe-1",
     )
     missing_source_noise = classification_confidence(
         0.4,
@@ -49,7 +49,7 @@ def test_relevance_and_source_completeness_affect_confidence() -> None:
 def test_classification_confidence_is_deterministic() -> None:
     kwargs = {
         "headline": "Bitcoin rally",
-        "source_name": "CryptoPanic",
+        "source_name": "Sharpe Terminal",
     }
 
     assert classification_confidence(0.4, RelevanceLabel.RELEVANT, **kwargs) == (

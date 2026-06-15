@@ -62,7 +62,7 @@ Primary persona: indywidualny trader aktywnie handlujący intraday / swing, któ
 
 ### Primary
 
-- Trader can log in, select BTCUSD, run a BACKTEST over historical crypto news from one source such as CryptoPanic or an aggregated crypto-news feed, and export a training dataset as JSONL, with CSV as optional secondary output.
+- Trader can log in, select BTCUSD, run a BACKTEST over historical crypto news from one source such as Sharpe Terminal or an aggregated crypto-news feed, and export a training dataset as JSONL, with CSV as optional secondary output.
 - Each exported dataset record contains timestamp, news headline, sentiment score in the range -1..+1, directional bias LONG/SHORT/FLAT, and confidence in the range 0..1.
 
 ### Secondary
@@ -110,7 +110,7 @@ Primary persona: indywidualny trader aktywnie handlujący intraday / swing, któ
 
 ### News Ingestion & Context
 
-- FR-005: System can retrieve historical news from one source, either CryptoPanic or one aggregated crypto-news feed. Priority: must-have
+- FR-005: System can retrieve historical news from one source, either Sharpe Terminal or one aggregated crypto-news feed. Priority: must-have
   > Socratic: Counter-argument considered: one source may bias the dataset but keeps scope bounded. Resolution: kept one source for v1.
 - FR-006: System can attach each news item to a timestamp and crypto-relevance context for BTCUSD analysis. Priority: must-have
   > Socratic: Counter-argument considered: hard BTCUSD mapping may be falsely precise; crypto-relevant context may be enough. Resolution: revised wording to avoid over-precise mapping while preserving BTCUSD analysis context.
@@ -142,16 +142,16 @@ Primary persona: indywidualny trader aktywnie handlujący intraday / swing, któ
 ## Non-Functional Requirements
 
 - Reproducibility: the same input, including time range, BTCUSD instrument, config, seed, and model version, always generates an identical JSONL dataset regardless of run count.
-- Backtest runtime: processing 30 days of historical CryptoPanic news and generating the full dataset completes in <= 5 minutes on a standard developer machine.
+- Backtest runtime: processing 30 days of historical Sharpe Terminal news and generating the full dataset completes in <= 5 minutes on a standard developer machine.
 - Auditability: every dataset record includes source_name, timestamp, run_id, and config_version so the result can be reproduced and debugged.
 - Workspace privacy: inputs, outputs, and exports are isolated per workspace and visible only to the logged-in trader, with no cross-workspace leakage.
 - Semantic safety: outputs are clearly presented as analytical/ML dataset fields and directional bias, not as investment recommendations or executable trading signals.
 
 ## Business Logic
 
-Aplikacja bierze historyczne newsy dotyczace rynku crypto (CryptoPanic) w wybranym przedziale czasu dla BTCUSD i dla kazdego wydarzenia wyznacza sentyment, kierunkowy bias oraz confidence, zeby trader otrzymal deterministyczny dataset treningowy gotowy do uzycia w modelach w quantum-trading-system.
+Aplikacja bierze historyczne newsy dotyczace rynku crypto (Sharpe Terminal) w wybranym przedziale czasu dla BTCUSD i dla kazdego wydarzenia wyznacza sentyment, kierunkowy bias oraz confidence, zeby trader otrzymal deterministyczny dataset treningowy gotowy do uzycia w modelach w quantum-trading-system.
 
-Inputs consumed by the rule: historical crypto news from CryptoPanic or a single aggregated crypto-news feed, selected BACKTEST time range, BTCUSD as the selected instrument, run configuration, seed, and model version.
+Inputs consumed by the rule: historical crypto news from Sharpe Terminal or a single aggregated crypto-news feed, selected BACKTEST time range, BTCUSD as the selected instrument, run configuration, seed, and model version.
 
 Output produced by the rule: a reproducible JSONL dataset, optionally also CSV, with timestamp, headline, source identity, sentiment score, directional bias LONG/SHORT/FLAT, confidence, run_id, and config_version.
 
@@ -170,7 +170,7 @@ Workspace separation matters: different sentiment-engine approaches, instrument 
 - No LIVE streaming in v1: MVP does not stream current news or directional bias in real time.
 - No broker/order execution: MVP does not place orders, integrate with brokers, or automate trading.
 - No multi-instrument support: MVP is limited to BTCUSD.
-- No multi-source aggregation: MVP uses CryptoPanic or one aggregated crypto-news feed only.
+- No multi-source aggregation: MVP uses Sharpe Terminal or one aggregated crypto-news feed only.
 - No production-grade trading recommendations: output is a dataset and directional bias for analytical/ML use, not an investment recommendation.
 - No advanced quality dashboard: dashboard remains nice-to-have and does not block MVP delivery.
 - No probabilistic multi-asset mapping: probabilistic mapping of one news item to many assets is deferred to a later scale stage.

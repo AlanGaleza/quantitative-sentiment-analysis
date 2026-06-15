@@ -7,7 +7,7 @@ from quantitative_sentiment_analysis.contracts.schemas import Instrument, RunMod
 
 @dataclass(frozen=True)
 class SentimentPolicyConfig:
-    provider_name: str = "CryptoPanic"
+    provider_name: str = "Sharpe Terminal"
     instrument: Instrument = Instrument.BTCUSD
     mode: RunMode = RunMode.BACKTEST
     default_historical_range_days: int = 30

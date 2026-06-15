@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import cast
 from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from quantitative_sentiment_analysis.backtest_dataset.cryptopanic import (
-    CRYPTOPANIC_API_KEY_ENV,
-    CryptoPanicClient,
+from quantitative_sentiment_analysis.backtest_dataset.sharpe import (
+    SHARPE_API_KEY_ENV,
+    SHARPE_NEWS_API_URL,
+    SharpeTerminalClient,
 )
 from quantitative_sentiment_analysis.backtest_dataset.provider import (
     DatasetProviderConfigurationError,
@@ -59,71 +61,197 @@ def test_provider_request_rejects_unsupported_scope() -> None:
         make_request(mode=cast(RunMode, "LIVE"))
 
 
-def test_cryptopanic_from_environment_requires_token(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv(CRYPTOPANIC_API_KEY_ENV, raising=False)
+def test_sharpe_from_environment_requires_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv(SHARPE_API_KEY_ENV, raising=False)
 
-    with pytest.raises(DatasetProviderConfigurationError, match=CRYPTOPANIC_API_KEY_ENV):
-        CryptoPanicClient.from_environment()
+    with pytest.raises(DatasetProviderConfigurationError, match=SHARPE_API_KEY_ENV):
+        SharpeTerminalClient.from_environment()
 
 
-def test_cryptopanic_missing_token_is_typed_provider_limitation(
+def test_sharpe_missing_api_key_is_typed_provider_limitation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.delenv(CRYPTOPANIC_API_KEY_ENV, raising=False)
-    client = CryptoPanicClient(auth_token=None)
+    monkeypatch.delenv(SHARPE_API_KEY_ENV, raising=False)
+    client = SharpeTerminalClient(api_key=None)
 
     with pytest.raises(DatasetProviderLimitationError) as exc_info:
         client.fetch_historical_news(make_request())
 
     limitation = exc_info.value.to_schema()
-    assert limitation.provider_name == "CryptoPanic"
+    assert limitation.provider_name == "Sharpe Terminal"
     assert limitation.reason == "missing provider configuration"
-    assert CRYPTOPANIC_API_KEY_ENV in (limitation.detail or "")
+    assert SHARPE_API_KEY_ENV in (limitation.detail or "")
 
 
-def test_cryptopanic_fetch_uses_stubbed_http_and_filters_non_record_results() -> None:
-    requested_urls: list[str] = []
+def test_sharpe_fetch_uses_bearer_auth_and_filters_to_requested_window() -> None:
+    requested: list[tuple[str, dict[str, str]]] = []
 
-    def fetch_json(url: str) -> dict[str, object]:
-        requested_urls.append(url)
+    def fetch_json(url: str, headers: Mapping[str, str]) -> dict[str, object]:
+        requested.append((url, dict(headers)))
         return {
-            "results": [
-                {"id": 1, "title": "Bitcoin ETF approval"},
-                "unexpected",
-                {"id": 2, "title": "BTC selloff"},
-            ]
+            "data": {
+                "articles": [
+                    {
+                        "id": "sharpe-1",
+                        "title": "Bitcoin ETF approval",
+                        "summary": "BTC spot inflows accelerate.",
+                        "source": "Sharpe News",
+                        "published": "2026-06-02T09:00:00Z",
+                        "category": "crypto",
+                        "coin": "BTC",
+                        "url": "https://example.test/sharpe-1",
+                    },
+                    {
+                        "id": "future",
+                        "title": "BTC headline outside requested window",
+                        "source": "Sharpe News",
+                        "published": "2026-06-09T09:00:00Z",
+                    },
+                    {
+                        "id": "sharpe-2",
+                        "title": "BTC selloff",
+                        "source": {"id": "terminal", "name": "Sharpe Terminal"},
+                        "published": "2026-06-08T12:00:00Z",
+                    },
+                    "unexpected",
+                ]
+            }
         }
 
-    client = CryptoPanicClient(auth_token="secret-token", fetch_json=fetch_json)
+    client = SharpeTerminalClient(
+        api_key="secret-token",
+        fetch_json=fetch_json,
+        page_limit=100,
+    )
 
     records = client.fetch_historical_news(make_request())
 
     assert records == (
-        {"id": 1, "title": "Bitcoin ETF approval"},
-        {"id": 2, "title": "BTC selloff"},
+        {
+            "id": "sharpe-1",
+            "published_at": "2026-06-02T09:00:00Z",
+            "title": "Bitcoin ETF approval",
+            "body": "BTC spot inflows accelerate.",
+            "source_id": "Sharpe News",
+            "source_name": "Sharpe News",
+            "url": "https://example.test/sharpe-1",
+            "category": "crypto",
+            "coin": "BTC",
+        },
+        {
+            "id": "sharpe-2",
+            "published_at": "2026-06-08T12:00:00Z",
+            "title": "BTC selloff",
+            "body": None,
+            "source_id": "terminal",
+            "source_name": "Sharpe Terminal",
+            "url": None,
+            "category": None,
+            "coin": None,
+        },
     )
-    query = parse_qs(urlparse(requested_urls[0]).query)
-    assert query["auth_token"] == ["secret-token"]
-    assert query["currencies"] == ["BTC"]
-    assert query["from"] == ["2026-06-01"]
-    assert query["to"] == ["2026-06-08"]
+    url, headers = requested[0]
+    assert headers["Authorization"] == "Bearer secret-token"
+    assert headers["Accept"] == "application/json"
+    assert url.startswith(f"{SHARPE_NEWS_API_URL}?")
+    query = parse_qs(urlparse(url).query)
+    assert query["limit"] == ["100"]
+    assert query["offset"] == ["0"]
+    assert query["category"] == ["crypto"]
+    assert query["coin"] == ["BTC"]
+    assert query["since"] == ["2026-06-01T12:00:00Z"]
 
 
-def test_cryptopanic_unexpected_payload_is_provider_limitation() -> None:
-    client = CryptoPanicClient(
-        auth_token="secret-token",
-        fetch_json=lambda url: {"status": "ok"},
+def test_sharpe_fetch_paginates_until_short_article_page() -> None:
+    requested_offsets: list[str] = []
+
+    def fetch_json(url: str, headers: Mapping[str, str]) -> dict[str, object]:
+        query = parse_qs(urlparse(url).query)
+        requested_offsets.append(query["offset"][0])
+        if query["offset"] == ["0"]:
+            return {
+                "data": {
+                    "articles": [
+                        {
+                            "id": "sharpe-1",
+                            "title": "Bitcoin ETF approval",
+                            "source": "Sharpe News",
+                            "published": "2026-06-02T09:00:00Z",
+                        }
+                    ]
+                }
+            }
+        return {"data": {"articles": []}}
+
+    client = SharpeTerminalClient(
+        api_key="secret-token",
+        fetch_json=fetch_json,
+        page_limit=1,
+    )
+
+    records = client.fetch_historical_news(make_request())
+
+    assert requested_offsets == ["0", "1"]
+    assert [record["id"] for record in records] == ["sharpe-1"]
+
+
+def test_sharpe_fetch_filters_non_record_results() -> None:
+    def fetch_json(url: str, headers: Mapping[str, str]) -> dict[str, object]:
+        return {
+            "data": {
+                "articles": [
+                    {"id": 1, "title": "Bitcoin ETF approval"},
+                    "unexpected",
+                    {"id": 2, "title": "BTC selloff"},
+                ]
+            }
+        }
+
+    client = SharpeTerminalClient(api_key="secret-token", fetch_json=fetch_json)
+
+    records = client.fetch_historical_news(make_request())
+
+    assert records == (
+        {
+            "id": 1,
+            "published_at": None,
+            "title": "Bitcoin ETF approval",
+            "body": None,
+            "source_id": None,
+            "source_name": None,
+            "url": None,
+            "category": None,
+            "coin": None,
+        },
+        {
+            "id": 2,
+            "published_at": None,
+            "title": "BTC selloff",
+            "body": None,
+            "source_id": None,
+            "source_name": None,
+            "url": None,
+            "category": None,
+            "coin": None,
+        },
+    )
+
+
+def test_sharpe_unexpected_payload_is_provider_limitation() -> None:
+    client = SharpeTerminalClient(
+        api_key="secret-token",
+        fetch_json=lambda url, headers: {"status": "ok"},
     )
 
     with pytest.raises(DatasetProviderLimitationError, match="unexpected provider response"):
         client.fetch_historical_news(make_request())
 
 
-def test_cryptopanic_fetch_failure_is_unavailable() -> None:
-    def fail(url: str) -> dict[str, object]:
+def test_sharpe_fetch_failure_is_unavailable() -> None:
+    def fail(url: str, headers: Mapping[str, str]) -> dict[str, object]:
         raise OSError("network unavailable")
 
-    client = CryptoPanicClient(auth_token="secret-token", fetch_json=fail)
+    client = SharpeTerminalClient(api_key="secret-token", fetch_json=fail)
 
     with pytest.raises(DatasetProviderUnavailableError, match="request failed"):
         client.fetch_historical_news(make_request())

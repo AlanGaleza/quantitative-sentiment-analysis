@@ -3,7 +3,7 @@ from quantitative_sentiment_analysis.sentiment_policy import DEFAULT_POLICY_CONF
 
 
 def test_policy_config_locks_f02_decisions() -> None:
-    assert DEFAULT_POLICY_CONFIG.provider_name == "CryptoPanic"
+    assert DEFAULT_POLICY_CONFIG.provider_name == "Sharpe Terminal"
     assert DEFAULT_POLICY_CONFIG.instrument is Instrument.BTCUSD
     assert DEFAULT_POLICY_CONFIG.mode is RunMode.BACKTEST
     assert DEFAULT_POLICY_CONFIG.default_historical_range_days == 30

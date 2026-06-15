@@ -90,7 +90,7 @@ bootstrapping it from zero.
 | Frontend component/API tests | Vitest + jsdom | Vitest ^4.1.8, jsdom ^29.1.1 | `npm test` in `frontend`; `frontend/vite.config.ts` sets jsdom, globals, and setup file. |
 | Frontend framework | React + Vite | React ^19.2.7, Vite ^8.0.16 | DOM/component tests are the default signal layer for current UI risks. |
 | E2E/browser | none wired | n/a | Use `/10x-e2e` only if a later risk requires full browser workflow signal beyond API/component tests. |
-| Provider smoke | manual controlled smoke | n/a | Real CryptoPanic API access stays out of CI; automated tests should use fixture-backed provider boundaries. |
+| Provider smoke | manual controlled smoke | n/a | Real Sharpe Terminal API access stays out of CI; automated tests should use fixture-backed provider boundaries. |
 
 **Stack grounding tools (current session):**
 - Docs: Context7 -- checked FastAPI TestClient guidance, pytest discovery, and Vitest jsdom/setup guidance; checked: 2026-06-15
@@ -108,7 +108,7 @@ a named rollout phase lands, its gate is planned rather than enforced.
 | Backend pytest | local + CI | required; strengthened by §3 Phase 1-3 | Dataset determinism, API contracts, workspace mismatch, relevance/quality regressions. |
 | Frontend Vitest | local + CI | required; strengthened by §3 Phase 3-4 | Broken workflow rendering, warnings, copy/semantic-safety regressions. |
 | Type/build checks | local + CI | required after §3 Phase 4 | Type drift and broken frontend build. |
-| Provider smoke | manual pre-prod | planned after §3 Phase 2 | CryptoPanic token/range/provider limitation mismatch without putting live provider calls in CI. |
+| Provider smoke | manual pre-prod | planned after §3 Phase 2 | Sharpe Terminal token/range/provider limitation mismatch without putting live provider calls in CI. |
 | E2E critical flow | optional via `/10x-e2e` | not required until a researched risk justifies it | Full browser workflow breakage that API/component tests cannot catch. |
 | Semantic-safety review | local + CI | required after §3 Phase 4 | Advisory wording, broker/order/live implications. |
 

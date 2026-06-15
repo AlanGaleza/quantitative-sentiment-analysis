@@ -148,7 +148,7 @@ def test_orchestrator_is_stable_for_reordered_provider_records() -> None:
 
 def test_orchestrator_stores_provider_limitation_state() -> None:
     class ProviderLimited:
-        provider_name = "CryptoPanic"
+        provider_name = "Sharpe Terminal"
 
         def fetch_historical_news(
             self,
@@ -157,7 +157,7 @@ def test_orchestrator_stores_provider_limitation_state() -> None:
             raise DatasetProviderLimitationError(
                 provider_name=self.provider_name,
                 reason="missing provider configuration",
-                detail="Set CRYPTOPANIC_API_KEY for a manual BACKTEST smoke check.",
+                detail="Set SHARPE_API_KEY for a manual BACKTEST smoke check.",
             )
 
     repository = InMemoryCompletedDatasetRepository()
@@ -173,7 +173,7 @@ def test_orchestrator_stores_provider_limitation_state() -> None:
     )
 
     assert preview.summary.status is DatasetRunStatus.FAILED_PROVIDER_LIMITATION
-    assert preview.summary.provider_name == "CryptoPanic"
+    assert preview.summary.provider_name == "Sharpe Terminal"
     assert preview.summary.record_count == 0
     assert preview.summary.provider_limitation is not None
     assert preview.summary.provider_limitation.reason == "missing provider configuration"

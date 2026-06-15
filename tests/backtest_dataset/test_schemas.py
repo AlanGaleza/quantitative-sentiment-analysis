@@ -32,7 +32,7 @@ def make_summary(**overrides: object) -> DatasetRunSummary:
         "timeframe_start": TIMEFRAME_START,
         "timeframe_end": TIMEFRAME_END,
         "status": DatasetRunStatus.COMPLETED,
-        "provider_name": "CryptoPanic",
+        "provider_name": "Sharpe Terminal",
         "record_count": 1,
         "relevant_count": 1,
         "noise_count": 0,
@@ -49,10 +49,10 @@ def make_record(**overrides: object) -> DatasetRecord:
     payload: dict[str, object] = {
         "workspace_id": "workspace-alpha",
         "run_id": "draft-run-000001",
-        "record_id": "cryptopanic:1",
+        "record_id": "sharpe:1",
         "timestamp": EVENT_TIME,
         "headline": "Bitcoin ETF inflows support BTC price",
-        "source_id": "cryptopanic",
+        "source_id": "sharpe",
         "instrument": Instrument.BTCUSD,
         "mode": RunMode.BACKTEST,
         "sentiment_score": 0.45,
@@ -116,14 +116,14 @@ def test_provider_limitation_is_required_for_provider_limited_failures() -> None
         record_count=0,
         relevant_count=0,
         provider_limitation=DatasetProviderLimitation(
-            provider_name="CryptoPanic",
+            provider_name="Sharpe Terminal",
             reason="missing configuration",
-            detail="Set CRYPTOPANIC_API_KEY for a manual BACKTEST smoke check.",
+            detail="Set SHARPE_API_KEY for a manual BACKTEST smoke check.",
         ),
     )
 
     assert summary.provider_limitation is not None
-    assert summary.provider_limitation.provider_name == "CryptoPanic"
+    assert summary.provider_limitation.provider_name == "Sharpe Terminal"
     assert summary.provider_limitation.reason == "missing configuration"
 
 
@@ -131,7 +131,7 @@ def test_completed_summary_rejects_provider_limitation() -> None:
     with pytest.raises(ValidationError, match="provider_limitation"):
         make_summary(
             provider_limitation=DatasetProviderLimitation(
-                provider_name="CryptoPanic",
+                provider_name="Sharpe Terminal",
                 reason="missing configuration",
             )
         )
@@ -150,7 +150,7 @@ def test_preview_reuses_canonical_dataset_records() -> None:
 
 def test_preview_rejects_more_than_bounded_record_limit() -> None:
     records = [
-        make_record(record_id=f"cryptopanic:{index}", headline=f"BTC headline {index}")
+        make_record(record_id=f"sharpe:{index}", headline=f"BTC headline {index}")
         for index in range(MAX_DATASET_PREVIEW_RECORDS + 1)
     ]
 
@@ -206,7 +206,7 @@ def test_models_reject_unknown_fields() -> None:
 
     with pytest.raises(ValidationError):
         DatasetProviderLimitation(
-            provider_name="CryptoPanic",
+            provider_name="Sharpe Terminal",
             reason="missing configuration",
             unexpected="value",
         )

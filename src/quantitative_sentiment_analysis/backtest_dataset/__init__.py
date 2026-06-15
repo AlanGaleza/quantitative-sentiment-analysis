@@ -40,6 +40,11 @@ from quantitative_sentiment_analysis.backtest_dataset.export import (
     DatasetExportNotReadyError,
     export_dataset_jsonl_bytes,
 )
+from quantitative_sentiment_analysis.backtest_dataset.sharpe import (
+    SHARPE_API_KEY_ENV,
+    SHARPE_NEWS_API_URL,
+    SharpeTerminalClient,
+)
 
 __all__ = [
     "CompletedDatasetRepository",
@@ -66,6 +71,9 @@ __all__ = [
     "ProviderFetchRequest",
     "ProviderNormalizationError",
     "ProviderRawRecord",
+    "SHARPE_API_KEY_ENV",
+    "SHARPE_NEWS_API_URL",
+    "SharpeTerminalClient",
     "export_dataset_jsonl_bytes",
     "get_completed_dataset_repository",
     "metadata_for_preview",
