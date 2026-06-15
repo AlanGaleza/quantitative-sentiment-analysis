@@ -462,14 +462,14 @@ No database migration is planned. The in-memory repository is a deliberate MVP/t
 
 #### Automated
 
-- [x] 5.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell`
-- [x] 5.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
-- [x] 5.3 Frontend build passes: `cd frontend && npm run build`
-- [x] 5.4 Foundation docs reference S-01 handoff: `rg -n "workspace-backtest-shell|S-01|draft" context/foundation/roadmap.md context/foundation/quality-contracts.md`
+- [x] 5.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell` — c6010ee
+- [x] 5.2 Full frontend test suite passes: `cd frontend && npm test -- --run` — c6010ee
+- [x] 5.3 Frontend build passes: `cd frontend && npm run build` — c6010ee
+- [x] 5.4 Foundation docs reference S-01 handoff: `rg -n "workspace-backtest-shell|S-01|draft" context/foundation/roadmap.md context/foundation/quality-contracts.md` — c6010ee
 
 #### Manual
 
-- [x] 5.5 S-02 can use the new draft run shell contract without re-deciding workspace, mode, instrument, or timeframe semantics.
-- [x] 5.6 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset`.
-- [x] 5.7 No generated real workspace data or unsanitized news exports are committed.
-- [x] 5.8 Working tree is clean after commits and epilogue.
+- [x] 5.5 S-02 can use the new draft run shell contract without re-deciding workspace, mode, instrument, or timeframe semantics. — c6010ee
+- [x] 5.6 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset`. — c6010ee
+- [x] 5.7 No generated real workspace data or unsanitized news exports are committed. — c6010ee
+- [x] 5.8 Working tree is clean after commits and epilogue. — c6010ee
