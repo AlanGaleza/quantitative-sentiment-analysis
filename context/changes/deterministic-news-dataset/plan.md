@@ -571,31 +571,31 @@ If a real HTTP client dependency is needed for CryptoPanic, add it through `uv a
 
 #### Automated
 
-- [x] 4.1 Dataset router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py`
-- [x] 4.2 Quality adapter tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_quality/test_dataset_adapter.py`
-- [x] 4.3 Backend regression tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy`
+- [x] 4.1 Dataset router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py` — b32d3b3
+- [x] 4.2 Quality adapter tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_quality/test_dataset_adapter.py` — b32d3b3
+- [x] 4.3 Backend regression tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy` — b32d3b3
 
 #### Manual
 
-- [x] 4.4 API can start a dataset for an existing draft run and fetch its summary/preview.
-- [x] 4.5 Provider limitation returns a clear failed BACKTEST dataset state, not fabricated data.
-- [x] 4.6 Existing `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` route reads completed S-02 data when available.
+- [x] 4.4 API can start a dataset for an existing draft run and fetch its summary/preview. — b32d3b3
+- [x] 4.5 Provider limitation returns a clear failed BACKTEST dataset state, not fabricated data. — b32d3b3
+- [x] 4.6 Existing `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` route reads completed S-02 data when available. — b32d3b3
 
 ### Phase 5: Frontend Shell Flow
 
 #### Automated
 
-- [ ] 5.1 Shell API tests pass: `cd frontend && npm test -- --run src/features/backtestShell/api.test.ts`
-- [ ] 5.2 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx`
-- [ ] 5.3 Frontend build passes: `cd frontend && npm run build`
-- [ ] 5.4 Full frontend test suite passes: `cd frontend && npm test -- --run`
+- [x] 5.1 Shell API tests pass: `cd frontend && npm test -- --run src/features/backtestShell/api.test.ts`
+- [x] 5.2 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx`
+- [x] 5.3 Frontend build passes: `cd frontend && npm run build`
+- [x] 5.4 Full frontend test suite passes: `cd frontend && npm test -- --run`
 
 #### Manual
 
-- [ ] 5.5 User can create a draft run, then explicitly start deterministic BACKTEST dataset generation.
-- [ ] 5.6 Completed UI shows counts, provider, model/config versions, fingerprint, preview records, and quality route readiness.
-- [ ] 5.7 Provider limitation is visible and does not imply fallback or fabricated data.
-- [ ] 5.8 UI copy remains BACKTEST-only analytical workflow copy.
+- [x] 5.5 User can create a draft run, then explicitly start deterministic BACKTEST dataset generation.
+- [x] 5.6 Completed UI shows counts, provider, model/config versions, fingerprint, preview records, and quality route readiness.
+- [x] 5.7 Provider limitation is visible and does not imply fallback or fabricated data.
+- [x] 5.8 UI copy remains BACKTEST-only analytical workflow copy.
 
 ### Phase 6: Verification and Handoff
 

@@ -2,9 +2,15 @@ import { FormEvent, useMemo, useState } from "react";
 
 import {
   createBacktestRunShell,
+  runBacktestDataset,
   type BacktestShellApiError,
 } from "./api";
-import type { BacktestRunShell, CreateBacktestRunRequest } from "./types";
+import type {
+  BacktestRunShell,
+  CreateBacktestRunRequest,
+  DatasetPreviewRecord,
+  DatasetRunPreview,
+} from "./types";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -13,9 +19,12 @@ type CreateRun = (
   request: CreateBacktestRunRequest,
 ) => Promise<BacktestRunShell>;
 
+type RunDataset = (workspaceId: string, runId: string) => Promise<DatasetRunPreview>;
+
 interface BacktestShellPageProps {
   workspaceId: string;
   createRun?: CreateRun;
+  runDataset?: RunDataset;
   now?: Date;
 }
 
@@ -25,9 +34,17 @@ type SubmitState =
   | { status: "created"; run: BacktestRunShell }
   | { status: "error"; message: string };
 
+type DatasetState =
+  | { status: "idle" }
+  | { status: "running" }
+  | { status: "completed"; preview: DatasetRunPreview }
+  | { status: "provider-limited"; preview: DatasetRunPreview; message: string }
+  | { status: "error"; message: string };
+
 export function BacktestShellPage({
   workspaceId,
   createRun = createBacktestRunShell,
+  runDataset = runBacktestDataset,
   now = new Date(),
 }: BacktestShellPageProps) {
   const defaults = useMemo(() => defaultTimeframe(now), [now]);
@@ -35,6 +52,7 @@ export function BacktestShellPage({
   const [timeframeEnd, setTimeframeEnd] = useState(defaults.timeframeEnd);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+  const [datasetState, setDatasetState] = useState<DatasetState>({ status: "idle" });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,8 +72,31 @@ export function BacktestShellPage({
         timeframe_end: timeframeEnd,
       });
       setSubmitState({ status: "created", run });
+      setDatasetState({ status: "idle" });
     } catch (error) {
       setSubmitState({
+        status: "error",
+        message: errorMessage(error),
+      });
+    }
+  }
+
+  async function handleRunDataset(run: BacktestRunShell) {
+    setDatasetState({ status: "running" });
+    try {
+      const preview = await runDataset(workspaceId, run.run_id);
+      setDatasetState({ status: "completed", preview });
+    } catch (error) {
+      const apiError = error as Partial<BacktestShellApiError>;
+      if (isDatasetRunPreview(apiError.payload)) {
+        setDatasetState({
+          status: "provider-limited",
+          preview: apiError.payload,
+          message: errorMessage(error),
+        });
+        return;
+      }
+      setDatasetState({
         status: "error",
         message: errorMessage(error),
       });
@@ -151,7 +192,11 @@ export function BacktestShellPage({
             </div>
           ) : null}
           {submitState.status === "created" ? (
-            <CreatedRunSummary run={submitState.run} />
+            <CreatedRunSummary
+              run={submitState.run}
+              datasetState={datasetState}
+              onRunDataset={() => void handleRunDataset(submitState.run)}
+            />
           ) : null}
         </aside>
       </section>
@@ -159,7 +204,15 @@ export function BacktestShellPage({
   );
 }
 
-function CreatedRunSummary({ run }: { run: BacktestRunShell }) {
+function CreatedRunSummary({
+  run,
+  datasetState,
+  onRunDataset,
+}: {
+  run: BacktestRunShell;
+  datasetState: DatasetState;
+  onRunDataset: () => void;
+}) {
   return (
     <div className="created-run">
       <div className="section-heading">
@@ -176,12 +229,155 @@ function CreatedRunSummary({ run }: { run: BacktestRunShell }) {
         <MetadataItem label="Created" value={run.created_at} />
         <MetadataItem label="Status" value={run.status} />
       </dl>
-      {run.quality_report_path ? (
+      <div className="dataset-actions">
+        <button type="button" onClick={onRunDataset} disabled={datasetState.status === "running"}>
+          {datasetState.status === "running"
+            ? "Running deterministic dataset..."
+            : "Run deterministic BACKTEST dataset"}
+        </button>
+      </div>
+      {run.quality_report_path && datasetState.status !== "completed" ? (
         <p className="quality-link-note">
           <a href={run.quality_report_path}>Quality route</a> is unavailable
           until S-02 produces a completed deterministic dataset.
         </p>
       ) : null}
+      <DatasetPanel run={run} datasetState={datasetState} />
+    </div>
+  );
+}
+
+function DatasetPanel({
+  run,
+  datasetState,
+}: {
+  run: BacktestRunShell;
+  datasetState: DatasetState;
+}) {
+  if (datasetState.status === "idle") {
+    return (
+      <p className="dataset-note">
+        Deterministic dataset generation starts only after the explicit BACKTEST
+        action above.
+      </p>
+    );
+  }
+  if (datasetState.status === "running") {
+    return (
+      <p role="status" className="loading-state">
+        Running deterministic BACKTEST dataset...
+      </p>
+    );
+  }
+  if (datasetState.status === "error") {
+    return (
+      <div role="alert" className="error-state">
+        {datasetState.message}
+      </div>
+    );
+  }
+
+  const preview = datasetState.preview;
+  const isProviderLimited = datasetState.status === "provider-limited";
+  return (
+    <section
+      className={isProviderLimited ? "dataset-panel provider-limited" : "dataset-panel"}
+      aria-label="Dataset run result"
+    >
+      <div className="section-heading">
+        <h2>
+          {isProviderLimited
+            ? "Provider limitation"
+            : "Completed deterministic dataset"}
+        </h2>
+        <span>{preview.summary.status}</span>
+      </div>
+      {isProviderLimited ? (
+        <div role="alert" className="inline-alert">
+          {datasetState.message}
+        </div>
+      ) : null}
+      <dl className="metadata-grid" aria-label="Dataset summary metadata">
+        <MetadataItem label="Provider" value={preview.summary.provider_name} />
+        <MetadataItem label="Records" value={String(preview.summary.record_count)} />
+        <MetadataItem label="Relevant" value={String(preview.summary.relevant_count)} />
+        <MetadataItem label="Noise" value={String(preview.summary.noise_count)} />
+        <MetadataItem
+          label="Irrelevant"
+          value={String(preview.summary.irrelevant_count)}
+        />
+        <MetadataItem label="Model" value={preview.summary.model_version} />
+        <MetadataItem label="Config" value={preview.summary.config_version} />
+        <MetadataItem
+          label="Fingerprint"
+          value={preview.summary.input_fingerprint}
+        />
+      </dl>
+      {isProviderLimited ? (
+        <ProviderLimitationDetails preview={preview} />
+      ) : (
+        <>
+          <p className="quality-link-note">
+            <a href={run.quality_report_path ?? "#"}>Quality route</a> is
+            available for this completed dataset. Movement fields remain pending
+            price enrichment.
+          </p>
+          <DatasetPreviewTable records={preview.records} />
+        </>
+      )}
+    </section>
+  );
+}
+
+function ProviderLimitationDetails({ preview }: { preview: DatasetRunPreview }) {
+  const limitation = preview.summary.provider_limitation;
+  if (!limitation) {
+    return null;
+  }
+  return (
+    <dl className="metadata-grid provider-limitation-metadata" aria-label="Provider limitation metadata">
+      <MetadataItem label="Provider" value={limitation.provider_name} />
+      <MetadataItem label="Reason" value={limitation.reason} />
+      {limitation.detail ? <MetadataItem label="Detail" value={limitation.detail} /> : null}
+    </dl>
+  );
+}
+
+function DatasetPreviewTable({ records }: { records: DatasetPreviewRecord[] }) {
+  if (records.length === 0) {
+    return <p className="empty-state">No preview records returned.</p>;
+  }
+
+  return (
+    <div className="records-panel dataset-preview-panel">
+      <div className="section-heading">
+        <h2>Preview records</h2>
+        <span>{records.length}</span>
+      </div>
+      <div className="table-wrap">
+        <table aria-label="Dataset preview records">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Headline</th>
+              <th>Bias</th>
+              <th>Confidence</th>
+              <th>Relevance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {records.map((record) => (
+              <tr key={record.record_id ?? `${record.timestamp}-${record.headline}`}>
+                <td>{record.timestamp}</td>
+                <td>{record.headline}</td>
+                <td>{record.directional_bias}</td>
+                <td>{record.confidence.toFixed(4)}</td>
+                <td>{record.relevance}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -242,4 +438,12 @@ function errorMessage(error: unknown): string {
   }
 
   return "Draft BACKTEST run could not be created.";
+}
+
+function isDatasetRunPreview(value: unknown): value is DatasetRunPreview {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+  const candidate = value as Partial<DatasetRunPreview>;
+  return Boolean(candidate.summary && Array.isArray(candidate.records));
 }

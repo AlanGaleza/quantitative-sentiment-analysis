@@ -2,7 +2,11 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { BacktestShellPage } from "./BacktestShellPage";
-import type { BacktestRunShell, CreateBacktestRunRequest } from "./types";
+import type {
+  BacktestRunShell,
+  CreateBacktestRunRequest,
+  DatasetRunPreview,
+} from "./types";
 
 const FIXED_NOW = new Date("2026-06-15T10:00:00.000Z");
 const DEFAULT_START = "2026-05-16T10:00:00.000Z";
@@ -86,6 +90,118 @@ describe("BacktestShellPage", () => {
     expect(
       screen.getByText(/unavailable until S-02 produces a completed deterministic dataset/i),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
+    ).toBeInTheDocument();
+  });
+
+  it("runs deterministic dataset after draft creation and displays summary preview", async () => {
+    const createRun = vi
+      .fn()
+      .mockImplementation(
+        async (_workspaceId: string, request: CreateBacktestRunRequest) =>
+          createdRun(request),
+      );
+    const runDataset = vi.fn().mockResolvedValue(datasetPreview());
+    render(
+      <BacktestShellPage
+        workspaceId="workspace-alpha"
+        now={FIXED_NOW}
+        createRun={createRun}
+        runDataset={runDataset}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Create draft run" }));
+    await screen.findByText("Draft run created");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
+    );
+
+    expect(
+      await screen.findByText("Completed deterministic dataset"),
+    ).toBeInTheDocument();
+    expect(runDataset).toHaveBeenCalledWith("workspace-alpha", "draft-run-001");
+
+    const summary = screen.getByLabelText("Dataset summary metadata");
+    expect(within(summary).getByText("FixtureNews")).toBeInTheDocument();
+    expect(within(summary).getByText("2")).toBeInTheDocument();
+    expect(within(summary).getByText("sentiment-rules-v1")).toBeInTheDocument();
+    expect(within(summary).getByText("news-sentiment-policy-v1")).toBeInTheDocument();
+    expect(within(summary).getByText("fingerprint-alpha")).toBeInTheDocument();
+    expect(screen.getByText("Bitcoin ETF approval sparks bullish inflows")).toBeInTheDocument();
+    expect(screen.getByText("Provider placeholder")).toBeInTheDocument();
+    expect(screen.getByText("LONG")).toBeInTheDocument();
+    expect(screen.getByText("NOISE")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Quality route" })).toHaveAttribute(
+      "href",
+      "/workspaces/workspace-alpha/backtests/draft-run-001/quality",
+    );
+    expect(
+      screen.getByText(/available for this completed dataset/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Movement fields remain pending price enrichment/i)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/unavailable until S-02 produces a completed deterministic dataset/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("displays provider limitation without completed preview records", async () => {
+    const createRun = vi
+      .fn()
+      .mockImplementation(
+        async (_workspaceId: string, request: CreateBacktestRunRequest) =>
+          createdRun(request),
+      );
+    const failedPreview = datasetPreview({
+      summary: {
+        ...datasetPreview().summary,
+        status: "FAILED_PROVIDER_LIMITATION",
+        provider_name: "CryptoPanic",
+        record_count: 0,
+        relevant_count: 0,
+        noise_count: 0,
+        irrelevant_count: 0,
+        provider_limitation: {
+          provider_name: "CryptoPanic",
+          reason: "missing provider configuration",
+          detail: "Set CRYPTOPANIC_API_KEY locally for a BACKTEST smoke check.",
+        },
+      },
+      records: [],
+    });
+    const providerError = Object.assign(
+      new Error(
+        "CryptoPanic: missing provider configuration: Set CRYPTOPANIC_API_KEY locally for a BACKTEST smoke check.",
+      ),
+      { detail: "CryptoPanic: missing provider configuration", payload: failedPreview },
+    );
+    const runDataset = vi.fn().mockRejectedValue(providerError);
+    render(
+      <BacktestShellPage
+        workspaceId="workspace-alpha"
+        now={FIXED_NOW}
+        createRun={createRun}
+        runDataset={runDataset}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Create draft run" }));
+    await screen.findByText("Draft run created");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
+    );
+
+    expect(await screen.findByText("Provider limitation")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "CryptoPanic: missing provider configuration",
+    );
+    const limitation = screen.getByLabelText("Provider limitation metadata");
+    expect(within(limitation).getByText("CryptoPanic")).toBeInTheDocument();
+    expect(
+      within(limitation).getByText("missing provider configuration"),
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("Dataset preview records")).not.toBeInTheDocument();
   });
 
   it("renders API errors", async () => {
@@ -147,7 +263,13 @@ describe("BacktestShellPage", () => {
   });
 
   it("does not use forbidden product-facing wording", () => {
-    render(<BacktestShellPage workspaceId="workspace-alpha" now={FIXED_NOW} />);
+    render(
+      <BacktestShellPage
+        workspaceId="workspace-alpha"
+        now={FIXED_NOW}
+        runDataset={async () => datasetPreview()}
+      />,
+    );
 
     const visibleText = document.body.textContent ?? "";
     expect(visibleText).not.toMatch(/live/i);
@@ -158,3 +280,63 @@ describe("BacktestShellPage", () => {
     expect(visibleText).not.toMatch(/signal/i);
   });
 });
+
+function datasetPreview(overrides: Partial<DatasetRunPreview> = {}): DatasetRunPreview {
+  return {
+    summary: {
+      workspace_id: "workspace-alpha",
+      run_id: "draft-run-001",
+      instrument: "BTCUSD",
+      mode: "BACKTEST",
+      timeframe_start: "2026-06-01T12:00:00.000Z",
+      timeframe_end: "2026-06-08T12:00:00.000Z",
+      status: "COMPLETED",
+      provider_name: "FixtureNews",
+      record_count: 2,
+      relevant_count: 1,
+      noise_count: 1,
+      irrelevant_count: 0,
+      model_version: "sentiment-rules-v1",
+      config_version: "news-sentiment-policy-v1",
+      input_fingerprint: "fingerprint-alpha",
+      provider_limitation: null,
+    },
+    records: [
+      {
+        workspace_id: "workspace-alpha",
+        run_id: "draft-run-001",
+        record_id: "fixturenews:record-001",
+        timestamp: "2026-06-02T09:00:00Z",
+        headline: "Bitcoin ETF approval sparks bullish inflows",
+        source_id: "coinwire",
+        source_name: "CoinWire",
+        instrument: "BTCUSD",
+        mode: "BACKTEST",
+        sentiment_score: 0.57,
+        directional_bias: "LONG",
+        confidence: 0.78,
+        relevance: "RELEVANT",
+        model_version: "sentiment-rules-v1",
+        config_version: "news-sentiment-policy-v1",
+      },
+      {
+        workspace_id: "workspace-alpha",
+        run_id: "draft-run-001",
+        record_id: "fixturenews:record-002",
+        timestamp: "2026-06-02T10:00:00Z",
+        headline: "Provider placeholder",
+        source_id: null,
+        source_name: "FixtureNews",
+        instrument: "BTCUSD",
+        mode: "BACKTEST",
+        sentiment_score: 0,
+        directional_bias: "FLAT",
+        confidence: 0.35,
+        relevance: "NOISE",
+        model_version: "sentiment-rules-v1",
+        config_version: "news-sentiment-policy-v1",
+      },
+    ],
+    ...overrides,
+  };
+}
