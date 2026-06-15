@@ -3,7 +3,7 @@ project: Quantitative Sentiment Analysis
 version: 1
 status: active
 created: 2026-06-11
-updated: 2026-06-11
+updated: 2026-06-15
 roadmap_id: F-01
 change_id: define-quality-contracts
 ---
@@ -215,6 +215,11 @@ S-04 may use response-specific fields such as `event_timestamp`, but its input
 records must remain compatible with the foundation dataset contract. S-04 must
 not fetch prices directly or fabricate production run data before S-02 supplies
 completed deterministic BACKTEST records.
+
+S-04 compatibility aliases should reuse the shared `DirectionalBias` and
+`RelevanceLabel` contract values while preserving the existing quality response
+shape. In particular, S-04 JSON responses may keep `event_timestamp`; export and
+dataset contracts continue to use canonical `timestamp`.
 
 Before real S-02 data is exposed through S-04, quality-report payloads must cap,
 sample, paginate, or explicitly limit large `chart_points` and detail outputs.

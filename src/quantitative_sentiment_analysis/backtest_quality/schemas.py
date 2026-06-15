@@ -6,23 +6,17 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-
-class DirectionalBias(StrEnum):
-    LONG = "LONG"
-    SHORT = "SHORT"
-    FLAT = "FLAT"
+from quantitative_sentiment_analysis.contracts.schemas import (
+    DirectionalBias,
+    RelevanceLabel,
+    require_aware_datetime,
+)
 
 
 class RealizedDirection(StrEnum):
     UP = "UP"
     DOWN = "DOWN"
     FLAT = "FLAT"
-
-
-class RelevanceLabel(StrEnum):
-    RELEVANT = "RELEVANT"
-    NOISE = "NOISE"
-    IRRELEVANT = "IRRELEVANT"
 
 
 class EvaluationOutcome(StrEnum):
@@ -35,12 +29,6 @@ class HorizonUnit(StrEnum):
     MINUTES = "minutes"
     HOURS = "hours"
     DAYS = "days"
-
-
-def _require_aware_datetime(value: datetime) -> datetime:
-    if value.tzinfo is None or value.utcoffset() is None:
-        raise ValueError("timestamp must include timezone information")
-    return value
 
 
 class QualityHorizon(BaseModel):
@@ -74,7 +62,7 @@ class QualityInputRecord(BaseModel):
     @field_validator("event_timestamp")
     @classmethod
     def event_timestamp_must_be_aware(cls, value: datetime) -> datetime:
-        return _require_aware_datetime(value)
+        return require_aware_datetime(value)
 
     @model_validator(mode="after")
     def source_identity_required(self) -> Self:
@@ -97,7 +85,7 @@ class QualityChartPoint(BaseModel):
     @field_validator("event_timestamp")
     @classmethod
     def event_timestamp_must_be_aware(cls, value: datetime) -> datetime:
-        return _require_aware_datetime(value)
+        return require_aware_datetime(value)
 
 
 class QualityMetrics(BaseModel):

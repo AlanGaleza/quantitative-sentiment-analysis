@@ -407,31 +407,31 @@ No database migration is planned. Existing S-04 JSON response shape should remai
 
 #### Automated
 
-- [x] 3.1 Contract tests pass: `uv run pytest tests/contracts`
-- [x] 3.2 Contract and S-04 tests pass together: `uv run pytest tests/contracts tests/backtest_quality`
-- [x] 3.3 Full backend tests pass: `uv run pytest`
-- [x] 3.4 Source and tests compile: `uv run python -m compileall src tests`
-- [x] 3.5 Dependency lock remains valid: `uv lock --check`
+- [x] 3.1 Contract tests pass: `uv run pytest tests/contracts` — 393e8bd
+- [x] 3.2 Contract and S-04 tests pass together: `uv run pytest tests/contracts tests/backtest_quality` — 393e8bd
+- [x] 3.3 Full backend tests pass: `uv run pytest` — 393e8bd
+- [x] 3.4 Source and tests compile: `uv run python -m compileall src tests` — 393e8bd
+- [x] 3.5 Dependency lock remains valid: `uv lock --check` — 393e8bd
 
 #### Manual
 
-- [x] 3.6 Test coverage is reviewed against `AGENTS.md` Data Contracts and Testing Guidelines.
-- [x] 3.7 Safety tests are strict enough for product-facing copy but do not fail solely because historical planning docs quote banned terms.
+- [x] 3.6 Test coverage is reviewed against `AGENTS.md` Data Contracts and Testing Guidelines. — 393e8bd
+- [x] 3.7 Safety tests are strict enough for product-facing copy but do not fail solely because historical planning docs quote banned terms. — 393e8bd
 
 ### Phase 4: S-04 Compatibility and Downstream Handoff
 
 #### Automated
 
-- [ ] 4.1 S-04 compatibility tests pass: `uv run pytest tests/contracts/test_backtest_quality_compatibility.py`
-- [ ] 4.2 Existing S-04 tests still pass: `uv run pytest tests/backtest_quality`
-- [ ] 4.3 Full backend tests pass: `uv run pytest`
-- [ ] 4.4 Local fixture quality route still returns a BTCUSD BACKTEST report when enabled: `QSA_RUNTIME_ENV=local QSA_BACKTEST_QUALITY_PROVIDER=local-fixture uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
-- [ ] 4.5 Health endpoint still responds while the local API is running: `curl -fsS http://127.0.0.1:8000/health`
+- [x] 4.1 S-04 compatibility tests pass: `uv run pytest tests/contracts/test_backtest_quality_compatibility.py`
+- [x] 4.2 Existing S-04 tests still pass: `uv run pytest tests/backtest_quality`
+- [x] 4.3 Full backend tests pass: `uv run pytest`
+- [x] 4.4 Local fixture quality route still returns a BTCUSD BACKTEST report when enabled: `QSA_RUNTIME_ENV=local QSA_BACKTEST_QUALITY_PROVIDER=local-fixture uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
+- [x] 4.5 Health endpoint still responds while the local API is running: `curl -fsS http://127.0.0.1:8000/health`
 
 #### Manual
 
-- [ ] 4.6 S-04 UI/API language still says BACKTEST-only analytical quality and does not imply investment recommendations or executable trading behavior.
-- [ ] 4.7 Future S-02/S-04 integration notes are clear enough that real large-run payloads will not ship unbounded by accident.
+- [x] 4.6 S-04 UI/API language still says BACKTEST-only analytical quality and does not imply investment recommendations or executable trading behavior.
+- [x] 4.7 Future S-02/S-04 integration notes are clear enough that real large-run payloads will not ship unbounded by accident.
 
 ### Phase 5: Final Verification and Handoff
 
