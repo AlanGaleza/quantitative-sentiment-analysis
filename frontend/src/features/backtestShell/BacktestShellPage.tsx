@@ -272,7 +272,7 @@ function CreatedRunSummary({
       {run.quality_report_path && datasetState.status !== "completed" ? (
         <p className="quality-link-note">
           <a href={run.quality_report_path}>Quality route</a> is unavailable
-          until S-02 produces a completed deterministic dataset.
+          until this BACKTEST run has a completed deterministic dataset.
         </p>
       ) : null}
       <DatasetPanel

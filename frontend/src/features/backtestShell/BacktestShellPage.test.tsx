@@ -88,7 +88,9 @@ describe("BacktestShellPage", () => {
       "/workspaces/workspace-alpha/backtests/draft-run-001/quality",
     );
     expect(
-      screen.getByText(/unavailable until S-02 produces a completed deterministic dataset/i),
+      screen.getByText(
+        /unavailable until this BACKTEST run has a completed deterministic dataset/i,
+      ),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
@@ -147,7 +149,9 @@ describe("BacktestShellPage", () => {
       screen.getByRole("button", { name: "Download JSONL dataset" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(/unavailable until S-02 produces a completed deterministic dataset/i),
+      screen.queryByText(
+        /unavailable until this BACKTEST run has a completed deterministic dataset/i,
+      ),
     ).not.toBeInTheDocument();
   });
 
