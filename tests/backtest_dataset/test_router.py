@@ -85,6 +85,29 @@ def setup_dependencies(
     return shell_repository, completed_repository
 
 
+def generate_preview_and_export_bytes(
+    *,
+    records: list[ProviderRawRecord],
+) -> tuple[dict[str, object], bytes]:
+    shell_repository, _completed_repository = setup_dependencies(
+        provider=FixtureNewsProvider(records),
+    )
+    create_draft(shell_repository)
+    client = TestClient(app)
+
+    post_response = client.post(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/run"
+    )
+    assert post_response.status_code == 200
+
+    export_response = client.get(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/export.jsonl"
+    )
+    assert export_response.status_code == 200
+
+    return post_response.json(), export_response.content
+
+
 def teardown_module() -> None:
     app.dependency_overrides.clear()
 
@@ -261,9 +284,22 @@ def test_export_dataset_jsonl_returns_full_completed_dataset_with_download_heade
     payloads = [json.loads(line) for line in lines]
     assert payloads[0]["record_id"] == "fixturenews:record-000"
     assert payloads[-1]["record_id"] == "fixturenews:record-104"
+    assert all(payload["workspace_id"] == "workspace-alpha" for payload in payloads)
     assert all(payload["run_id"] == "draft-run-fixed" for payload in payloads)
     assert all(payload["config_version"] == "news-sentiment-policy-v1" for payload in payloads)
     assert "provider_name" not in payloads[0]
+
+
+def test_api_generation_and_export_jsonl_bytes_are_stable_for_identical_inputs() -> None:
+    records = fixture_records(count=3)
+
+    first_preview, first_body = generate_preview_and_export_bytes(records=records)
+    second_preview, second_body = generate_preview_and_export_bytes(
+        records=list(records),
+    )
+
+    assert first_preview == second_preview
+    assert first_body == second_body
 
 
 def test_export_dataset_jsonl_returns_404_for_missing_completed_dataset_without_provider_call() -> None:

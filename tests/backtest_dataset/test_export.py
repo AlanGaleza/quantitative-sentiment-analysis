@@ -108,6 +108,7 @@ def test_export_jsonl_bytes_are_stable_utf8_records_without_metadata_line() -> N
     payloads = [json.loads(line) for line in lines]
     assert payloads[0]["record_id"] == "cryptopanic:001"
     assert payloads[1]["record_id"] == "cryptopanic:002"
+    assert all(payload["workspace_id"] == "workspace-alpha" for payload in payloads)
     assert all(payload["run_id"] == "draft-run-000001" for payload in payloads)
     assert all(payload["config_version"] == "news-policy-v1" for payload in payloads)
     assert payloads[0]["directional_bias"] == "LONG"

@@ -306,15 +306,15 @@ No migration is required. The completed dataset repository is process-local in-m
 
 #### Automated
 
-- [x] 2.1 Repository workspace isolation test passes
-- [x] 2.2 Dataset route workspace mismatch test passes
+- [x] 2.1 Repository workspace isolation test passes — 2f4069d
+- [x] 2.2 Dataset route workspace mismatch test passes — 2f4069d
 
 ### Phase 3: API Determinism and JSONL Bytes
 
 #### Automated
 
-- [ ] 3.1 Export contract tests pass
-- [ ] 3.2 API route determinism and export tests pass
+- [x] 3.1 Export contract tests pass
+- [x] 3.2 API route determinism and export tests pass
 
 ### Phase 4: Verification and Rollout Notes
 
