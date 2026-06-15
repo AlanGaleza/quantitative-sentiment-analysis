@@ -394,29 +394,29 @@ No database migration is planned. Existing S-04 JSON response shape should remai
 
 #### Automated
 
-- [x] 2.1 Shared contract package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.contracts"`
-- [x] 2.2 Source compiles: `uv run python -m compileall src`
-- [x] 2.3 Existing backend tests still pass after adding the package: `uv run pytest tests/test_main.py tests/backtest_quality`
+- [x] 2.1 Shared contract package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.contracts"` — 2c280c7
+- [x] 2.2 Source compiles: `uv run python -m compileall src` — 2c280c7
+- [x] 2.3 Existing backend tests still pass after adding the package: `uv run pytest tests/test_main.py tests/backtest_quality` — 2c280c7
 
 #### Manual
 
-- [x] 2.4 The shared package does not depend on S-04 or any future S-02 storage implementation.
-- [x] 2.5 Field names and enum values match `context/foundation/quality-contracts.md`.
+- [x] 2.4 The shared package does not depend on S-04 or any future S-02 storage implementation. — 2c280c7
+- [x] 2.5 Field names and enum values match `context/foundation/quality-contracts.md`. — 2c280c7
 
 ### Phase 3: Contract Verification Tests
 
 #### Automated
 
-- [ ] 3.1 Contract tests pass: `uv run pytest tests/contracts`
-- [ ] 3.2 Contract and S-04 tests pass together: `uv run pytest tests/contracts tests/backtest_quality`
-- [ ] 3.3 Full backend tests pass: `uv run pytest`
-- [ ] 3.4 Source and tests compile: `uv run python -m compileall src tests`
-- [ ] 3.5 Dependency lock remains valid: `uv lock --check`
+- [x] 3.1 Contract tests pass: `uv run pytest tests/contracts`
+- [x] 3.2 Contract and S-04 tests pass together: `uv run pytest tests/contracts tests/backtest_quality`
+- [x] 3.3 Full backend tests pass: `uv run pytest`
+- [x] 3.4 Source and tests compile: `uv run python -m compileall src tests`
+- [x] 3.5 Dependency lock remains valid: `uv lock --check`
 
 #### Manual
 
-- [ ] 3.6 Test coverage is reviewed against `AGENTS.md` Data Contracts and Testing Guidelines.
-- [ ] 3.7 Safety tests are strict enough for product-facing copy but do not fail solely because historical planning docs quote banned terms.
+- [x] 3.6 Test coverage is reviewed against `AGENTS.md` Data Contracts and Testing Guidelines.
+- [x] 3.7 Safety tests are strict enough for product-facing copy but do not fail solely because historical planning docs quote banned terms.
 
 ### Phase 4: S-04 Compatibility and Downstream Handoff
 
