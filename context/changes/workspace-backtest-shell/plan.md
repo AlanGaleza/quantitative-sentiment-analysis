@@ -419,29 +419,29 @@ No database migration is planned. The in-memory repository is a deliberate MVP/t
 
 #### Automated
 
-- [x] 2.1 Router tests pass: `uv run pytest tests/backtest_shell/test_router.py`
-- [x] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell`
-- [x] 2.3 FastAPI app imports with the new router: `uv run python -c "from quantitative_sentiment_analysis.main import app; print(app.title)"`
+- [x] 2.1 Router tests pass: `uv run pytest tests/backtest_shell/test_router.py` — a67bf62
+- [x] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell` — a67bf62
+- [x] 2.3 FastAPI app imports with the new router: `uv run python -c "from quantitative_sentiment_analysis.main import app; print(app.title)"` — a67bf62
 
 #### Manual
 
-- [x] 2.4 API responses use BACKTEST-only analytical wording.
-- [x] 2.5 Existing quality route `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` still works with its fixture provider path.
-- [x] 2.6 CORS still rejects wildcard origins and unconfigured origins.
+- [x] 2.4 API responses use BACKTEST-only analytical wording. — a67bf62
+- [x] 2.5 Existing quality route `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` still works with its fixture provider path. — a67bf62
+- [x] 2.6 CORS still rejects wildcard origins and unconfigured origins. — a67bf62
 
 ### Phase 3: Frontend Route and API Client
 
 #### Automated
 
-- [ ] 3.1 Frontend route/API tests pass: `cd frontend && npm test -- --run App.test.ts src/features/backtestShell/api.test.ts`
-- [ ] 3.2 Frontend typecheck/build passes: `cd frontend && npm run build`
-- [ ] 3.3 Existing quality frontend tests still pass: `cd frontend && npm test -- --run src/features/backtestQuality`
+- [x] 3.1 Frontend route/API tests pass: `cd frontend && npm test -- --run App.test.ts src/features/backtestShell/api.test.ts`
+- [x] 3.2 Frontend typecheck/build passes: `cd frontend && npm run build`
+- [x] 3.3 Existing quality frontend tests still pass: `cd frontend && npm test -- --run src/features/backtestQuality`
 
 #### Manual
 
-- [ ] 3.4 Existing quality route still renders for a run-scoped quality path.
-- [ ] 3.5 Unknown routes still show a clear route guidance state.
-- [ ] 3.6 No frontend copy implies that creating a draft run starts analysis.
+- [x] 3.4 Existing quality route still renders for a run-scoped quality path.
+- [x] 3.5 Unknown routes still show a clear route guidance state.
+- [x] 3.6 No frontend copy implies that creating a draft run starts analysis.
 
 ### Phase 4: Operational Shell UI
 

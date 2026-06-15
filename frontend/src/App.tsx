@@ -1,8 +1,33 @@
 import { BacktestQualityPage } from "./features/backtestQuality/BacktestQualityPage";
 
+interface ShellRoute {
+  kind: "shell";
+  workspaceId: string;
+}
+
 interface QualityRoute {
+  kind: "quality";
   workspaceId: string;
   runId: string;
+}
+
+type AppRoute = ShellRoute | QualityRoute;
+
+export function parseShellRoute(pathname: string): ShellRoute | null {
+  const match = /^\/workspaces\/([^/]+)\/backtests\/new\/?$/.exec(pathname);
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return {
+      kind: "shell",
+      workspaceId: decodeURIComponent(match[1]),
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function parseQualityRoute(pathname: string): QualityRoute | null {
@@ -16,6 +41,7 @@ export function parseQualityRoute(pathname: string): QualityRoute | null {
 
   try {
     return {
+      kind: "quality",
       workspaceId: decodeURIComponent(match[1]),
       runId: decodeURIComponent(match[2]),
     };
@@ -24,15 +50,30 @@ export function parseQualityRoute(pathname: string): QualityRoute | null {
   }
 }
 
+export function parseAppRoute(pathname: string): AppRoute | null {
+  return parseShellRoute(pathname) ?? parseQualityRoute(pathname);
+}
+
 export default function App() {
-  const route = parseQualityRoute(window.location.pathname);
+  const route = parseAppRoute(window.location.pathname);
 
   if (!route) {
     return (
       <main className="quality-page">
         <section className="error-state" role="alert">
-          Open a run-scoped BACKTEST quality path:
+          Open a workspace BACKTEST path:
+          /workspaces/:workspaceId/backtests/new or
           /workspaces/:workspaceId/backtests/:runId/quality
+        </section>
+      </main>
+    );
+  }
+
+  if (route.kind === "shell") {
+    return (
+      <main className="quality-page">
+        <section className="error-state" role="status">
+          Draft BACKTEST shell route for workspace {route.workspaceId}.
         </section>
       </main>
     );
