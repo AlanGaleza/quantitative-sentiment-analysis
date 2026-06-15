@@ -213,6 +213,11 @@ audited by source identity.
 S-02 should consume the S-01 draft workspace/run/timeframe shell instead of
 re-deciding workspace identity, instrument, mode, or timeframe semantics.
 
+`deterministic-news-dataset` supplies a local/dev completed-run storage boundary,
+a deterministic dataset start/status API, and bounded preview responses over the
+canonical `DatasetRecord` rows. The completed-run storage is not durable
+production storage and does not replace S-03 JSONL export.
+
 ### S-03: JSONL Export
 
 S-03 should serialize the validated dataset records as stable JSONL. Export tests
@@ -230,6 +235,12 @@ S-04 compatibility aliases should reuse the shared `DirectionalBias` and
 `RelevanceLabel` contract values while preserving the existing quality response
 shape. In particular, S-04 JSON responses may keep `event_timestamp`; export and
 dataset contracts continue to use canonical `timestamp`.
+
+`deterministic-news-dataset` adds the first real adapter from completed S-02
+records into S-04 quality inputs. Until a price-enrichment slice exists, the
+adapter maps canonical `timestamp` to S-04 `event_timestamp` and leaves
+`later_return` plus `realized_direction` missing so quality reports warn instead
+of inventing movement data.
 
 Before real S-02 data is exposed through S-04, quality-report payloads must cap,
 sample, paginate, or explicitly limit large `chart_points` and detail outputs.

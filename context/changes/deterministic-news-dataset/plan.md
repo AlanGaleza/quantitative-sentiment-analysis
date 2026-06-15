@@ -585,31 +585,31 @@ If a real HTTP client dependency is needed for CryptoPanic, add it through `uv a
 
 #### Automated
 
-- [x] 5.1 Shell API tests pass: `cd frontend && npm test -- --run src/features/backtestShell/api.test.ts`
-- [x] 5.2 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx`
-- [x] 5.3 Frontend build passes: `cd frontend && npm run build`
-- [x] 5.4 Full frontend test suite passes: `cd frontend && npm test -- --run`
+- [x] 5.1 Shell API tests pass: `cd frontend && npm test -- --run src/features/backtestShell/api.test.ts` — 0805ba3
+- [x] 5.2 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx` — 0805ba3
+- [x] 5.3 Frontend build passes: `cd frontend && npm run build` — 0805ba3
+- [x] 5.4 Full frontend test suite passes: `cd frontend && npm test -- --run` — 0805ba3
 
 #### Manual
 
-- [x] 5.5 User can create a draft run, then explicitly start deterministic BACKTEST dataset generation.
-- [x] 5.6 Completed UI shows counts, provider, model/config versions, fingerprint, preview records, and quality route readiness.
-- [x] 5.7 Provider limitation is visible and does not imply fallback or fabricated data.
-- [x] 5.8 UI copy remains BACKTEST-only analytical workflow copy.
+- [x] 5.5 User can create a draft run, then explicitly start deterministic BACKTEST dataset generation. — 0805ba3
+- [x] 5.6 Completed UI shows counts, provider, model/config versions, fingerprint, preview records, and quality route readiness. — 0805ba3
+- [x] 5.7 Provider limitation is visible and does not imply fallback or fabricated data. — 0805ba3
+- [x] 5.8 UI copy remains BACKTEST-only analytical workflow copy. — 0805ba3
 
 ### Phase 6: Verification and Handoff
 
 #### Automated
 
-- [ ] 6.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy`
-- [ ] 6.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
-- [ ] 6.3 Frontend build passes: `cd frontend && npm run build`
-- [ ] 6.4 Foundation docs reference S-02 handoff: `rg -n "deterministic-news-dataset|S-02|completed dataset|provider limitation" context/foundation/roadmap.md context/foundation/quality-contracts.md context/foundation/news-sentiment-policy.md`
+- [x] 6.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy`
+- [x] 6.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
+- [x] 6.3 Frontend build passes: `cd frontend && npm run build`
+- [x] 6.4 Foundation docs reference S-02 handoff: `rg -n "deterministic-news-dataset|S-02|completed dataset|provider limitation" context/foundation/roadmap.md context/foundation/quality-contracts.md context/foundation/news-sentiment-policy.md`
 
 #### Manual
 
-- [ ] 6.5 S-03 can use the completed canonical dataset records without re-deciding record fields or determinism semantics.
-- [ ] 6.6 S-04 can read completed S-02 records and surfaces missing movement as warnings until price enrichment exists.
-- [ ] 6.7 Manual CryptoPanic smoke-test instructions are clear and do not require committing secrets.
-- [ ] 6.8 No generated real workspace data, provider payloads, secrets, JSONL exports, or unsanitized news exports are committed.
-- [ ] 6.9 Working tree is clean after commits and epilogue.
+- [x] 6.5 S-03 can use the completed canonical dataset records without re-deciding record fields or determinism semantics.
+- [x] 6.6 S-04 can read completed S-02 records and surfaces missing movement as warnings until price enrichment exists.
+- [x] 6.7 Manual CryptoPanic smoke-test instructions are clear and do not require committing secrets.
+- [x] 6.8 No generated real workspace data, provider payloads, secrets, JSONL exports, or unsanitized news exports are committed.
+- [x] 6.9 Working tree is clean after commits and epilogue.

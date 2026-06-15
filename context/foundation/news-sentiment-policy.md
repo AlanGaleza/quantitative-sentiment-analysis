@@ -195,6 +195,13 @@ test. If the configured access cannot support the 30-day BTCUSD BACKTEST use
 case, S-02 must return an explicit provider limitation instead of silently
 switching providers or fabricating data.
 
+`deterministic-news-dataset` implements this as a provider boundary with
+CryptoPanic configured by `CRYPTOPANIC_API_KEY`, fixture-backed automated tests,
+deterministic normalization, exact provider-ID dedupe, local rule/lexicon
+scoring, bounded preview responses, and typed provider-limitation failures.
+Automated verification remains offline; real CryptoPanic access is a controlled
+manual smoke dependency.
+
 ### S-03: JSONL Export
 
 S-03 should export records after S-02 has applied this policy. JSONL stability
@@ -212,6 +219,10 @@ keeping metric denominators on the full input set.
 S-04 must keep BACKTEST-only analytical wording and must not fetch prices
 directly or fabricate production run data before S-02 supplies completed
 deterministic BACKTEST records.
+
+The S-02 quality adapter feeds completed canonical dataset records to S-04 while
+leaving `later_return` and `realized_direction` missing until deterministic price
+enrichment exists. JSONL/CSV export remains deferred to S-03.
 
 ## Acceptance Checklist
 

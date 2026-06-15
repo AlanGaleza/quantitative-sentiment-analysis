@@ -32,9 +32,9 @@ Trader traci przewagę nie dlatego, że nie ma dostępu do informacji, tylko dla
 | F-01 | define-quality-contracts | (foundation) contracts for workspace, run metadata, dataset schema, and non-advisory wording are fixed | — | FR-001, FR-003, FR-012, FR-013, FR-014, NFR-Reproducibility, NFR-Auditability, NFR-Workspace privacy, NFR-Semantic safety | ready |
 | F-02 | choose-news-and-sentiment-policy | (foundation) source, relevance labeling, sentiment thresholds, and visualization scope are decided | F-01 | FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-015 | ready |
 | S-01 | workspace-backtest-shell | trader can enter a workspace, select BTCUSD, choose BACKTEST, and define a time range | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, NFR-Workspace privacy, NFR-Semantic safety | ready |
-| S-02 | deterministic-news-dataset | trader can run BTCUSD BACKTEST and receive auditable per-news records | F-02, S-01 | US-01, FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-012, FR-013, NFR-Reproducibility, NFR-Backtest runtime, NFR-Auditability | blocked |
+| S-02 | deterministic-news-dataset | trader can run BTCUSD BACKTEST and receive auditable per-news records | F-02, S-01 | US-01, FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-012, FR-013, NFR-Reproducibility, NFR-Backtest runtime, NFR-Auditability | ready |
 | S-03 | jsonl-export | trader can export the reproducible training dataset as JSONL | S-02 | US-01, FR-014, NFR-Reproducibility, NFR-Auditability | proposed |
-| S-04 | backtest-quality-view | trader can view a basic backtest-quality visualization for BTCUSD | S-02 | FR-015 | blocked |
+| S-04 | backtest-quality-view | trader can view a basic backtest-quality visualization for BTCUSD | S-02 | FR-015 | ready |
 
 ## Streams
 
@@ -107,23 +107,25 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Outcome:** trader can run BTCUSD BACKTEST and receive auditable per-news records with sentiment, directional bias, confidence, source, run, and config metadata.
 - **Change ID:** deterministic-news-dataset
 - **PRD refs:** US-01, FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-012, FR-013, NFR-Reproducibility, NFR-Backtest runtime, NFR-Auditability
-- **Prerequisites:** F-02, S-01. S-01 now provides the draft workspace/run/timeframe shell; S-02 should start from `/10x-plan deterministic-news-dataset`.
+- **Prerequisites:** F-02, S-01. S-01 provides the draft workspace/run/timeframe shell; `deterministic-news-dataset` adds the completed local/dev dataset run boundary, deterministic generation API, bounded preview, and S-04 adapter.
 - **Parallel with:** —
 - **Blockers:** —
 - **Unknowns:**
-  - Verify that the chosen source can provide the needed historical range for BTCUSD backtests — Owner: user. Block: yes.
+  - Run a controlled manual CryptoPanic token/API smoke test before trusting real ingestion beyond fixture-backed verification — Owner: user. Block: no for local/dev fixture-backed S-02 flow.
+- **Handoff:** S-02 now supplies canonical `DatasetRecord` rows in local/dev completed-run storage, a `/dataset/run` start route, `/dataset` status/preview route, and a quality adapter that leaves movement fields missing until price enrichment exists.
 - **Risk:** This is the core data path; if it is not deterministic and auditable, both export and visualization become misleading.
-- **Status:** blocked
+- **Status:** ready
 
 ### S-03: JSONL export
 
 - **Outcome:** trader can export the reproducible training dataset as JSONL for later model-training use.
 - **Change ID:** jsonl-export
 - **PRD refs:** US-01, FR-014, NFR-Reproducibility, NFR-Auditability
-- **Prerequisites:** S-02
+- **Prerequisites:** S-02 completed canonical dataset records.
 - **Parallel with:** S-04
 - **Blockers:** —
 - **Unknowns:** —
+- **Handoff:** Use the completed S-02 canonical dataset records and stable determinism metadata; do not re-decide record fields or preview-only response shape.
 - **Risk:** Export is sequenced after dataset generation so the first artifact mirrors the audited records instead of inventing a second schema.
 - **Status:** proposed
 
@@ -132,13 +134,14 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Outcome:** trader can view a basic BTCUSD backtest-quality visualization showing sentiment against later price movement.
 - **Change ID:** backtest-quality-view
 - **PRD refs:** FR-015
-- **Prerequisites:** S-02
+- **Prerequisites:** S-02 completed canonical dataset records. Price enrichment is still absent, so real quality reports initially surface missing movement warnings.
 - **Parallel with:** S-03
 - **Blockers:** —
 - **Unknowns:**
-  - Decide whether the first view uses correlation, hit rate, sentiment-vs-price movement, or the smallest useful combination — Owner: user. Block: yes.
+  - Add deterministic price enrichment before expecting non-empty `later_return` and `realized_direction` fields for real completed runs — Owner: user. Block: no for S-02 adapter readiness.
+- **Handoff:** The existing quality route can read completed S-02 records through the completed-dataset adapter. Until price enrichment ships, missing movement is explicit in S-04 warnings rather than fabricated.
 - **Risk:** This is the chosen validation milestone; shipping it before S-02 would create a visualization without trusted data.
-- **Status:** blocked
+- **Status:** ready
 
 ## Backlog Handoff
 
@@ -147,9 +150,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | F-01 | define-quality-contracts | Define dataset and workspace quality contracts | yes | Run `/10x-plan define-quality-contracts` |
 | F-02 | choose-news-and-sentiment-policy | Decide source, scoring, and visualization policy | yes | Policy decisions live in `context/foundation/news-sentiment-policy.md`. |
 | S-01 | workspace-backtest-shell | Add workspace and BACKTEST selection shell | yes | Draft shell contract is implemented by `workspace-backtest-shell`. |
-| S-02 | deterministic-news-dataset | Generate deterministic BTCUSD news dataset | yes | Depends on F-02 and S-01; next sensible command: `/10x-plan deterministic-news-dataset`. |
-| S-03 | jsonl-export | Export reproducible dataset as JSONL | no | Depends on S-02. |
-| S-04 | backtest-quality-view | Show BTCUSD backtest quality view | no | Depends on S-02 and visualization decision. |
+| S-02 | deterministic-news-dataset | Generate deterministic BTCUSD news dataset | yes | Implementation supplies local/dev completed dataset storage, API preview, and S-04 adapter. Archive when verified. |
+| S-03 | jsonl-export | Export reproducible dataset as JSONL | yes | Depends on completed S-02 canonical records; export remains unimplemented. |
+| S-04 | backtest-quality-view | Show BTCUSD backtest quality view | yes | S-02 adapter can feed completed records; price enrichment remains a separate future slice. |
 
 ## Open Roadmap Questions
 

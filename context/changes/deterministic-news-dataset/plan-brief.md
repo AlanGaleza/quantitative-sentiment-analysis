@@ -81,3 +81,12 @@ Add a focused backend package, `backtest_dataset`, parallel to `backtest_shell` 
 - Starting from a draft run, the app can generate a completed deterministic BTCUSD BACKTEST dataset summary and preview.
 - Re-running with the same fixture input and run metadata produces identical records, counts, fingerprint, and preview serialization.
 - Existing S-04 quality route can consume completed S-02 records through an adapter without fixture provider mode.
+
+## Implementation Handoff
+
+Phases 1-5 delivered the local/dev completed dataset store, provider boundary,
+deterministic normalization and orchestration, backend dataset API, S-04 adapter,
+and frontend shell flow. Phase 6 final verification keeps S-03 export and price
+enrichment explicitly deferred: S-03 should consume completed canonical
+`DatasetRecord` rows, and S-04 should continue warning on missing movement until
+a future price-enrichment slice supplies `later_return` and `realized_direction`.
