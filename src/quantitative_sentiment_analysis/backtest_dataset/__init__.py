@@ -36,6 +36,10 @@ from quantitative_sentiment_analysis.backtest_dataset.orchestrator import (
     DatasetOrchestrator,
     metadata_for_preview,
 )
+from quantitative_sentiment_analysis.backtest_dataset.export import (
+    DatasetExportNotReadyError,
+    export_dataset_jsonl_bytes,
+)
 
 __all__ = [
     "CompletedDatasetRepository",
@@ -47,6 +51,7 @@ __all__ = [
     "DatasetProviderLimitationError",
     "DatasetProviderUnavailableError",
     "DatasetProviderUnsupportedScopeError",
+    "DatasetExportNotReadyError",
     "DatasetOrchestrator",
     "DatasetProviderLimitation",
     "DatasetRunPreview",
@@ -61,6 +66,7 @@ __all__ = [
     "ProviderFetchRequest",
     "ProviderNormalizationError",
     "ProviderRawRecord",
+    "export_dataset_jsonl_bytes",
     "get_completed_dataset_repository",
     "metadata_for_preview",
     "normalize_provider_records",
