@@ -1,7 +1,7 @@
 ---
 change_id: define-quality-contracts
 title: Define quality contracts
-status: implementing
+status: implemented
 created: 2026-06-11
 updated: 2026-06-15
 archived_at: null

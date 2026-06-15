@@ -437,14 +437,14 @@ No database migration is planned. Existing S-04 JSON response shape should remai
 
 #### Automated
 
-- [x] 5.1 Backend lock remains valid: `uv lock --check`
-- [x] 5.2 Full backend tests pass: `uv run pytest`
-- [x] 5.3 Source and tests compile: `uv run python -m compileall src tests`
-- [x] 5.4 Whitespace check passes: `git diff --check`
-- [x] 5.5 No archived files are modified: `git diff --name-only -- context/archive`
+- [x] 5.1 Backend lock remains valid: `uv lock --check` — dfb57ab
+- [x] 5.2 Full backend tests pass: `uv run pytest` — dfb57ab
+- [x] 5.3 Source and tests compile: `uv run python -m compileall src tests` — dfb57ab
+- [x] 5.4 Whitespace check passes: `git diff --check` — dfb57ab
+- [x] 5.5 No archived files are modified: `git diff --name-only -- context/archive` — dfb57ab
 
 #### Manual
 
-- [x] 5.6 `context/foundation/quality-contracts.md` is accepted as the contract source for S-01/S-02/S-03 planning.
-- [x] 5.7 The implementation does not include F-02 decisions about provider, thresholds, confidence formula, or visualization scope.
-- [x] 5.8 The final handoff names the next sensible command as `/10x-plan choose-news-and-sentiment-policy` or `/10x-plan workspace-backtest-shell`, depending on which roadmap track the user wants next.
+- [x] 5.6 `context/foundation/quality-contracts.md` is accepted as the contract source for S-01/S-02/S-03 planning. — dfb57ab
+- [x] 5.7 The implementation does not include F-02 decisions about provider, thresholds, confidence formula, or visualization scope. — dfb57ab
+- [x] 5.8 The final handoff names the next sensible command as `/10x-plan choose-news-and-sentiment-policy` or `/10x-plan workspace-backtest-shell`, depending on which roadmap track the user wants next. — dfb57ab
