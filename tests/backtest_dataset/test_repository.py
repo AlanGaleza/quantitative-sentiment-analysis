@@ -11,6 +11,7 @@ from quantitative_sentiment_analysis.backtest_dataset import (
     DatasetRunStatus,
     DatasetRunSummary,
     InMemoryCompletedDatasetRepository,
+    MAX_DATASET_PREVIEW_RECORDS,
 )
 from quantitative_sentiment_analysis.contracts import (
     DatasetRecord,
@@ -62,6 +63,16 @@ def make_record(**overrides: object) -> DatasetRecord:
     return DatasetRecord.model_validate(payload)
 
 
+def make_records(count: int) -> list[DatasetRecord]:
+    return [
+        make_record(
+            record_id=f"cryptopanic:{index:03d}",
+            headline=f"Bitcoin dataset repository row {index}",
+        )
+        for index in range(count)
+    ]
+
+
 def test_repository_saves_and_reads_completed_run_by_workspace_and_run() -> None:
     repository = InMemoryCompletedDatasetRepository()
     summary = make_summary()
@@ -98,6 +109,78 @@ def test_repository_reads_are_isolated_by_workspace_and_run_id() -> None:
 
     with pytest.raises(CompletedDatasetRunNotFoundError):
         repository.get_run("workspace-gamma", "draft-run-000001")
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "match"),
+    [
+        ("workspace_id", "workspace-beta", "workspace_id"),
+        ("run_id", "draft-run-beta", "run_id"),
+    ],
+)
+def test_repository_rejects_full_record_identity_mismatch_outside_preview(
+    field: str,
+    value: str,
+    match: str,
+) -> None:
+    repository = InMemoryCompletedDatasetRepository()
+    records = make_records(MAX_DATASET_PREVIEW_RECORDS + 1)
+    records[-1] = make_record(
+        record_id="cryptopanic:mismatch",
+        headline="Bitcoin mismatched record outside preview",
+        **{field: value},
+    )
+
+    with pytest.raises(ValueError, match=match):
+        repository.save_run(
+            make_summary(record_count=len(records), relevant_count=len(records)),
+            records,
+        )
+
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.get_run("workspace-alpha", "draft-run-000001")
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.list_records("workspace-alpha", "draft-run-000001")
+
+
+def test_repository_rejects_full_record_count_mismatch_outside_preview() -> None:
+    repository = InMemoryCompletedDatasetRepository()
+    records = make_records(MAX_DATASET_PREVIEW_RECORDS + 1)
+
+    with pytest.raises(ValueError, match="record_count"):
+        repository.save_run(
+            make_summary(record_count=len(records) + 1, relevant_count=len(records) + 1),
+            records,
+        )
+
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.get_run("workspace-alpha", "draft-run-000001")
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.list_records("workspace-alpha", "draft-run-000001")
+
+
+def test_repository_rejects_full_relevance_count_mismatch_outside_preview() -> None:
+    repository = InMemoryCompletedDatasetRepository()
+    records = make_records(MAX_DATASET_PREVIEW_RECORDS + 1)
+    records[-1] = make_record(
+        record_id="cryptopanic:noise-outside-preview",
+        headline="Daily market newsletter roundup",
+        relevance=RelevanceLabel.NOISE,
+        sentiment_score=0.0,
+        directional_bias=DirectionalBias.FLAT,
+        confidence=0.5,
+    )
+
+    with pytest.raises(ValueError, match="relevant_count"):
+        repository.save_run(
+            make_summary(record_count=len(records), relevant_count=len(records)),
+            records,
+        )
+
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.get_run("workspace-alpha", "draft-run-000001")
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.list_records("workspace-alpha", "draft-run-000001")
 
 
 def test_repository_not_found_error_names_local_non_production_storage() -> None:
@@ -149,6 +232,26 @@ def test_repository_accepts_provider_limited_terminal_state_with_no_records() ->
     assert saved.summary.status is DatasetRunStatus.FAILED_PROVIDER_LIMITATION
     assert saved.summary.provider_limitation is not None
     assert saved.records == ()
+
+
+def test_repository_rejects_provider_limited_terminal_state_with_records() -> None:
+    repository = InMemoryCompletedDatasetRepository()
+    summary = make_summary(
+        status=DatasetRunStatus.FAILED_PROVIDER_LIMITATION,
+        provider_limitation=DatasetProviderLimitation(
+            provider_name="CryptoPanic",
+            reason="provider unavailable",
+            detail="Temporary provider outage.",
+        ),
+    )
+
+    with pytest.raises(ValueError, match="provider-limited"):
+        repository.save_run(summary, [make_record()])
+
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.get_run("workspace-alpha", "draft-run-000001")
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.list_records("workspace-alpha", "draft-run-000001")
 
 
 @pytest.mark.parametrize(

@@ -9,7 +9,12 @@ from quantitative_sentiment_analysis.backtest_dataset.schemas import (
     DatasetRunStatus,
     DatasetRunSummary,
 )
-from quantitative_sentiment_analysis.contracts import DatasetRecord, Instrument, RunMode
+from quantitative_sentiment_analysis.contracts import (
+    DatasetRecord,
+    Instrument,
+    RelevanceLabel,
+    RunMode,
+)
 
 
 class CompletedDatasetRunNotFoundError(RuntimeError):
@@ -65,6 +70,7 @@ class InMemoryCompletedDatasetRepository:
     ) -> DatasetRunPreview:
         self._ensure_terminal_state(summary)
         stored_records = tuple(records)
+        self._ensure_records_match_summary(summary, stored_records)
         preview = DatasetRunPreview(
             summary=summary,
             records=stored_records[:MAX_DATASET_PREVIEW_RECORDS],
@@ -112,6 +118,45 @@ class InMemoryCompletedDatasetRepository:
             raise CompletedDatasetRunUnsupportedError(
                 "completed dataset storage supports only BTCUSD BACKTEST scope"
             )
+
+    def _ensure_records_match_summary(
+        self,
+        summary: DatasetRunSummary,
+        records: tuple[DatasetRecord, ...],
+    ) -> None:
+        if len(records) != summary.record_count:
+            raise ValueError("stored record_count must match summary record_count")
+
+        relevance_counts = {
+            RelevanceLabel.RELEVANT: 0,
+            RelevanceLabel.NOISE: 0,
+            RelevanceLabel.IRRELEVANT: 0,
+        }
+        for record in records:
+            if record.workspace_id != summary.workspace_id:
+                raise ValueError("stored record workspace_id must match summary")
+            if record.run_id != summary.run_id:
+                raise ValueError("stored record run_id must match summary")
+            if record.instrument is not summary.instrument:
+                raise ValueError("stored record instrument must match summary")
+            if record.mode is not summary.mode:
+                raise ValueError("stored record mode must match summary")
+            if record.model_version != summary.model_version:
+                raise ValueError("stored record model_version must match summary")
+            if record.config_version != summary.config_version:
+                raise ValueError("stored record config_version must match summary")
+            relevance_counts[record.relevance] += 1
+
+        if relevance_counts[RelevanceLabel.RELEVANT] != summary.relevant_count:
+            raise ValueError("stored relevant_count must match summary relevant_count")
+        if relevance_counts[RelevanceLabel.NOISE] != summary.noise_count:
+            raise ValueError("stored noise_count must match summary noise_count")
+        if relevance_counts[RelevanceLabel.IRRELEVANT] != summary.irrelevant_count:
+            raise ValueError(
+                "stored irrelevant_count must match summary irrelevant_count"
+            )
+        if summary.status is DatasetRunStatus.FAILED_PROVIDER_LIMITATION and records:
+            raise ValueError("provider-limited dataset runs must not store records")
 
 
 _default_repository = InMemoryCompletedDatasetRepository()
