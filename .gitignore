@@ -15,9 +15,13 @@ dist/
 *.egg-info/
 .eggs/
 frontend/node_modules/
+node_modules/
 frontend/dist/
 frontend/coverage/
 frontend/*.tsbuildinfo
+playwright/.auth/
+playwright-report/
+test-results/
 
 # Test and coverage artifacts
 .pytest_cache/

@@ -1,0 +1,12 @@
+{
+  "name": "quantitative-sentiment-analysis-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "node node_modules/@playwright/test/cli.js test",
+    "e2e:install": "node node_modules/@playwright/test/cli.js install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0"
+  }
+}
