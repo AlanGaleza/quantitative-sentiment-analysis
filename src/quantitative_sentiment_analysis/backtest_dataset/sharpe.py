@@ -17,7 +17,7 @@ from quantitative_sentiment_analysis.backtest_dataset.provider import (
 )
 
 SHARPE_API_KEY_ENV = "SHARPE_API_KEY"
-SHARPE_NEWS_API_URL = "https://terminal.jup.ag/api/v1/news/feed"
+SHARPE_NEWS_API_URL = "https://www.sharpe.ai/api/v1/news/feed"
 SHARPE_PAGE_LIMIT = 500
 
 FetchJson = Callable[[str, Mapping[str, str]], dict[str, object]]
