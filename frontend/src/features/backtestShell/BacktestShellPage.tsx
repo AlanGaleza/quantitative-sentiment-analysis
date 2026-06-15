@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from "react";
 
 import {
   createBacktestRunShell,
+  downloadBacktestDatasetExport,
   runBacktestDataset,
   type BacktestShellApiError,
 } from "./api";
@@ -20,11 +21,13 @@ type CreateRun = (
 ) => Promise<BacktestRunShell>;
 
 type RunDataset = (workspaceId: string, runId: string) => Promise<DatasetRunPreview>;
+type DownloadDatasetExport = (workspaceId: string, runId: string) => Promise<void>;
 
 interface BacktestShellPageProps {
   workspaceId: string;
   createRun?: CreateRun;
   runDataset?: RunDataset;
+  downloadDatasetExport?: DownloadDatasetExport;
   now?: Date;
 }
 
@@ -41,10 +44,16 @@ type DatasetState =
   | { status: "provider-limited"; preview: DatasetRunPreview; message: string }
   | { status: "error"; message: string };
 
+type ExportState =
+  | { status: "idle" }
+  | { status: "downloading" }
+  | { status: "error"; message: string };
+
 export function BacktestShellPage({
   workspaceId,
   createRun = createBacktestRunShell,
   runDataset = runBacktestDataset,
+  downloadDatasetExport = downloadBacktestDatasetExport,
   now = new Date(),
 }: BacktestShellPageProps) {
   const defaults = useMemo(() => defaultTimeframe(now), [now]);
@@ -53,6 +62,7 @@ export function BacktestShellPage({
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
   const [datasetState, setDatasetState] = useState<DatasetState>({ status: "idle" });
+  const [exportState, setExportState] = useState<ExportState>({ status: "idle" });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -73,6 +83,7 @@ export function BacktestShellPage({
       });
       setSubmitState({ status: "created", run });
       setDatasetState({ status: "idle" });
+      setExportState({ status: "idle" });
     } catch (error) {
       setSubmitState({
         status: "error",
@@ -83,6 +94,7 @@ export function BacktestShellPage({
 
   async function handleRunDataset(run: BacktestRunShell) {
     setDatasetState({ status: "running" });
+    setExportState({ status: "idle" });
     try {
       const preview = await runDataset(workspaceId, run.run_id);
       setDatasetState({ status: "completed", preview });
@@ -97,6 +109,19 @@ export function BacktestShellPage({
         return;
       }
       setDatasetState({
+        status: "error",
+        message: errorMessage(error),
+      });
+    }
+  }
+
+  async function handleDownloadDatasetExport(run: BacktestRunShell) {
+    setExportState({ status: "downloading" });
+    try {
+      await downloadDatasetExport(workspaceId, run.run_id);
+      setExportState({ status: "idle" });
+    } catch (error) {
+      setExportState({
         status: "error",
         message: errorMessage(error),
       });
@@ -195,7 +220,11 @@ export function BacktestShellPage({
             <CreatedRunSummary
               run={submitState.run}
               datasetState={datasetState}
+              exportState={exportState}
               onRunDataset={() => void handleRunDataset(submitState.run)}
+              onDownloadDatasetExport={() =>
+                void handleDownloadDatasetExport(submitState.run)
+              }
             />
           ) : null}
         </aside>
@@ -207,11 +236,15 @@ export function BacktestShellPage({
 function CreatedRunSummary({
   run,
   datasetState,
+  exportState,
   onRunDataset,
+  onDownloadDatasetExport,
 }: {
   run: BacktestRunShell;
   datasetState: DatasetState;
+  exportState: ExportState;
   onRunDataset: () => void;
+  onDownloadDatasetExport: () => void;
 }) {
   return (
     <div className="created-run">
@@ -242,7 +275,12 @@ function CreatedRunSummary({
           until S-02 produces a completed deterministic dataset.
         </p>
       ) : null}
-      <DatasetPanel run={run} datasetState={datasetState} />
+      <DatasetPanel
+        run={run}
+        datasetState={datasetState}
+        exportState={exportState}
+        onDownloadDatasetExport={onDownloadDatasetExport}
+      />
     </div>
   );
 }
@@ -250,9 +288,13 @@ function CreatedRunSummary({
 function DatasetPanel({
   run,
   datasetState,
+  exportState,
+  onDownloadDatasetExport,
 }: {
   run: BacktestRunShell;
   datasetState: DatasetState;
+  exportState: ExportState;
+  onDownloadDatasetExport: () => void;
 }) {
   if (datasetState.status === "idle") {
     return (
@@ -322,6 +364,22 @@ function DatasetPanel({
             available for this completed dataset. Movement fields remain pending
             price enrichment.
           </p>
+          <div className="dataset-actions export-actions">
+            <button
+              type="button"
+              onClick={onDownloadDatasetExport}
+              disabled={exportState.status === "downloading"}
+            >
+              {exportState.status === "downloading"
+                ? "Preparing JSONL download..."
+                : "Download JSONL dataset"}
+            </button>
+          </div>
+          {exportState.status === "error" ? (
+            <div role="alert" className="inline-alert">
+              {exportState.message}
+            </div>
+          ) : null}
           <DatasetPreviewTable records={preview.records} />
         </>
       )}

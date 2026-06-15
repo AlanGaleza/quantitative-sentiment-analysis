@@ -59,6 +59,17 @@ export function buildBacktestDatasetUrl(
   );
 }
 
+export function buildBacktestDatasetExportUrl(
+  workspaceId: string,
+  runId: string,
+): string {
+  return withApiBaseUrl(
+    `${API_PREFIX}/workspaces/${encodeURIComponent(
+      workspaceId,
+    )}/backtests/${encodeURIComponent(runId)}/dataset/export.jsonl`,
+  );
+}
+
 export async function createBacktestRunShell(
   workspaceId: string,
   request: CreateBacktestRunRequest,
@@ -116,6 +127,44 @@ export async function fetchBacktestDataset(
   return (await response.json()) as DatasetRunPreview;
 }
 
+export async function fetchBacktestDatasetExport(
+  workspaceId: string,
+  runId: string,
+): Promise<Blob> {
+  const response = await fetch(buildBacktestDatasetExportUrl(workspaceId, runId), {
+    headers: {
+      Accept: "application/x-ndjson",
+    },
+  });
+
+  if (!response.ok) {
+    const error = await readError(response);
+    throw new BacktestShellApiError(response.status, error.detail, error.payload);
+  }
+
+  return response.blob();
+}
+
+export async function downloadBacktestDatasetExport(
+  workspaceId: string,
+  runId: string,
+): Promise<void> {
+  const blob = await fetchBacktestDatasetExport(workspaceId, runId);
+  downloadBlob(blob, datasetExportFilename(workspaceId, runId));
+}
+
+export function downloadBlob(blob: Blob, filename: string): void {
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
 export async function fetchBacktestRunShell(
   workspaceId: string,
   runId: string,
@@ -141,6 +190,22 @@ function withApiBaseUrl(path: string): string {
   }
 
   return `${baseUrl.replace(/\/+$/, "")}${path}`;
+}
+
+function datasetExportFilename(workspaceId: string, runId: string): string {
+  return `${safeFilenamePart(workspaceId)}-${safeFilenamePart(runId)}-dataset.jsonl`;
+}
+
+function safeFilenamePart(value: string): string {
+  const sanitized = Array.from(value)
+    .map((character) => {
+      if (/^[A-Za-z0-9._-]$/.test(character)) {
+        return character;
+      }
+      return "_";
+    })
+    .join("");
+  return sanitized || "dataset";
 }
 
 async function readErrorDetail(response: Response): Promise<string> {

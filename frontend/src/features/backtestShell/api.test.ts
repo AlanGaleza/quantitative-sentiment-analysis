@@ -2,11 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   BacktestShellApiError,
+  buildBacktestDatasetExportUrl,
   buildBacktestDatasetUrl,
   buildBacktestRunShellUrl,
   buildCreateBacktestRunUrl,
   buildRunBacktestDatasetUrl,
   createBacktestRunShell,
+  downloadBacktestDatasetExport,
+  downloadBlob,
+  fetchBacktestDatasetExport,
   fetchBacktestRunShell,
   fetchBacktestDataset,
   runBacktestDataset,
@@ -41,6 +45,9 @@ describe("backtest shell API client", () => {
     expect(buildBacktestDatasetUrl("workspace alpha", "draft run/001")).toBe(
       "https://api.example.test/api/workspaces/workspace%20alpha/backtests/draft%20run%2F001/dataset",
     );
+    expect(buildBacktestDatasetExportUrl("workspace alpha", "draft run/001")).toBe(
+      "https://api.example.test/api/workspaces/workspace%20alpha/backtests/draft%20run%2F001/dataset/export.jsonl",
+    );
   });
 
   it("falls back to relative /api for local Vite proxy development", () => {
@@ -57,6 +64,9 @@ describe("backtest shell API client", () => {
     );
     expect(buildBacktestDatasetUrl("workspace-alpha", "draft-run-001")).toBe(
       "/api/workspaces/workspace-alpha/backtests/draft-run-001/dataset",
+    );
+    expect(buildBacktestDatasetExportUrl("workspace-alpha", "draft-run-001")).toBe(
+      "/api/workspaces/workspace-alpha/backtests/draft-run-001/dataset/export.jsonl",
     );
   });
 
@@ -183,6 +193,105 @@ describe("backtest shell API client", () => {
     expect(preview.summary.record_count).toBe(1);
   });
 
+  it("fetches completed deterministic dataset JSONL export as a blob", async () => {
+    const body = '{"run_id":"draft-run-001"}\n';
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(body, {
+        status: 200,
+        headers: { "content-type": "application/x-ndjson" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const blob = await fetchBacktestDatasetExport(
+      "workspace-alpha",
+      "draft-run-001",
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workspaces/workspace-alpha/backtests/draft-run-001/dataset/export.jsonl",
+      {
+        headers: {
+          Accept: "application/x-ndjson",
+        },
+      },
+    );
+    expect(await blob.text()).toBe(body);
+  });
+
+  it("downloads completed deterministic dataset JSONL export with a stable filename", async () => {
+    const body = '{"run_id":"draft-run-001"}\n';
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(body, {
+          status: 200,
+          headers: { "content-type": "application/x-ndjson" },
+        }),
+      ),
+    );
+    const createObjectUrl = vi.fn().mockReturnValue("blob:dataset-export");
+    const revokeObjectUrl = vi.fn();
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: createObjectUrl,
+      revokeObjectURL: revokeObjectUrl,
+    });
+    const click = vi.fn();
+    const createElement = vi
+      .spyOn(document, "createElement")
+      .mockImplementation((tagName: string) => {
+        const element = document.createElementNS(
+          "http://www.w3.org/1999/xhtml",
+          tagName,
+        ) as HTMLAnchorElement;
+        if (tagName === "a") {
+          element.click = click;
+        }
+        return element;
+      });
+
+    await downloadBacktestDatasetExport("workspace alpha", "draft/run 001");
+
+    expect(createObjectUrl).toHaveBeenCalledOnce();
+    expect(await createObjectUrl.mock.calls[0][0].text()).toBe(body);
+    expect(click).toHaveBeenCalledOnce();
+    const anchor = createElement.mock.results[0].value as HTMLAnchorElement;
+    expect(anchor.download).toBe("workspace_alpha-draft_run_001-dataset.jsonl");
+    expect(revokeObjectUrl).toHaveBeenCalledWith("blob:dataset-export");
+    expect(document.body.querySelector("a[download]")).not.toBeInTheDocument();
+  });
+
+  it("can trigger a browser download for a provided blob", () => {
+    const createObjectUrl = vi.fn().mockReturnValue("blob:manual-export");
+    const revokeObjectUrl = vi.fn();
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: createObjectUrl,
+      revokeObjectURL: revokeObjectUrl,
+    });
+    const click = vi.fn();
+    vi.spyOn(document, "createElement").mockImplementation((tagName: string) => {
+      const element = document.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        tagName,
+      ) as HTMLAnchorElement;
+      if (tagName === "a") {
+        element.click = click;
+      }
+      return element;
+    });
+    const blob = new Blob(['{"run_id":"draft-run-001"}\n'], {
+      type: "application/x-ndjson",
+    });
+
+    downloadBlob(blob, "workspace-alpha-draft-run-001-dataset.jsonl");
+
+    expect(createObjectUrl).toHaveBeenCalledWith(blob);
+    expect(click).toHaveBeenCalledOnce();
+    expect(revokeObjectUrl).toHaveBeenCalledWith("blob:manual-export");
+  });
+
   it("raises typed errors for non-2xx responses", async () => {
     vi.stubGlobal(
       "fetch",
@@ -199,6 +308,25 @@ describe("backtest shell API client", () => {
     ).rejects.toMatchObject({
       status: 422,
       detail: "timeframe range is invalid",
+    } satisfies Partial<BacktestShellApiError>);
+  });
+
+  it("raises typed export errors for non-2xx JSONL export responses", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ detail: "dataset export is not ready" }), {
+          status: 409,
+          headers: { "content-type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(
+      fetchBacktestDatasetExport("workspace-alpha", "draft-run-001"),
+    ).rejects.toMatchObject({
+      status: 409,
+      detail: "dataset export is not ready",
     } satisfies Partial<BacktestShellApiError>);
   });
 

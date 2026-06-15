@@ -103,12 +103,14 @@ describe("BacktestShellPage", () => {
           createdRun(request),
       );
     const runDataset = vi.fn().mockResolvedValue(datasetPreview());
+    const downloadDatasetExport = vi.fn().mockResolvedValue(undefined);
     render(
       <BacktestShellPage
         workspaceId="workspace-alpha"
         now={FIXED_NOW}
         createRun={createRun}
         runDataset={runDataset}
+        downloadDatasetExport={downloadDatasetExport}
       />,
     );
 
@@ -142,8 +144,127 @@ describe("BacktestShellPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Movement fields remain pending price enrichment/i)).toBeInTheDocument();
     expect(
+      screen.getByRole("button", { name: "Download JSONL dataset" }),
+    ).toBeInTheDocument();
+    expect(
       screen.queryByText(/unavailable until S-02 produces a completed deterministic dataset/i),
     ).not.toBeInTheDocument();
+  });
+
+  it("downloads JSONL export only after completed dataset generation", async () => {
+    const createRun = vi
+      .fn()
+      .mockImplementation(
+        async (_workspaceId: string, request: CreateBacktestRunRequest) =>
+          createdRun(request),
+      );
+    const runDataset = vi.fn().mockResolvedValue(datasetPreview());
+    const downloadDatasetExport = vi.fn().mockResolvedValue(undefined);
+    render(
+      <BacktestShellPage
+        workspaceId="workspace-alpha"
+        now={FIXED_NOW}
+        createRun={createRun}
+        runDataset={runDataset}
+        downloadDatasetExport={downloadDatasetExport}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Create draft run" }));
+    await screen.findByText("Draft run created");
+    expect(
+      screen.queryByRole("button", { name: "Download JSONL dataset" }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
+    );
+    await screen.findByText("Completed deterministic dataset");
+    fireEvent.click(screen.getByRole("button", { name: "Download JSONL dataset" }));
+
+    expect(downloadDatasetExport).toHaveBeenCalledWith(
+      "workspace-alpha",
+      "draft-run-001",
+    );
+    expect(screen.queryByText(/run_id/i)).not.toBeInTheDocument();
+  });
+
+  it("disables JSONL export action while download is in progress", async () => {
+    const createRun = vi
+      .fn()
+      .mockImplementation(
+        async (_workspaceId: string, request: CreateBacktestRunRequest) =>
+          createdRun(request),
+      );
+    const runDataset = vi.fn().mockResolvedValue(datasetPreview());
+    let finishDownload: () => void = () => undefined;
+    const downloadDatasetExport = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishDownload = resolve;
+        }),
+    );
+    render(
+      <BacktestShellPage
+        workspaceId="workspace-alpha"
+        now={FIXED_NOW}
+        createRun={createRun}
+        runDataset={runDataset}
+        downloadDatasetExport={downloadDatasetExport}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Create draft run" }));
+    await screen.findByText("Draft run created");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
+    );
+    await screen.findByText("Completed deterministic dataset");
+    fireEvent.click(screen.getByRole("button", { name: "Download JSONL dataset" }));
+
+    expect(
+      screen.getByRole("button", { name: "Preparing JSONL download..." }),
+    ).toBeDisabled();
+
+    finishDownload();
+    expect(
+      await screen.findByRole("button", { name: "Download JSONL dataset" }),
+    ).toBeEnabled();
+  });
+
+  it("renders JSONL export errors without displaying export contents", async () => {
+    const createRun = vi
+      .fn()
+      .mockImplementation(
+        async (_workspaceId: string, request: CreateBacktestRunRequest) =>
+          createdRun(request),
+      );
+    const runDataset = vi.fn().mockResolvedValue(datasetPreview());
+    const downloadDatasetExport = vi
+      .fn()
+      .mockRejectedValue(new Error("dataset export is not ready"));
+    render(
+      <BacktestShellPage
+        workspaceId="workspace-alpha"
+        now={FIXED_NOW}
+        createRun={createRun}
+        runDataset={runDataset}
+        downloadDatasetExport={downloadDatasetExport}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Create draft run" }));
+    await screen.findByText("Draft run created");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
+    );
+    await screen.findByText("Completed deterministic dataset");
+    fireEvent.click(screen.getByRole("button", { name: "Download JSONL dataset" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "dataset export is not ready",
+    );
+    expect(screen.queryByText(/"run_id"/i)).not.toBeInTheDocument();
   });
 
   it("displays provider limitation without completed preview records", async () => {
@@ -202,6 +323,9 @@ describe("BacktestShellPage", () => {
       within(limitation).getByText("missing provider configuration"),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText("Dataset preview records")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Download JSONL dataset" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders API errors", async () => {

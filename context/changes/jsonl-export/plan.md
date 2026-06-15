@@ -357,29 +357,29 @@ No database migration is required. Existing completed runs in the local/dev in-m
 
 #### Automated
 
-- [x] 2.1 Backend router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py`
-- [x] 2.2 Backend export tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_export.py`
-- [x] 2.3 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
+- [x] 2.1 Backend router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py` — ba990ff
+- [x] 2.2 Backend export tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_export.py` — ba990ff
+- [x] 2.3 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest` — ba990ff
 
 #### Manual
 
-- [x] 2.4 `curl -i` against a completed dataset export returns an attachment-style JSONL response with expected headers.
-- [x] 2.5 `curl` against a missing run returns `404` and does not generate a dataset run.
-- [x] 2.6 `curl` against a provider-limited run returns `409` and no JSONL body pretending to be valid export data.
+- [x] 2.4 `curl -i` against a completed dataset export returns an attachment-style JSONL response with expected headers. — ba990ff
+- [x] 2.5 `curl` against a missing run returns `404` and does not generate a dataset run. — ba990ff
+- [x] 2.6 `curl` against a provider-limited run returns `409` and no JSONL body pretending to be valid export data. — ba990ff
 
 ### Phase 3: Frontend Download Flow
 
 #### Automated
 
-- [ ] 3.1 Frontend tests pass: `cd frontend && npm test`
-- [ ] 3.2 Frontend build/typecheck passes: `cd frontend && npm run build`
-- [ ] 3.3 Existing backend full test suite still passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
+- [x] 3.1 Frontend tests pass: `cd frontend && npm test`
+- [x] 3.2 Frontend build/typecheck passes: `cd frontend && npm run build`
+- [x] 3.3 Existing backend full test suite still passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
 
 #### Manual
 
-- [ ] 3.4 After creating and completing a BACKTEST dataset in the shell, the JSONL download action appears and triggers a file download.
-- [ ] 3.5 Provider-limited, running, idle, and error dataset states do not show a misleading export button.
-- [ ] 3.6 The page never displays the full JSONL export body as visible text.
+- [x] 3.4 After creating and completing a BACKTEST dataset in the shell, the JSONL download action appears and triggers a file download.
+- [x] 3.5 Provider-limited, running, idle, and error dataset states do not show a misleading export button.
+- [x] 3.6 The page never displays the full JSONL export body as visible text.
 
 ### Phase 4: Verification and Handoff
 
