@@ -529,29 +529,29 @@ If a real HTTP client dependency is needed for CryptoPanic, add it through `uv a
 
 #### Automated
 
-- [x] 1.1 Dataset package imports cleanly: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run python -c "import quantitative_sentiment_analysis.backtest_dataset"`
-- [x] 1.2 Dataset schema tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_schemas.py`
-- [x] 1.3 Completed repository tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_repository.py`
+- [x] 1.1 Dataset package imports cleanly: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run python -c "import quantitative_sentiment_analysis.backtest_dataset"` — 2a32f72
+- [x] 1.2 Dataset schema tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_schemas.py` — 2a32f72
+- [x] 1.3 Completed repository tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_repository.py` — 2a32f72
 
 #### Manual
 
-- [x] 1.4 Schemas reuse F-01 `DatasetRecord` and do not duplicate canonical dataset fields.
-- [x] 1.5 Repository wording clearly states local/dev in-memory non-production storage.
-- [x] 1.6 No JSONL export, auth, live, broker, order, or recommendation scope is introduced.
+- [x] 1.4 Schemas reuse F-01 `DatasetRecord` and do not duplicate canonical dataset fields. — 2a32f72
+- [x] 1.5 Repository wording clearly states local/dev in-memory non-production storage. — 2a32f72
+- [x] 1.6 No JSONL export, auth, live, broker, order, or recommendation scope is introduced. — 2a32f72
 
 ### Phase 2: Provider and Normalization Pipeline
 
 #### Automated
 
-- [ ] 2.1 Provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_provider.py`
-- [ ] 2.2 Normalization tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_normalization.py`
-- [ ] 2.3 Sentiment policy tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/sentiment_policy`
+- [x] 2.1 Provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_provider.py`
+- [x] 2.2 Normalization tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_normalization.py`
+- [x] 2.3 Sentiment policy tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/sentiment_policy`
 
 #### Manual
 
-- [ ] 2.4 Real provider configuration is documented as an env-var smoke dependency, not committed as a secret.
-- [ ] 2.5 Provider limitation wording is BACKTEST-only analytical and does not imply fallback or fabricated data.
-- [ ] 2.6 Normalization preserves records for audit except exact repeated provider IDs.
+- [x] 2.4 Real provider configuration is documented as an env-var smoke dependency, not committed as a secret.
+- [x] 2.5 Provider limitation wording is BACKTEST-only analytical and does not imply fallback or fabricated data.
+- [x] 2.6 Normalization preserves records for audit except exact repeated provider IDs.
 
 ### Phase 3: Deterministic Dataset Orchestration
 
