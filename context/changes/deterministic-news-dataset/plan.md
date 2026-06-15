@@ -601,15 +601,15 @@ If a real HTTP client dependency is needed for CryptoPanic, add it through `uv a
 
 #### Automated
 
-- [x] 6.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy`
-- [x] 6.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
-- [x] 6.3 Frontend build passes: `cd frontend && npm run build`
-- [x] 6.4 Foundation docs reference S-02 handoff: `rg -n "deterministic-news-dataset|S-02|completed dataset|provider limitation" context/foundation/roadmap.md context/foundation/quality-contracts.md context/foundation/news-sentiment-policy.md`
+- [x] 6.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy` — 1467b87
+- [x] 6.2 Full frontend test suite passes: `cd frontend && npm test -- --run` — 1467b87
+- [x] 6.3 Frontend build passes: `cd frontend && npm run build` — 1467b87
+- [x] 6.4 Foundation docs reference S-02 handoff: `rg -n "deterministic-news-dataset|S-02|completed dataset|provider limitation" context/foundation/roadmap.md context/foundation/quality-contracts.md context/foundation/news-sentiment-policy.md` — 1467b87
 
 #### Manual
 
-- [x] 6.5 S-03 can use the completed canonical dataset records without re-deciding record fields or determinism semantics.
-- [x] 6.6 S-04 can read completed S-02 records and surfaces missing movement as warnings until price enrichment exists.
-- [x] 6.7 Manual CryptoPanic smoke-test instructions are clear and do not require committing secrets.
-- [x] 6.8 No generated real workspace data, provider payloads, secrets, JSONL exports, or unsanitized news exports are committed.
-- [x] 6.9 Working tree is clean after commits and epilogue.
+- [x] 6.5 S-03 can use the completed canonical dataset records without re-deciding record fields or determinism semantics. — 1467b87
+- [x] 6.6 S-04 can read completed S-02 records and surfaces missing movement as warnings until price enrichment exists. — 1467b87
+- [x] 6.7 Manual CryptoPanic smoke-test instructions are clear and do not require committing secrets. — 1467b87
+- [x] 6.8 No generated real workspace data, provider payloads, secrets, JSONL exports, or unsanitized news exports are committed. — 1467b87
+- [x] 6.9 Working tree is clean after commits and epilogue. — 1467b87
