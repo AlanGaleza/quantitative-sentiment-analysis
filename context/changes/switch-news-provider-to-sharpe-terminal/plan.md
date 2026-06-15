@@ -235,15 +235,15 @@ repositories are process-local and do not need conversion.
 
 #### Automated
 
-- [x] 1.1 Provider tests cover missing `SHARPE_API_KEY`, Bearer auth headers, Sharpe request params, `data.articles` parsing, pagination, local `timeframe_end` filtering, unexpected payloads, and unavailable-provider errors.
-- [x] 1.2 Backend dataset tests pass with the new provider dependency.
-- [x] 1.3 Ruff passes for the provider and touched backend tests.
+- [x] 1.1 Provider tests cover missing `SHARPE_API_KEY`, Bearer auth headers, Sharpe request params, `data.articles` parsing, pagination, local `timeframe_end` filtering, unexpected payloads, and unavailable-provider errors. — 03ec574
+- [x] 1.2 Backend dataset tests pass with the new provider dependency. — 03ec574
+- [x] 1.3 Ruff passes for the provider and touched backend tests. — 03ec574
 
 ### Phase 2: Policy, Copy, And Regression Coverage
 
 #### Automated
 
-- [x] 2.1 Full backend pytest suite passes.
-- [x] 2.2 Frontend Vitest suite passes.
-- [x] 2.3 `git diff --check` reports no whitespace errors.
-- [x] 2.4 No active source, test, frontend, or foundation file outside historical `context/changes/**` still references CryptoPanic.
+- [x] 2.1 Full backend pytest suite passes. — 03ec574
+- [x] 2.2 Frontend Vitest suite passes. — 03ec574
+- [x] 2.3 `git diff --check` reports no whitespace errors. — 03ec574
+- [x] 2.4 No active source, test, frontend, or foundation file outside historical `context/changes/**` still references CryptoPanic. — 03ec574
