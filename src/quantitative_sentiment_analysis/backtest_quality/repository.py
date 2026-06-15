@@ -5,6 +5,13 @@ from datetime import UTC, datetime, timedelta
 import os
 from typing import Protocol
 
+from quantitative_sentiment_analysis.backtest_dataset.repository import (
+    CompletedDatasetRepository,
+    CompletedDatasetRunIncompleteError,
+    CompletedDatasetRunNotFoundError,
+    get_completed_dataset_repository,
+)
+from quantitative_sentiment_analysis.backtest_dataset.schemas import DatasetRunStatus
 from quantitative_sentiment_analysis.backtest_quality.schemas import (
     DirectionalBias,
     QualityInputRecord,
@@ -66,6 +73,58 @@ class LocalFixtureQualityInputProvider:
         return _local_fixture_records(workspace_id=workspace_id, run_id=run_id)
 
 
+class CompletedDatasetQualityInputProvider:
+    """Maps completed S-02 canonical dataset records into S-04 quality inputs."""
+
+    def __init__(self, repository: CompletedDatasetRepository) -> None:
+        self._repository = repository
+
+    def get_quality_inputs(
+        self,
+        workspace_id: str,
+        run_id: str,
+    ) -> Sequence[QualityInputRecord]:
+        try:
+            preview = self._repository.get_run(workspace_id, run_id)
+            records = self._repository.list_records(workspace_id, run_id)
+        except CompletedDatasetRunNotFoundError as exc:
+            raise QualityRunNotFoundError(str(exc)) from exc
+        except CompletedDatasetRunIncompleteError as exc:
+            raise QualityRunIncompleteError(str(exc)) from exc
+
+        if preview.summary.status is not DatasetRunStatus.COMPLETED:
+            raise QualityRunIncompleteError(
+                "completed BACKTEST dataset is required before quality can be evaluated"
+            )
+        if not records:
+            raise QualityRunIncompleteError(
+                "completed BACKTEST dataset has no records for quality evaluation"
+            )
+
+        return tuple(
+            QualityInputRecord(
+                workspace_id=record.workspace_id,
+                run_id=record.run_id,
+                record_id=record.record_id,
+                instrument=record.instrument.value,
+                mode=record.mode.value,
+                event_timestamp=record.timestamp,
+                headline=record.headline,
+                source_id=record.source_id,
+                source_name=record.source_name,
+                sentiment_score=record.sentiment_score,
+                directional_bias=record.directional_bias,
+                confidence=record.confidence,
+                relevance=record.relevance,
+                later_return=None,
+                realized_direction=None,
+                model_version=record.model_version,
+                config_version=record.config_version,
+            )
+            for record in records
+        )
+
+
 def get_quality_input_provider() -> QualityInputProvider:
     configured_provider = os.getenv(QSA_BACKTEST_QUALITY_PROVIDER, "").strip()
     if configured_provider == LOCAL_FIXTURE_PROVIDER:
@@ -80,7 +139,7 @@ def get_quality_input_provider() -> QualityInputProvider:
             f"quality input provider {configured_provider!r} is not available"
         )
 
-    return NotReadyQualityInputProvider()
+    return CompletedDatasetQualityInputProvider(get_completed_dataset_repository())
 
 
 def _local_fixture_records(

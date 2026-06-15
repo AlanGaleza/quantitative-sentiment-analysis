@@ -557,29 +557,29 @@ If a real HTTP client dependency is needed for CryptoPanic, add it through `uv a
 
 #### Automated
 
-- [x] 3.1 Orchestration tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_orchestrator.py`
-- [x] 3.2 Determinism tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_determinism.py`
-- [x] 3.3 Contract serialization tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/contracts/test_serialization.py`
+- [x] 3.1 Orchestration tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_orchestrator.py` — bfb0d1c
+- [x] 3.2 Determinism tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_determinism.py` — bfb0d1c
+- [x] 3.3 Contract serialization tests still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/contracts/test_serialization.py` — bfb0d1c
 
 #### Manual
 
-- [x] 3.4 Completed output uses the S-01 draft workspace/run/timeframe without re-deciding those fields.
-- [x] 3.5 Relevance labels preserve noise and irrelevant records rather than hiding them.
-- [x] 3.6 No wall-clock timestamp, random ID, provider ordering, or environment-specific value enters deterministic dataset content.
+- [x] 3.4 Completed output uses the S-01 draft workspace/run/timeframe without re-deciding those fields. — bfb0d1c
+- [x] 3.5 Relevance labels preserve noise and irrelevant records rather than hiding them. — bfb0d1c
+- [x] 3.6 No wall-clock timestamp, random ID, provider ordering, or environment-specific value enters deterministic dataset content. — bfb0d1c
 
 ### Phase 4: Backend API and Quality Adapter
 
 #### Automated
 
-- [ ] 4.1 Dataset router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py`
-- [ ] 4.2 Quality adapter tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_quality/test_dataset_adapter.py`
-- [ ] 4.3 Backend regression tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy`
+- [x] 4.1 Dataset router tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_dataset/test_router.py`
+- [x] 4.2 Quality adapter tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/backtest_quality/test_dataset_adapter.py`
+- [x] 4.3 Backend regression tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_shell tests/backtest_dataset tests/backtest_quality tests/sentiment_policy`
 
 #### Manual
 
-- [ ] 4.4 API can start a dataset for an existing draft run and fetch its summary/preview.
-- [ ] 4.5 Provider limitation returns a clear failed BACKTEST dataset state, not fabricated data.
-- [ ] 4.6 Existing `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` route reads completed S-02 data when available.
+- [x] 4.4 API can start a dataset for an existing draft run and fetch its summary/preview.
+- [x] 4.5 Provider limitation returns a clear failed BACKTEST dataset state, not fabricated data.
+- [x] 4.6 Existing `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` route reads completed S-02 data when available.
 
 ### Phase 5: Frontend Shell Flow
 

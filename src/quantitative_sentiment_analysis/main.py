@@ -8,6 +8,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from quantitative_sentiment_analysis import __version__
+from quantitative_sentiment_analysis.backtest_dataset.router import (
+    router as dataset_router,
+)
 from quantitative_sentiment_analysis.backtest_quality.router import router as quality_router
 from quantitative_sentiment_analysis.backtest_shell.router import router as shell_router
 
@@ -54,6 +57,7 @@ def create_app(cors_allowed_origins: Sequence[str] | None = None) -> FastAPI:
         )
 
     application.include_router(shell_router)
+    application.include_router(dataset_router)
     application.include_router(quality_router)
     application.add_api_route("/", read_root, methods=["GET"])
     application.add_api_route("/health", health_check, methods=["GET"])

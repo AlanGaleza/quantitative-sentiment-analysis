@@ -2,6 +2,7 @@
 
 from quantitative_sentiment_analysis.backtest_quality.metrics import build_quality_report
 from quantitative_sentiment_analysis.backtest_quality.repository import (
+    CompletedDatasetQualityInputProvider,
     LOCAL_FIXTURE_PROVIDER,
     LocalFixtureQualityInputProvider,
     NotReadyQualityInputProvider,
@@ -29,6 +30,7 @@ from quantitative_sentiment_analysis.backtest_quality.schemas import (
 
 __all__ = [
     "BacktestQualityReport",
+    "CompletedDatasetQualityInputProvider",
     "DirectionalBias",
     "EvaluationOutcome",
     "HorizonUnit",

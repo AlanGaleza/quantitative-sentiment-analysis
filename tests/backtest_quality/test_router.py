@@ -57,13 +57,13 @@ def test_quality_route_returns_fixture_backed_report() -> None:
     assert data["chart_points"][0]["outcome"] == "HIT"
 
 
-def test_quality_route_returns_not_ready_without_s02_provider() -> None:
+def test_quality_route_returns_not_found_without_completed_dataset() -> None:
     client = TestClient(app)
 
     response = client.get("/api/workspaces/workspace-alpha/backtests/run-001/quality")
 
-    assert response.status_code == 409
-    assert "S-02" in response.json()["detail"]
+    assert response.status_code == 404
+    assert "completed BACKTEST dataset" in response.json()["detail"]
 
 
 def test_quality_route_returns_local_fixture_report_when_env_enabled(
