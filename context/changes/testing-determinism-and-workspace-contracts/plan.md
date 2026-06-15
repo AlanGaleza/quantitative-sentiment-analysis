@@ -313,16 +313,16 @@ No migration is required. The completed dataset repository is process-local in-m
 
 #### Automated
 
-- [x] 3.1 Export contract tests pass
-- [x] 3.2 API route determinism and export tests pass
+- [x] 3.1 Export contract tests pass — 30c4c68
+- [x] 3.2 API route determinism and export tests pass — 30c4c68
 
 ### Phase 4: Verification and Rollout Notes
 
 #### Automated
 
-- [ ] 4.1 Focused backend gate passes
-- [ ] 4.2 Full backend pytest is either passed or explicitly reported as skipped/blocked with reason
+- [x] 4.1 Focused backend gate passes
+- [x] 4.2 Full backend pytest is either passed or explicitly reported as skipped/blocked with reason
 
 #### Manual
 
-- [ ] 4.3 Human confirms the rollout stayed within Phase 1 scope and did not pull in auth, frontend, quality dashboard, or provider pipeline behavior
+- [x] 4.3 Human confirms the rollout stayed within Phase 1 scope and did not pull in auth, frontend, quality dashboard, or provider pipeline behavior
