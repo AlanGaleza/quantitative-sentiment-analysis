@@ -96,6 +96,10 @@ export function SentimentReturnPlot({ points }: SentimentReturnPlotProps) {
 
       <div className="plot-summary">
         <p>
+          Chart points may be a deterministic sample of the full BACKTEST report;
+          metrics above use the report denominator.
+        </p>
+        <p>
           {missingPoints.length} chart point
           {missingPoints.length === 1 ? "" : "s"} missing numeric later return.
         </p>

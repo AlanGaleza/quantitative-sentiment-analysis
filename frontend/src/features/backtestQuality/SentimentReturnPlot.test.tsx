@@ -22,6 +22,11 @@ describe("SentimentReturnPlot", () => {
     expect(
       screen.getByText("Point 4: LONG directional bias, later return missing, MISS"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Chart points may be a deterministic sample of the full BACKTEST report; metrics above use the report denominator.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText("1 chart point missing numeric later return.")).toBeInTheDocument();
   });
 

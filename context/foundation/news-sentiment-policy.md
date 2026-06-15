@@ -206,7 +206,8 @@ provider/scoring/config decisions that populate the existing fields.
 S-04 should use the 4 hours default horizon, correlation, hit rate, and sampled
 sentiment-vs-later-return plot as the first required quality view. Metrics may
 use the full deterministic run, but real-run chart/detail payloads must be
-bounded.
+bounded. The current backend policy caps chart points deterministically while
+keeping metric denominators on the full input set.
 
 S-04 must keep BACKTEST-only analytical wording and must not fetch prices
 directly or fabricate production run data before S-02 supplies completed

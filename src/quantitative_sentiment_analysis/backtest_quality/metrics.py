@@ -16,6 +16,7 @@ from quantitative_sentiment_analysis.backtest_quality.schemas import (
 )
 
 MAX_REPRESENTATIVE_RECORDS = 100
+MAX_CHART_POINTS = 100
 
 
 class QualityReportInputError(ValueError):
@@ -104,7 +105,7 @@ def build_quality_report(
         config_version=first.config_version,
         metrics=metrics,
         warnings=_build_warnings(metrics),
-        chart_points=chart_points,
+        chart_points=_sample_chart_points(chart_points),
         representative_records=_sample_representative_records(ordered_records),
     )
 
@@ -171,6 +172,24 @@ def _sample_representative_records(
     return [
         records[(sample_index * last_index) // (max_records - 1)]
         for sample_index in range(max_records)
+    ]
+
+
+def _sample_chart_points(
+    points: Sequence[QualityChartPoint],
+    max_points: int = MAX_CHART_POINTS,
+) -> list[QualityChartPoint]:
+    if len(points) <= max_points:
+        return list(points)
+    if max_points <= 0:
+        return []
+    if max_points == 1:
+        return [points[0]]
+
+    last_index = len(points) - 1
+    return [
+        points[(sample_index * last_index) // (max_points - 1)]
+        for sample_index in range(max_points)
     ]
 
 

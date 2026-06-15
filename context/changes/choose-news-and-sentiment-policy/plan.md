@@ -403,27 +403,27 @@ No database migration is planned. Existing `DatasetRecord` and S-04 response sha
 
 #### Automated
 
-- [x] 3.1 Sentiment policy tests pass: `uv run pytest tests/sentiment_policy`
-- [x] 3.2 Contract and quality tests still pass with policy tests: `uv run pytest tests/contracts tests/backtest_quality tests/sentiment_policy`
-- [x] 3.3 Determinism checks pass repeatedly: `uv run pytest tests/sentiment_policy/test_scoring.py tests/sentiment_policy/test_confidence.py`
+- [x] 3.1 Sentiment policy tests pass: `uv run pytest tests/sentiment_policy` — accb7c9
+- [x] 3.2 Contract and quality tests still pass with policy tests: `uv run pytest tests/contracts tests/backtest_quality tests/sentiment_policy` — accb7c9
+- [x] 3.3 Determinism checks pass repeatedly: `uv run pytest tests/sentiment_policy/test_scoring.py tests/sentiment_policy/test_confidence.py` — accb7c9
 
 #### Manual
 
-- [x] 3.4 Test names and failure messages explain policy intent rather than implementation trivia.
-- [x] 3.5 Tests do not require network access, CryptoPanic credentials, current time, or generated real-news datasets.
-- [x] 3.6 Tests verify semantic-safety boundaries without introducing product-facing trading recommendation wording.
+- [x] 3.4 Test names and failure messages explain policy intent rather than implementation trivia. — accb7c9
+- [x] 3.5 Tests do not require network access, CryptoPanic credentials, current time, or generated real-news datasets. — accb7c9
+- [x] 3.6 Tests verify semantic-safety boundaries without introducing product-facing trading recommendation wording. — accb7c9
 
 ### Phase 4: Downstream S-02/S-04 Handoff
 
 #### Automated
 
-- [ ] 4.1 Full backend test suite passes: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy`
-- [ ] 4.2 Frontend tests pass if S-04 UI copy or payload semantics change: `cd frontend && npm test -- --run`
-- [ ] 4.3 Foundation docs still point to the policy: `rg -n "news-sentiment-policy|CryptoPanic|sampled|4 hours" context/foundation`
+- [x] 4.1 Full backend test suite passes: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy`
+- [x] 4.2 Frontend tests pass if S-04 UI copy or payload semantics change: `cd frontend && npm test -- --run`
+- [x] 4.3 Foundation docs still point to the policy: `rg -n "news-sentiment-policy|CryptoPanic|sampled|4 hours" context/foundation`
 
 #### Manual
 
-- [ ] 4.4 S-02 handoff is specific enough to start `/10x-plan deterministic-news-dataset` without re-asking provider/scoring decisions.
-- [ ] 4.5 S-04 handoff closes the roadmap's visualization question without expanding into an advanced dashboard.
-- [ ] 4.6 Existing quality view still presents BACKTEST-only analytical quality and does not imply trading recommendations or executable signals.
-- [ ] 4.7 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset` or `/10x-plan workspace-backtest-shell`, depending on which dependency track the user wants next.
+- [x] 4.4 S-02 handoff is specific enough to start `/10x-plan deterministic-news-dataset` without re-asking provider/scoring decisions.
+- [x] 4.5 S-04 handoff closes the roadmap's visualization question without expanding into an advanced dashboard.
+- [x] 4.6 Existing quality view still presents BACKTEST-only analytical quality and does not imply trading recommendations or executable signals.
+- [x] 4.7 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset` or `/10x-plan workspace-backtest-shell`, depending on which dependency track the user wants next.

@@ -12,7 +12,7 @@ F-01 already provides shared dataset/run contracts and stable JSONL serializatio
 
 ## Desired End State
 
-`context/foundation/news-sentiment-policy.md` becomes the human-readable source of truth for F-02. A small `sentiment_policy` backend package mirrors deterministic constants and pure scoring/relevance/confidence helpers for S-02. Tests prove that the policy is bounded, deterministic, auditable, and semantically safe.
+`context/foundation/news-sentiment-policy.md` becomes the human-readable source of truth for F-02. A small `sentiment_policy` backend package mirrors deterministic constants and pure scoring/relevance/confidence helpers for S-02. Tests prove that the policy is bounded, deterministic, auditable, and semantically safe; S-04 chart payloads are capped while metrics keep full-run denominators.
 
 ## Key Decisions Made
 

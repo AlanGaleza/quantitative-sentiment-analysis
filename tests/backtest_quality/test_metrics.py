@@ -7,6 +7,7 @@ from quantitative_sentiment_analysis.backtest_quality import (
     RelevanceLabel,
 )
 from quantitative_sentiment_analysis.backtest_quality.metrics import (
+    MAX_CHART_POINTS,
     MAX_REPRESENTATIVE_RECORDS,
     QualityReportInputError,
     build_quality_report,
@@ -46,7 +47,7 @@ def test_build_quality_report_is_deterministic() -> None:
     assert first == second
 
 
-def test_representative_records_are_deterministically_capped() -> None:
+def test_quality_payload_records_are_deterministically_capped() -> None:
     records = [
         make_quality_record(
             index,
@@ -61,8 +62,10 @@ def test_representative_records_are_deterministically_capped() -> None:
     report = build_quality_report(records)
 
     assert report.metrics.sample_count == 150
-    assert len(report.chart_points) == 150
+    assert len(report.chart_points) == MAX_CHART_POINTS
     assert len(report.representative_records) == MAX_REPRESENTATIVE_RECORDS
+    assert report.chart_points[0].event_timestamp == records[0].event_timestamp
+    assert report.chart_points[-1].event_timestamp == records[-1].event_timestamp
     assert report.representative_records[0].record_id == "record-001"
     assert report.representative_records[-1].record_id == "record-150"
     assert report.model_dump(mode="json") == build_quality_report(
