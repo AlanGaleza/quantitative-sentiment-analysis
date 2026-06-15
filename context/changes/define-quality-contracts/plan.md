@@ -422,29 +422,29 @@ No database migration is planned. Existing S-04 JSON response shape should remai
 
 #### Automated
 
-- [x] 4.1 S-04 compatibility tests pass: `uv run pytest tests/contracts/test_backtest_quality_compatibility.py`
-- [x] 4.2 Existing S-04 tests still pass: `uv run pytest tests/backtest_quality`
-- [x] 4.3 Full backend tests pass: `uv run pytest`
-- [x] 4.4 Local fixture quality route still returns a BTCUSD BACKTEST report when enabled: `QSA_RUNTIME_ENV=local QSA_BACKTEST_QUALITY_PROVIDER=local-fixture uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
-- [x] 4.5 Health endpoint still responds while the local API is running: `curl -fsS http://127.0.0.1:8000/health`
+- [x] 4.1 S-04 compatibility tests pass: `uv run pytest tests/contracts/test_backtest_quality_compatibility.py` — 5c76f97
+- [x] 4.2 Existing S-04 tests still pass: `uv run pytest tests/backtest_quality` — 5c76f97
+- [x] 4.3 Full backend tests pass: `uv run pytest` — 5c76f97
+- [x] 4.4 Local fixture quality route still returns a BTCUSD BACKTEST report when enabled: `QSA_RUNTIME_ENV=local QSA_BACKTEST_QUALITY_PROVIDER=local-fixture uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000` — 5c76f97
+- [x] 4.5 Health endpoint still responds while the local API is running: `curl -fsS http://127.0.0.1:8000/health` — 5c76f97
 
 #### Manual
 
-- [x] 4.6 S-04 UI/API language still says BACKTEST-only analytical quality and does not imply investment recommendations or executable trading behavior.
-- [x] 4.7 Future S-02/S-04 integration notes are clear enough that real large-run payloads will not ship unbounded by accident.
+- [x] 4.6 S-04 UI/API language still says BACKTEST-only analytical quality and does not imply investment recommendations or executable trading behavior. — 5c76f97
+- [x] 4.7 Future S-02/S-04 integration notes are clear enough that real large-run payloads will not ship unbounded by accident. — 5c76f97
 
 ### Phase 5: Final Verification and Handoff
 
 #### Automated
 
-- [ ] 5.1 Backend lock remains valid: `uv lock --check`
-- [ ] 5.2 Full backend tests pass: `uv run pytest`
-- [ ] 5.3 Source and tests compile: `uv run python -m compileall src tests`
-- [ ] 5.4 Whitespace check passes: `git diff --check`
-- [ ] 5.5 No archived files are modified: `git diff --name-only -- context/archive`
+- [x] 5.1 Backend lock remains valid: `uv lock --check`
+- [x] 5.2 Full backend tests pass: `uv run pytest`
+- [x] 5.3 Source and tests compile: `uv run python -m compileall src tests`
+- [x] 5.4 Whitespace check passes: `git diff --check`
+- [x] 5.5 No archived files are modified: `git diff --name-only -- context/archive`
 
 #### Manual
 
-- [ ] 5.6 `context/foundation/quality-contracts.md` is accepted as the contract source for S-01/S-02/S-03 planning.
-- [ ] 5.7 The implementation does not include F-02 decisions about provider, thresholds, confidence formula, or visualization scope.
-- [ ] 5.8 The final handoff names the next sensible command as `/10x-plan choose-news-and-sentiment-policy` or `/10x-plan workspace-backtest-shell`, depending on which roadmap track the user wants next.
+- [x] 5.6 `context/foundation/quality-contracts.md` is accepted as the contract source for S-01/S-02/S-03 planning.
+- [x] 5.7 The implementation does not include F-02 decisions about provider, thresholds, confidence formula, or visualization scope.
+- [x] 5.8 The final handoff names the next sensible command as `/10x-plan choose-news-and-sentiment-policy` or `/10x-plan workspace-backtest-shell`, depending on which roadmap track the user wants next.

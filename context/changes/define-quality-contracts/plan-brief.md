@@ -45,7 +45,7 @@ The project has `context/foundation/quality-contracts.md` as the human-readable 
 
 ## Architecture / Approach
 
-The plan creates a foundation document first, then mirrors it in a shared Python package. Future feature modules import shared enums/models/helpers from `contracts`; S-04 keeps its API shape but can reuse shared enum definitions and validation helpers. Deterministic JSONL and fingerprint behavior are verified by tests before S-02/S-03 build real dataset/export flows.
+The plan creates a foundation document first, then mirrors it in a shared Python package. Future feature modules import shared enums/models/helpers from `contracts`; S-04 keeps its API shape while reusing shared `DirectionalBias` and `RelevanceLabel` definitions plus the shared timezone validator. S-04 response JSON intentionally keeps `event_timestamp`; canonical dataset/export records use `timestamp`. Deterministic JSONL and fingerprint behavior are verified by tests before S-02/S-03 build real dataset/export flows.
 
 ## Phases at a Glance
 
