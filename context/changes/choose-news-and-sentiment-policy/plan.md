@@ -417,13 +417,13 @@ No database migration is planned. Existing `DatasetRecord` and S-04 response sha
 
 #### Automated
 
-- [x] 4.1 Full backend test suite passes: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy`
-- [x] 4.2 Frontend tests pass if S-04 UI copy or payload semantics change: `cd frontend && npm test -- --run`
-- [x] 4.3 Foundation docs still point to the policy: `rg -n "news-sentiment-policy|CryptoPanic|sampled|4 hours" context/foundation`
+- [x] 4.1 Full backend test suite passes: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy` — 865b42d
+- [x] 4.2 Frontend tests pass if S-04 UI copy or payload semantics change: `cd frontend && npm test -- --run` — 865b42d
+- [x] 4.3 Foundation docs still point to the policy: `rg -n "news-sentiment-policy|CryptoPanic|sampled|4 hours" context/foundation` — 865b42d
 
 #### Manual
 
-- [x] 4.4 S-02 handoff is specific enough to start `/10x-plan deterministic-news-dataset` without re-asking provider/scoring decisions.
-- [x] 4.5 S-04 handoff closes the roadmap's visualization question without expanding into an advanced dashboard.
-- [x] 4.6 Existing quality view still presents BACKTEST-only analytical quality and does not imply trading recommendations or executable signals.
-- [x] 4.7 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset` or `/10x-plan workspace-backtest-shell`, depending on which dependency track the user wants next.
+- [x] 4.4 S-02 handoff is specific enough to start `/10x-plan deterministic-news-dataset` without re-asking provider/scoring decisions. — 865b42d
+- [x] 4.5 S-04 handoff closes the roadmap's visualization question without expanding into an advanced dashboard. — 865b42d
+- [x] 4.6 Existing quality view still presents BACKTEST-only analytical quality and does not imply trading recommendations or executable signals. — 865b42d
+- [x] 4.7 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset` or `/10x-plan workspace-backtest-shell`, depending on which dependency track the user wants next. — 865b42d
