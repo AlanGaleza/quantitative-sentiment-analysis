@@ -375,29 +375,29 @@ No database migration is planned. Existing `DatasetRecord` and S-04 response sha
 
 #### Automated
 
-- [x] 1.1 Policy document exists and is non-empty: `test -s context/foundation/news-sentiment-policy.md`
-- [x] 1.2 Policy document names the selected provider and thresholds: `rg -n "CryptoPanic|0\\.20|LONG|SHORT|FLAT|30-day|4 hours" context/foundation/news-sentiment-policy.md`
-- [x] 1.3 Foundation docs reference the policy: `rg -n "news-sentiment-policy" context/foundation/quality-contracts.md context/foundation/roadmap.md`
+- [x] 1.1 Policy document exists and is non-empty: `test -s context/foundation/news-sentiment-policy.md` — 1f7e08c
+- [x] 1.2 Policy document names the selected provider and thresholds: `rg -n "CryptoPanic|0\\.20|LONG|SHORT|FLAT|30-day|4 hours" context/foundation/news-sentiment-policy.md` — 1f7e08c
+- [x] 1.3 Foundation docs reference the policy: `rg -n "news-sentiment-policy" context/foundation/quality-contracts.md context/foundation/roadmap.md` — 1f7e08c
 
 #### Manual
 
-- [x] 1.4 `news-sentiment-policy.md` is reviewed against PRD FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, and FR-015.
-- [x] 1.5 The policy preserves BACKTEST-only analytical wording and does not introduce live trading, broker, order execution, or investment recommendation scope.
-- [x] 1.6 The policy clearly says CryptoPanic must be smoke-tested before S-02 real ingestion.
+- [x] 1.4 `news-sentiment-policy.md` is reviewed against PRD FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, and FR-015. — 1f7e08c
+- [x] 1.5 The policy preserves BACKTEST-only analytical wording and does not introduce live trading, broker, order execution, or investment recommendation scope. — 1f7e08c
+- [x] 1.6 The policy clearly says CryptoPanic must be smoke-tested before S-02 real ingestion. — 1f7e08c
 
 ### Phase 2: Executable Policy Contracts
 
 #### Automated
 
-- [ ] 2.1 Policy package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.sentiment_policy"`
-- [ ] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality`
-- [ ] 2.3 Policy constants can be imported without network or environment secrets: `uv run python -c "from quantitative_sentiment_analysis.sentiment_policy import DEFAULT_POLICY_CONFIG; print(DEFAULT_POLICY_CONFIG.provider_name)"`
+- [x] 2.1 Policy package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.sentiment_policy"`
+- [x] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality`
+- [x] 2.3 Policy constants can be imported without network or environment secrets: `uv run python -c "from quantitative_sentiment_analysis.sentiment_policy import DEFAULT_POLICY_CONFIG; print(DEFAULT_POLICY_CONFIG.provider_name)"`
 
 #### Manual
 
-- [ ] 2.4 Module names and exports make it clear this is policy/scoring, not provider ingestion.
-- [ ] 2.5 The executable constants match `context/foundation/news-sentiment-policy.md`.
-- [ ] 2.6 No API token, endpoint secret, or production CryptoPanic request logic is introduced in this phase.
+- [x] 2.4 Module names and exports make it clear this is policy/scoring, not provider ingestion.
+- [x] 2.5 The executable constants match `context/foundation/news-sentiment-policy.md`.
+- [x] 2.6 No API token, endpoint secret, or production CryptoPanic request logic is introduced in this phase.
 
 ### Phase 3: Policy Verification Tests
 
