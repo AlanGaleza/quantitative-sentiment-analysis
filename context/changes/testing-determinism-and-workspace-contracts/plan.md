@@ -299,15 +299,15 @@ No migration is required. The completed dataset repository is process-local in-m
 
 #### Automated
 
-- [x] 1.1 Repository tests fail before the repository validation fix and pass after it
-- [x] 1.2 Existing provider-limited repository behavior still passes with zero records
+- [x] 1.1 Repository tests fail before the repository validation fix and pass after it — 942f352
+- [x] 1.2 Existing provider-limited repository behavior still passes with zero records — 942f352
 
 ### Phase 2: Workspace Boundary Coverage
 
 #### Automated
 
-- [ ] 2.1 Repository workspace isolation test passes
-- [ ] 2.2 Dataset route workspace mismatch test passes
+- [x] 2.1 Repository workspace isolation test passes
+- [x] 2.2 Dataset route workspace mismatch test passes
 
 ### Phase 3: API Determinism and JSONL Bytes
 

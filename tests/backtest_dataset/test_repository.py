@@ -106,9 +106,21 @@ def test_repository_reads_are_isolated_by_workspace_and_run_id() -> None:
 
     assert repository.get_run("workspace-alpha", "draft-run-000001") == alpha
     assert repository.get_run("workspace-beta", "draft-run-000001") == beta
+    assert repository.list_records("workspace-alpha", "draft-run-000001") == (
+        make_record(),
+    )
+    assert repository.list_records("workspace-beta", "draft-run-000001") == (
+        make_record(
+            workspace_id="workspace-beta",
+            run_id="draft-run-000001",
+            record_id="cryptopanic:beta",
+        ),
+    )
 
     with pytest.raises(CompletedDatasetRunNotFoundError):
         repository.get_run("workspace-gamma", "draft-run-000001")
+    with pytest.raises(CompletedDatasetRunNotFoundError):
+        repository.list_records("workspace-gamma", "draft-run-000001")
 
 
 @pytest.mark.parametrize(

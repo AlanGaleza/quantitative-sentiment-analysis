@@ -183,6 +183,35 @@ def test_get_dataset_returns_404_for_missing_completed_dataset() -> None:
     assert "completed BACKTEST dataset" in response.json()["detail"]
 
 
+def test_get_dataset_uses_workspace_boundary() -> None:
+    class ProviderShouldNotBeCalled:
+        provider_name = "UnexpectedProvider"
+
+        def fetch_historical_news(
+            self,
+            request: ProviderFetchRequest,
+        ) -> tuple[ProviderRawRecord, ...]:
+            raise AssertionError("dataset preview read must not trigger generation")
+
+    shell_repository, completed_repository = setup_dependencies()
+    create_draft(shell_repository)
+    client = TestClient(app)
+    post_response = client.post(
+        "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/dataset/run"
+    )
+    assert post_response.status_code == 200
+
+    app.dependency_overrides[get_historical_news_provider] = (
+        lambda: ProviderShouldNotBeCalled()
+    )
+    response = client.get(
+        "/api/workspaces/workspace-beta/backtests/draft-run-fixed/dataset"
+    )
+
+    assert completed_repository.get_run("workspace-alpha", "draft-run-fixed")
+    assert response.status_code == 404
+
+
 def test_dataset_preview_is_bounded() -> None:
     shell_repository, _completed_repository = setup_dependencies(
         provider=FixtureNewsProvider(fixture_records(count=105))
