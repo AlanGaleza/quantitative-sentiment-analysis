@@ -371,27 +371,27 @@ No database migration is required. Existing completed runs in the local/dev in-m
 
 #### Automated
 
-- [x] 3.1 Frontend tests pass: `cd frontend && npm test`
-- [x] 3.2 Frontend build/typecheck passes: `cd frontend && npm run build`
-- [x] 3.3 Existing backend full test suite still passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
+- [x] 3.1 Frontend tests pass: `cd frontend && npm test` — dff9ba0
+- [x] 3.2 Frontend build/typecheck passes: `cd frontend && npm run build` — dff9ba0
+- [x] 3.3 Existing backend full test suite still passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest` — dff9ba0
 
 #### Manual
 
-- [x] 3.4 After creating and completing a BACKTEST dataset in the shell, the JSONL download action appears and triggers a file download.
-- [x] 3.5 Provider-limited, running, idle, and error dataset states do not show a misleading export button.
-- [x] 3.6 The page never displays the full JSONL export body as visible text.
+- [x] 3.4 After creating and completing a BACKTEST dataset in the shell, the JSONL download action appears and triggers a file download. — dff9ba0
+- [x] 3.5 Provider-limited, running, idle, and error dataset states do not show a misleading export button. — dff9ba0
+- [x] 3.6 The page never displays the full JSONL export body as visible text. — dff9ba0
 
 ### Phase 4: Verification and Handoff
 
 #### Automated
 
-- [ ] 4.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
-- [ ] 4.2 Frontend tests pass: `cd frontend && npm test`
-- [ ] 4.3 Frontend build/typecheck passes: `cd frontend && npm run build`
-- [ ] 4.4 Repository audit shows no generated `.jsonl` export artifacts staged or committed: `git status --short`
+- [x] 4.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
+- [x] 4.2 Frontend tests pass: `cd frontend && npm test`
+- [x] 4.3 Frontend build/typecheck passes: `cd frontend && npm run build`
+- [x] 4.4 Repository audit shows no generated `.jsonl` export artifacts staged or committed: `git status --short`
 
 #### Manual
 
-- [ ] 4.5 Manual browser or curl smoke confirms the downloaded file body is valid JSONL with one dataset record per line.
-- [ ] 4.6 Manual review confirms no UI copy presents directional bias as an executable trading signal.
-- [ ] 4.7 Manual review confirms S-03 scope does not include CSV, durable export storage, or implicit generation.
+- [x] 4.5 Manual browser or curl smoke confirms the downloaded file body is valid JSONL with one dataset record per line.
+- [x] 4.6 Manual review confirms no UI copy presents directional bias as an executable trading signal.
+- [x] 4.7 Manual review confirms S-03 scope does not include CSV, durable export storage, or implicit generation.

@@ -224,6 +224,12 @@ S-03 should serialize the validated dataset records as stable JSONL. Export test
 must cover repeated identical output for identical inputs and the absence of
 broker/order side effects.
 
+`jsonl-export` exposes completed datasets through
+`GET /api/workspaces/{workspace_id}/backtests/{run_id}/dataset/export.jsonl`.
+The response is an HTTP download over canonical `DatasetRecord` lines, with
+metadata kept in headers or record fields rather than a manifest line. CSV,
+durable export storage, and implicit dataset generation remain out of scope.
+
 ### S-04: Backtest Quality View
 
 S-04 may use response-specific fields such as `event_timestamp`, but its input
