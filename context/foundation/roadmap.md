@@ -3,7 +3,7 @@ project: Quantitative Sentiment Analysis
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-08
+updated: 2026-06-15
 prd_version: 1
 main_goal: quality
 top_blocker: decisions
@@ -31,7 +31,7 @@ Trader traci przewagę nie dlatego, że nie ma dostępu do informacji, tylko dla
 |---|---|---|---|---|---|
 | F-01 | define-quality-contracts | (foundation) contracts for workspace, run metadata, dataset schema, and non-advisory wording are fixed | — | FR-001, FR-003, FR-012, FR-013, FR-014, NFR-Reproducibility, NFR-Auditability, NFR-Workspace privacy, NFR-Semantic safety | ready |
 | F-02 | choose-news-and-sentiment-policy | (foundation) source, relevance labeling, sentiment thresholds, and visualization scope are decided | F-01 | FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-015 | ready |
-| S-01 | workspace-backtest-shell | trader can enter a workspace, select BTCUSD, choose BACKTEST, and define a time range | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, NFR-Workspace privacy, NFR-Semantic safety | proposed |
+| S-01 | workspace-backtest-shell | trader can enter a workspace, select BTCUSD, choose BACKTEST, and define a time range | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, NFR-Workspace privacy, NFR-Semantic safety | ready |
 | S-02 | deterministic-news-dataset | trader can run BTCUSD BACKTEST and receive auditable per-news records | F-02, S-01 | US-01, FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-012, FR-013, NFR-Reproducibility, NFR-Backtest runtime, NFR-Auditability | blocked |
 | S-03 | jsonl-export | trader can export the reproducible training dataset as JSONL | S-02 | US-01, FR-014, NFR-Reproducibility, NFR-Auditability | proposed |
 | S-04 | backtest-quality-view | trader can view a basic backtest-quality visualization for BTCUSD | S-02 | FR-015 | blocked |
@@ -98,15 +98,16 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** F-02
 - **Blockers:** —
 - **Unknowns:** —
+- **Handoff:** `workspace-backtest-shell` supplies the local/dev draft run shell at `/workspaces/:workspaceId/backtests/new` and the workspace-scoped draft API contract for S-02.
 - **Risk:** Gives the workflow a safe BACKTEST-only frame before any dataset can be produced or interpreted.
-- **Status:** proposed
+- **Status:** ready
 
 ### S-02: Deterministic news dataset
 
 - **Outcome:** trader can run BTCUSD BACKTEST and receive auditable per-news records with sentiment, directional bias, confidence, source, run, and config metadata.
 - **Change ID:** deterministic-news-dataset
 - **PRD refs:** US-01, FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-012, FR-013, NFR-Reproducibility, NFR-Backtest runtime, NFR-Auditability
-- **Prerequisites:** F-02, S-01
+- **Prerequisites:** F-02, S-01. S-01 now provides the draft workspace/run/timeframe shell; S-02 should start from `/10x-plan deterministic-news-dataset`.
 - **Parallel with:** —
 - **Blockers:** —
 - **Unknowns:**
@@ -145,8 +146,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 |---|---|---|---|---|
 | F-01 | define-quality-contracts | Define dataset and workspace quality contracts | yes | Run `/10x-plan define-quality-contracts` |
 | F-02 | choose-news-and-sentiment-policy | Decide source, scoring, and visualization policy | yes | Policy decisions live in `context/foundation/news-sentiment-policy.md`. |
-| S-01 | workspace-backtest-shell | Add workspace and BACKTEST selection shell | no | Depends on F-01. |
-| S-02 | deterministic-news-dataset | Generate deterministic BTCUSD news dataset | no | Depends on F-02 and S-01. |
+| S-01 | workspace-backtest-shell | Add workspace and BACKTEST selection shell | yes | Draft shell contract is implemented by `workspace-backtest-shell`. |
+| S-02 | deterministic-news-dataset | Generate deterministic BTCUSD news dataset | yes | Depends on F-02 and S-01; next sensible command: `/10x-plan deterministic-news-dataset`. |
 | S-03 | jsonl-export | Export reproducible dataset as JSONL | no | Depends on S-02. |
 | S-04 | backtest-quality-view | Show BTCUSD backtest quality view | no | Depends on S-02 and visualization decision. |
 

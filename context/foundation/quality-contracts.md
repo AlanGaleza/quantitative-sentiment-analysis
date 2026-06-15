@@ -189,6 +189,10 @@ the allowed terms instead.
 
 S-01 should use the workspace/run identity contract and keep `BTCUSD` plus
 `BACKTEST` explicit. The shell must not introduce LIVE mode or execution wording.
+`workspace-backtest-shell` supplies a local/dev draft run shell for S-02: the
+workspace, draft `run_id`, `BTCUSD`, `BACKTEST`, and timezone-aware timeframe are
+fixed before deterministic news ingestion starts. The in-memory draft shell is
+not durable completed-run storage.
 
 ### F-02: News and Sentiment Policy
 
@@ -205,6 +209,9 @@ S-02 should produce records matching the Dataset Record Contract and run metadat
 matching the Run Metadata Contract. It should preserve noise or irrelevant
 records with `relevance` labels and reject or surface records that cannot be
 audited by source identity.
+
+S-02 should consume the S-01 draft workspace/run/timeframe shell instead of
+re-deciding workspace identity, instrument, mode, or timeframe semantics.
 
 ### S-03: JSONL Export
 

@@ -447,29 +447,29 @@ No database migration is planned. The in-memory repository is a deliberate MVP/t
 
 #### Automated
 
-- [x] 4.1 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx`
-- [x] 4.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
-- [x] 4.3 Frontend build passes: `cd frontend && npm run build`
+- [x] 4.1 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx` — 31b05ae
+- [x] 4.2 Full frontend test suite passes: `cd frontend && npm test -- --run` — 31b05ae
+- [x] 4.3 Frontend build passes: `cd frontend && npm run build` — 31b05ae
 
 #### Manual
 
-- [x] 4.4 Opening `/workspaces/workspace-alpha/backtests/new` shows the operational shell.
-- [x] 4.5 Creating a draft run shows run ID, workspace, BTCUSD, BACKTEST, timeframe, and draft/ready status.
-- [x] 4.6 UI text is BACKTEST-only analytical workflow copy and does not imply live trading, broker integration, order execution, or investment advice.
-- [x] 4.7 Existing `/workspaces/workspace-alpha/backtests/run-001/quality` route still works.
+- [x] 4.4 Opening `/workspaces/workspace-alpha/backtests/new` shows the operational shell. — 31b05ae
+- [x] 4.5 Creating a draft run shows run ID, workspace, BTCUSD, BACKTEST, timeframe, and draft/ready status. — 31b05ae
+- [x] 4.6 UI text is BACKTEST-only analytical workflow copy and does not imply live trading, broker integration, order execution, or investment advice. — 31b05ae
+- [x] 4.7 Existing `/workspaces/workspace-alpha/backtests/run-001/quality` route still works. — 31b05ae
 
 ### Phase 5: Verification and Handoff
 
 #### Automated
 
-- [ ] 5.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell`
-- [ ] 5.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
-- [ ] 5.3 Frontend build passes: `cd frontend && npm run build`
-- [ ] 5.4 Foundation docs reference S-01 handoff: `rg -n "workspace-backtest-shell|S-01|draft" context/foundation/roadmap.md context/foundation/quality-contracts.md`
+- [x] 5.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell`
+- [x] 5.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
+- [x] 5.3 Frontend build passes: `cd frontend && npm run build`
+- [x] 5.4 Foundation docs reference S-01 handoff: `rg -n "workspace-backtest-shell|S-01|draft" context/foundation/roadmap.md context/foundation/quality-contracts.md`
 
 #### Manual
 
-- [ ] 5.5 S-02 can use the new draft run shell contract without re-deciding workspace, mode, instrument, or timeframe semantics.
-- [ ] 5.6 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset`.
-- [ ] 5.7 No generated real workspace data or unsanitized news exports are committed.
-- [ ] 5.8 Working tree is clean after commits and epilogue.
+- [x] 5.5 S-02 can use the new draft run shell contract without re-deciding workspace, mode, instrument, or timeframe semantics.
+- [x] 5.6 The final handoff names the next sensible command as `/10x-plan deterministic-news-dataset`.
+- [x] 5.7 No generated real workspace data or unsanitized news exports are committed.
+- [x] 5.8 Working tree is clean after commits and epilogue.
