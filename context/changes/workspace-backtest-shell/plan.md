@@ -433,30 +433,30 @@ No database migration is planned. The in-memory repository is a deliberate MVP/t
 
 #### Automated
 
-- [x] 3.1 Frontend route/API tests pass: `cd frontend && npm test -- --run App.test.ts src/features/backtestShell/api.test.ts`
-- [x] 3.2 Frontend typecheck/build passes: `cd frontend && npm run build`
-- [x] 3.3 Existing quality frontend tests still pass: `cd frontend && npm test -- --run src/features/backtestQuality`
+- [x] 3.1 Frontend route/API tests pass: `cd frontend && npm test -- --run App.test.ts src/features/backtestShell/api.test.ts` — d37f43d
+- [x] 3.2 Frontend typecheck/build passes: `cd frontend && npm run build` — d37f43d
+- [x] 3.3 Existing quality frontend tests still pass: `cd frontend && npm test -- --run src/features/backtestQuality` — d37f43d
 
 #### Manual
 
-- [x] 3.4 Existing quality route still renders for a run-scoped quality path.
-- [x] 3.5 Unknown routes still show a clear route guidance state.
-- [x] 3.6 No frontend copy implies that creating a draft run starts analysis.
+- [x] 3.4 Existing quality route still renders for a run-scoped quality path. — d37f43d
+- [x] 3.5 Unknown routes still show a clear route guidance state. — d37f43d
+- [x] 3.6 No frontend copy implies that creating a draft run starts analysis. — d37f43d
 
 ### Phase 4: Operational Shell UI
 
 #### Automated
 
-- [ ] 4.1 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx`
-- [ ] 4.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
-- [ ] 4.3 Frontend build passes: `cd frontend && npm run build`
+- [x] 4.1 Shell page tests pass: `cd frontend && npm test -- --run src/features/backtestShell/BacktestShellPage.test.tsx`
+- [x] 4.2 Full frontend test suite passes: `cd frontend && npm test -- --run`
+- [x] 4.3 Frontend build passes: `cd frontend && npm run build`
 
 #### Manual
 
-- [ ] 4.4 Opening `/workspaces/workspace-alpha/backtests/new` shows the operational shell.
-- [ ] 4.5 Creating a draft run shows run ID, workspace, BTCUSD, BACKTEST, timeframe, and draft/ready status.
-- [ ] 4.6 UI text is BACKTEST-only analytical workflow copy and does not imply live trading, broker integration, order execution, or investment advice.
-- [ ] 4.7 Existing `/workspaces/workspace-alpha/backtests/run-001/quality` route still works.
+- [x] 4.4 Opening `/workspaces/workspace-alpha/backtests/new` shows the operational shell.
+- [x] 4.5 Creating a draft run shows run ID, workspace, BTCUSD, BACKTEST, timeframe, and draft/ready status.
+- [x] 4.6 UI text is BACKTEST-only analytical workflow copy and does not imply live trading, broker integration, order execution, or investment advice.
+- [x] 4.7 Existing `/workspaces/workspace-alpha/backtests/run-001/quality` route still works.
 
 ### Phase 5: Verification and Handoff
 

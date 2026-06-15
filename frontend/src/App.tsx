@@ -1,4 +1,5 @@
 import { BacktestQualityPage } from "./features/backtestQuality/BacktestQualityPage";
+import { BacktestShellPage } from "./features/backtestShell/BacktestShellPage";
 
 interface ShellRoute {
   kind: "shell";
@@ -70,13 +71,7 @@ export default function App() {
   }
 
   if (route.kind === "shell") {
-    return (
-      <main className="quality-page">
-        <section className="error-state" role="status">
-          Draft BACKTEST shell route for workspace {route.workspaceId}.
-        </section>
-      </main>
-    );
+    return <BacktestShellPage workspaceId={route.workspaceId} />;
   }
 
   return (

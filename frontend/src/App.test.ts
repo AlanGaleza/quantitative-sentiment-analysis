@@ -1,6 +1,8 @@
+import { render, screen } from "@testing-library/react";
+import { createElement } from "react";
 import { describe, expect, it } from "vitest";
 
-import { parseAppRoute, parseQualityRoute, parseShellRoute } from "./App";
+import App, { parseAppRoute, parseQualityRoute, parseShellRoute } from "./App";
 
 describe("parseAppRoute", () => {
   it("returns the workspace shell route", () => {
@@ -43,5 +45,18 @@ describe("parseQualityRoute", () => {
 
   it("returns null for malformed encoded route segments", () => {
     expect(parseQualityRoute("/workspaces/%E0%A4%A/backtests/run-001/quality")).toBeNull();
+  });
+});
+
+describe("App", () => {
+  it("renders the workspace shell page for the new route", () => {
+    window.history.pushState({}, "", "/workspaces/workspace-alpha/backtests/new");
+
+    render(createElement(App));
+
+    expect(
+      screen.getByRole("heading", { name: "Workspace backtest shell" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Workspace")).toHaveValue("workspace-alpha");
   });
 });
