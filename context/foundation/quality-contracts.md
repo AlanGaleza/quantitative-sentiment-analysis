@@ -38,7 +38,8 @@ F-01 does not decide:
 - persistent storage technology or migration design;
 - authentication provider implementation.
 
-Those decisions belong to later roadmap items, especially F-02 and S-02.
+Those decisions belong to later roadmap items, especially F-02 and S-02. The
+current F-02 decision source is `context/foundation/news-sentiment-policy.md`.
 
 ## Canonical Terms
 
@@ -191,10 +192,12 @@ S-01 should use the workspace/run identity contract and keep `BTCUSD` plus
 
 ### F-02: News and Sentiment Policy
 
-F-02 owns provider choice, relevance policy details, sentiment thresholds,
-directional-bias threshold mapping, confidence meaning beyond classification
-confidence, and visualization scope. F-01 only defines the field names and
-allowed value ranges those decisions must populate.
+F-02 policy decisions are defined in
+`context/foundation/news-sentiment-policy.md`. That document owns provider
+choice, relevance policy details, sentiment thresholds, directional-bias
+threshold mapping, confidence meaning beyond classification confidence, and
+visualization scope. F-01 only defines the field names and allowed value ranges
+those decisions must populate.
 
 ### S-02: Deterministic News Dataset
 
@@ -233,4 +236,4 @@ payload should not become unbounded.
   timestamps, deterministic JSONL serialization, run fingerprint stability, and
   workspace mismatch rejection.
 - Product-facing wording uses BACKTEST-only analytical framing.
-- F-02 decisions remain outside this document.
+- F-02 decisions are referenced from `context/foundation/news-sentiment-policy.md`.

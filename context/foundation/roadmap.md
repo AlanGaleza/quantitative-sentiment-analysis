@@ -30,7 +30,7 @@ Trader traci przewagę nie dlatego, że nie ma dostępu do informacji, tylko dla
 | ID | Change ID | Outcome (user can ...) | Prerequisites | PRD refs | Status |
 |---|---|---|---|---|---|
 | F-01 | define-quality-contracts | (foundation) contracts for workspace, run metadata, dataset schema, and non-advisory wording are fixed | — | FR-001, FR-003, FR-012, FR-013, FR-014, NFR-Reproducibility, NFR-Auditability, NFR-Workspace privacy, NFR-Semantic safety | ready |
-| F-02 | choose-news-and-sentiment-policy | (foundation) source, relevance labeling, sentiment thresholds, and visualization scope are decided | F-01 | FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-015 | blocked |
+| F-02 | choose-news-and-sentiment-policy | (foundation) source, relevance labeling, sentiment thresholds, and visualization scope are decided | F-01 | FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-015 | ready |
 | S-01 | workspace-backtest-shell | trader can enter a workspace, select BTCUSD, choose BACKTEST, and define a time range | F-01 | US-01, FR-001, FR-002, FR-003, FR-004, NFR-Workspace privacy, NFR-Semantic safety | proposed |
 | S-02 | deterministic-news-dataset | trader can run BTCUSD BACKTEST and receive auditable per-news records | F-02, S-01 | US-01, FR-005, FR-006, FR-007, FR-009, FR-010, FR-011, FR-012, FR-013, NFR-Reproducibility, NFR-Backtest runtime, NFR-Auditability | blocked |
 | S-03 | jsonl-export | trader can export the reproducible training dataset as JSONL | S-02 | US-01, FR-014, NFR-Reproducibility, NFR-Auditability | proposed |
@@ -82,12 +82,10 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** F-01
 - **Parallel with:** S-01
 - **Blockers:** —
-- **Unknowns:**
-  - Confirm whether the MVP source is CryptoPanic or another single aggregated crypto-news feed — Owner: user. Block: yes.
-  - Define the first deterministic sentiment and directional-bias thresholds — Owner: user. Block: yes.
-  - Define the minimum visualization that satisfies the required frontend view — Owner: user. Block: yes.
+- **Unknowns:** —
+- **Policy:** `context/foundation/news-sentiment-policy.md` locks CryptoPanic for MVP, a 30-day default range, deterministic rule/lexicon scoring, `>= 0.20 LONG`, `<= -0.20 SHORT`, otherwise `FLAT`, classification confidence, a 4 hours quality horizon, and correlation + hit rate + sampled sentiment-vs-return visualization.
 - **Risk:** The selected blocker is decisions; implementing scoring or UI before these calls would hide product uncertainty inside code.
-- **Status:** blocked
+- **Status:** ready
 
 ## Slices
 
@@ -146,7 +144,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | Roadmap ID | Change ID | Suggested issue title | Ready for `/10x-plan` | Notes |
 |---|---|---|---|---|
 | F-01 | define-quality-contracts | Define dataset and workspace quality contracts | yes | Run `/10x-plan define-quality-contracts` |
-| F-02 | choose-news-and-sentiment-policy | Decide source, scoring, and visualization policy | no | Resolve blocking decisions first. |
+| F-02 | choose-news-and-sentiment-policy | Decide source, scoring, and visualization policy | yes | Policy decisions live in `context/foundation/news-sentiment-policy.md`. |
 | S-01 | workspace-backtest-shell | Add workspace and BACKTEST selection shell | no | Depends on F-01. |
 | S-02 | deterministic-news-dataset | Generate deterministic BTCUSD news dataset | no | Depends on F-02 and S-01. |
 | S-03 | jsonl-export | Export reproducible dataset as JSONL | no | Depends on S-02. |
@@ -154,9 +152,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Open Roadmap Questions
 
-1. **Which exact news source is locked for MVP: CryptoPanic or another single aggregated crypto-news feed?** — Owner: user. Block: F-02, S-02.
-2. **What deterministic sentiment and directional-bias thresholds should define LONG, SHORT, and FLAT in v1?** — Owner: user. Block: F-02, S-02.
-3. **What is the smallest required frontend visualization: correlation, hit rate, sentiment-vs-price movement, or a combination?** — Owner: user. Block: F-02, S-04.
+1. **Resolved by F-02 policy:** CryptoPanic is locked as the MVP source, with S-02 required to smoke-test token/API access before real ingestion.
+2. **Resolved by F-02 policy:** deterministic rule/lexicon scoring maps `>= 0.20` to `LONG`, `<= -0.20` to `SHORT`, and the middle range to `FLAT`.
+3. **Resolved by F-02 policy:** the first quality view uses correlation, hit rate, and a sampled sentiment-vs-price-movement plot over a 4 hours horizon.
 
 ## Parked
 
