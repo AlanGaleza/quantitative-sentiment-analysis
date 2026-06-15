@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from quantitative_sentiment_analysis import __version__
 from quantitative_sentiment_analysis.backtest_quality.router import router as quality_router
+from quantitative_sentiment_analysis.backtest_shell.router import router as shell_router
 
 DEFAULT_LOCAL_CORS_ORIGINS = (
     "http://127.0.0.1:5173",
@@ -48,10 +49,11 @@ def create_app(cors_allowed_origins: Sequence[str] | None = None) -> FastAPI:
         application.add_middleware(
             CORSMiddleware,
             allow_origins=allowed_origins,
-            allow_methods=["GET"],
+            allow_methods=["GET", "POST"],
             allow_headers=["*"],
         )
 
+    application.include_router(shell_router)
     application.include_router(quality_router)
     application.add_api_route("/", read_root, methods=["GET"])
     application.add_api_route("/health", health_check, methods=["GET"])

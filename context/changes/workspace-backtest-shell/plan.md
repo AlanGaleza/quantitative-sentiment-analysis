@@ -405,29 +405,29 @@ No database migration is planned. The in-memory repository is a deliberate MVP/t
 
 #### Automated
 
-- [x] 1.1 Shell package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.backtest_shell"`
-- [x] 1.2 Schema tests pass: `uv run pytest tests/backtest_shell/test_schemas.py`
-- [x] 1.3 Repository tests pass: `uv run pytest tests/backtest_shell/test_repository.py`
+- [x] 1.1 Shell package imports cleanly: `uv run python -c "import quantitative_sentiment_analysis.backtest_shell"` — 1651f72
+- [x] 1.2 Schema tests pass: `uv run pytest tests/backtest_shell/test_schemas.py` — 1651f72
+- [x] 1.3 Repository tests pass: `uv run pytest tests/backtest_shell/test_repository.py` — 1651f72
 
 #### Manual
 
-- [x] 1.4 Schemas use `BTCUSD`, `BACKTEST`, and workspace/run identity consistently with F-01.
-- [x] 1.5 Repository naming and errors make clear that this is not production storage.
-- [x] 1.6 No auth, ingestion, scoring, export, broker, order, or LIVE scope is introduced.
+- [x] 1.4 Schemas use `BTCUSD`, `BACKTEST`, and workspace/run identity consistently with F-01. — 1651f72
+- [x] 1.5 Repository naming and errors make clear that this is not production storage. — 1651f72
+- [x] 1.6 No auth, ingestion, scoring, export, broker, order, or LIVE scope is introduced. — 1651f72
 
 ### Phase 2: Backend API Routes
 
 #### Automated
 
-- [ ] 2.1 Router tests pass: `uv run pytest tests/backtest_shell/test_router.py`
-- [ ] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell`
-- [ ] 2.3 FastAPI app imports with the new router: `uv run python -c "from quantitative_sentiment_analysis.main import app; print(app.title)"`
+- [x] 2.1 Router tests pass: `uv run pytest tests/backtest_shell/test_router.py`
+- [x] 2.2 Existing backend tests still pass: `uv run pytest tests/test_main.py tests/contracts tests/backtest_quality tests/sentiment_policy tests/backtest_shell`
+- [x] 2.3 FastAPI app imports with the new router: `uv run python -c "from quantitative_sentiment_analysis.main import app; print(app.title)"`
 
 #### Manual
 
-- [ ] 2.4 API responses use BACKTEST-only analytical wording.
-- [ ] 2.5 Existing quality route `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` still works with its fixture provider path.
-- [ ] 2.6 CORS still rejects wildcard origins and unconfigured origins.
+- [x] 2.4 API responses use BACKTEST-only analytical wording.
+- [x] 2.5 Existing quality route `/api/workspaces/{workspace_id}/backtests/{run_id}/quality` still works with its fixture provider path.
+- [x] 2.6 CORS still rejects wildcard origins and unconfigured origins.
 
 ### Phase 3: Frontend Route and API Client
 
