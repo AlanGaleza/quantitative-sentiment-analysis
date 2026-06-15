@@ -385,13 +385,13 @@ No database migration is required. Existing completed runs in the local/dev in-m
 
 #### Automated
 
-- [x] 4.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest`
-- [x] 4.2 Frontend tests pass: `cd frontend && npm test`
-- [x] 4.3 Frontend build/typecheck passes: `cd frontend && npm run build`
-- [x] 4.4 Repository audit shows no generated `.jsonl` export artifacts staged or committed: `git status --short`
+- [x] 4.1 Full backend test suite passes: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-policy-venv UV_LINK_MODE=copy uv run pytest` — 444dfa5
+- [x] 4.2 Frontend tests pass: `cd frontend && npm test` — 444dfa5
+- [x] 4.3 Frontend build/typecheck passes: `cd frontend && npm run build` — 444dfa5
+- [x] 4.4 Repository audit shows no generated `.jsonl` export artifacts staged or committed: `git status --short` — 444dfa5
 
 #### Manual
 
-- [x] 4.5 Manual browser or curl smoke confirms the downloaded file body is valid JSONL with one dataset record per line.
-- [x] 4.6 Manual review confirms no UI copy presents directional bias as an executable trading signal.
-- [x] 4.7 Manual review confirms S-03 scope does not include CSV, durable export storage, or implicit generation.
+- [x] 4.5 Manual browser or curl smoke confirms the downloaded file body is valid JSONL with one dataset record per line. — 444dfa5
+- [x] 4.6 Manual review confirms no UI copy presents directional bias as an executable trading signal. — 444dfa5
+- [x] 4.7 Manual review confirms S-03 scope does not include CSV, durable export storage, or implicit generation. — 444dfa5

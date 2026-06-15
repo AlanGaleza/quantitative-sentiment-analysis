@@ -1,7 +1,7 @@
 ---
 change_id: jsonl-export
 title: JSONL export
-status: implementing
+status: implemented
 created: 2026-06-15
 updated: 2026-06-15
 archived_at: null
