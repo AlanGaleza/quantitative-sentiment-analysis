@@ -39,6 +39,15 @@ test.describe("auth plus saved BACKTEST configuration CRUD", () => {
       await loginResponse;
 
       await expect(page).toHaveURL(
+        new RegExp(`/workspaces/${E2E_WORKSPACE}/backtests/?$`),
+      );
+      await expect(
+        page.getByRole("heading", { name: "BACKTEST run history" }),
+      ).toBeVisible();
+
+      await page.getByRole("link", { name: "Saved configs" }).click();
+
+      await expect(page).toHaveURL(
         new RegExp(`/workspaces/${E2E_WORKSPACE}/backtest-configs/?$`),
       );
       await expect(
