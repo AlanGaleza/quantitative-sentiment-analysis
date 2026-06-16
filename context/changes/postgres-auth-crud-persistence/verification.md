@@ -48,12 +48,10 @@ Date: 2026-06-16
   `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run python - <<'PY' ...`
   - Result: passed.
 
-### Pending / Blocked Locally
-
 - GitHub Actions workflow:
-  - Status: workflow file added and syntax-parsed locally.
-  - Pending: pass/fail status from a GitHub branch or PR run. This cannot be
-    truthfully marked complete until the workflow has run on GitHub.
+  - Result: passed.
+  - Run: `27605363701` on `main` for commit `1147e16`.
+  - Jobs passed: Backend, Frontend, Playwright E2E.
 
 ## Manual Verification Checklist
 

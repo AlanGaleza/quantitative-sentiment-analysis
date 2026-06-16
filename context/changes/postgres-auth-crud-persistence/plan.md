@@ -746,7 +746,7 @@ This is a no-data migration from in-memory production state to durable Postgres.
 - [x] 6.2 Backend lint/type gates pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run ruff check .` and `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pyright`
 - [x] 6.3 Frontend CI-equivalent gate passes: `npm --prefix frontend ci && npm --prefix frontend run test && npm --prefix frontend run build`
 - [x] 6.4 Playwright E2E passes: `npm run e2e`
-- [ ] 6.5 GitHub Actions workflow passes on the branch/PR.
+- [x] 6.5 GitHub Actions workflow passes on the branch/PR.
 
 #### Manual
 
