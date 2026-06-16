@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator, Sequence
 from datetime import UTC, datetime
 from typing import Protocol
 
@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 from quantitative_sentiment_analysis.contracts.schemas import require_aware_datetime
 from quantitative_sentiment_analysis.persistence.models import PriceCandleModel
 from quantitative_sentiment_analysis.price_enrichment.schemas import PriceCandle
+
+_UPSERT_BATCH_SIZE = 1000
 
 
 class PriceCandleRepository(Protocol):
@@ -55,24 +57,29 @@ class PostgresPriceCandleRepository:
         if not stored_candles:
             return ()
 
-        statement = insert(PriceCandleModel).values(
-            [_candle_to_row(candle) for candle in stored_candles]
-        )
-        upsert = statement.on_conflict_do_update(
-            constraint="uq_price_candles_provider_symbol_interval_open",
-            set_={
-                "close_time": statement.excluded.close_time,
-                "open_price": statement.excluded.open_price,
-                "high_price": statement.excluded.high_price,
-                "low_price": statement.excluded.low_price,
-                "close_price": statement.excluded.close_price,
-                "volume": statement.excluded.volume,
-                "quote_volume": statement.excluded.quote_volume,
-                "provider_metadata": statement.excluded.provider_metadata,
-            },
-        )
-        self._session.execute(upsert)
-        self._session.commit()
+        try:
+            for candle_batch in _batched(stored_candles, _UPSERT_BATCH_SIZE):
+                statement = insert(PriceCandleModel).values(
+                    [_candle_to_row(candle) for candle in candle_batch]
+                )
+                upsert = statement.on_conflict_do_update(
+                    constraint="uq_price_candles_provider_symbol_interval_open",
+                    set_={
+                        "close_time": statement.excluded.close_time,
+                        "open_price": statement.excluded.open_price,
+                        "high_price": statement.excluded.high_price,
+                        "low_price": statement.excluded.low_price,
+                        "close_price": statement.excluded.close_price,
+                        "volume": statement.excluded.volume,
+                        "quote_volume": statement.excluded.quote_volume,
+                        "provider_metadata": statement.excluded.provider_metadata,
+                    },
+                )
+                self._session.execute(upsert)
+            self._session.commit()
+        except Exception:
+            self._session.rollback()
+            raise
 
         provider_name = stored_candles[0].provider_name
         symbol = stored_candles[0].symbol
@@ -157,6 +164,14 @@ def _candle_to_row(candle: PriceCandle) -> dict[str, object]:
         "quote_volume": None,
         "provider_metadata": None,
     }
+
+
+def _batched(
+    candles: Sequence[PriceCandle],
+    batch_size: int,
+) -> Iterator[Sequence[PriceCandle]]:
+    for index in range(0, len(candles), batch_size):
+        yield candles[index : index + batch_size]
 
 
 def _validated_candle(candle: PriceCandle) -> PriceCandle:

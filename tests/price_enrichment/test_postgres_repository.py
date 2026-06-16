@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from quantitative_sentiment_analysis.persistence.database import (
     create_session_factory,
@@ -124,6 +124,24 @@ def test_postgres_price_candle_repository_upsert_updates_duplicate_candle(
 
     assert len(rows) == 1
     assert by_time[BASE_TIME].close_price == 105.0
+
+
+def test_postgres_price_candle_repository_batches_large_upserts(
+    session_factory,
+) -> None:
+    with session_factory() as session:
+        repository = PostgresPriceCandleRepository(session)
+
+        stored = repository.upsert_candles(
+            make_candle(offset, close_price=100.0 + offset)
+            for offset in range(6000)
+        )
+        row_count = session.scalar(select(func.count()).select_from(PriceCandleModel))
+
+    assert row_count == 6000
+    assert len(stored) == 6000
+    assert stored[0].open_time == BASE_TIME
+    assert stored[-1].open_time == BASE_TIME + timedelta(minutes=5999)
 
 
 def test_postgres_price_candle_repository_separates_provider_symbol_and_interval(
