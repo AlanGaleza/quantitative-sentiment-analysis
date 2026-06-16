@@ -35,6 +35,7 @@ export async function fetchBacktestQualityReport(
   runId: string,
 ): Promise<BacktestQualityReport> {
   const response = await fetch(buildBacktestQualityReportUrl(workspaceId, runId), {
+    credentials: "include",
     headers: {
       Accept: "application/json",
     },
@@ -44,12 +45,38 @@ export async function fetchBacktestQualityReport(
     throw new QualityReportApiError(response.status, await readErrorDetail(response));
   }
 
-  return (await response.json()) as BacktestQualityReport;
+  return readJson<BacktestQualityReport>(
+    response,
+    "Quality report response was empty.",
+  );
+}
+
+async function readJson<T>(response: Response, emptyDetail: string): Promise<T> {
+  const text = await response.text();
+
+  if (!text.trim()) {
+    throw new QualityReportApiError(response.status, emptyDetail);
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new QualityReportApiError(
+      response.status,
+      "Quality report response was not valid JSON.",
+    );
+  }
 }
 
 async function readErrorDetail(response: Response): Promise<string> {
+  const text = await response.text();
+
+  if (!text.trim()) {
+    return `Quality report request failed with status ${response.status}`;
+  }
+
   try {
-    const body = (await response.json()) as { detail?: unknown };
+    const body = JSON.parse(text) as { detail?: unknown };
     if (typeof body.detail === "string" && body.detail.length > 0) {
       return body.detail;
     }

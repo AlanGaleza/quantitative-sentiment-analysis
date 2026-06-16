@@ -1,10 +1,35 @@
-import { render, screen } from "@testing-library/react";
-import { createElement } from "react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { createElement, type ComponentType } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import App, { parseAppRoute, parseQualityRoute, parseShellRoute } from "./App";
+import App, {
+  defaultWorkspacePath,
+  parseAppRoute,
+  parseConfigRoute,
+  parseQualityRoute,
+  parseShellRoute,
+} from "./App";
+import type { AuthSessionResponse } from "./features/auth/types";
+
+type TestAppProps = {
+  loadCurrentSession?: () => Promise<AuthSessionResponse>;
+  logout?: () => Promise<void>;
+};
+
+const TestApp = App as ComponentType<TestAppProps>;
 
 describe("parseAppRoute", () => {
+  it("returns the workspace config route", () => {
+    expect(parseAppRoute("/workspaces/workspace-alpha/backtest-configs")).toEqual({
+      kind: "configs",
+      workspaceId: "workspace-alpha",
+    });
+    expect(parseConfigRoute("/workspaces/workspace-alpha/backtest-configs")).toEqual({
+      kind: "configs",
+      workspaceId: "workspace-alpha",
+    });
+  });
+
   it("returns the workspace shell route", () => {
     expect(parseAppRoute("/workspaces/workspace-alpha/backtests/new")).toEqual({
       kind: "shell",
@@ -29,34 +54,148 @@ describe("parseAppRoute", () => {
   });
 
   it("returns null for malformed encoded route segments", () => {
+    expect(parseAppRoute("/workspaces/%E0%A4%A/backtest-configs")).toBeNull();
     expect(parseAppRoute("/workspaces/%E0%A4%A/backtests/new")).toBeNull();
     expect(parseAppRoute("/workspaces/%E0%A4%A/backtests/run-001/quality")).toBeNull();
   });
 });
 
-describe("parseQualityRoute", () => {
-  it("returns the run-scoped quality route", () => {
-    expect(parseQualityRoute("/workspaces/workspace-alpha/backtests/run-001/quality")).toEqual({
-      kind: "quality",
-      workspaceId: "workspace-alpha",
-      runId: "run-001",
-    });
-  });
-
-  it("returns null for malformed encoded route segments", () => {
-    expect(parseQualityRoute("/workspaces/%E0%A4%A/backtests/run-001/quality")).toBeNull();
+describe("defaultWorkspacePath", () => {
+  it("points authenticated users to the saved config workflow", () => {
+    expect(defaultWorkspacePath(authSession())).toBe(
+      "/workspaces/workspace-alpha/backtest-configs",
+    );
   });
 });
 
 describe("App", () => {
-  it("renders the workspace shell page for the new route", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    window.history.pushState({}, "", "/");
+  });
+
+  it("shows login for protected workspace routes when session bootstrap fails", async () => {
     window.history.pushState({}, "", "/workspaces/workspace-alpha/backtests/new");
 
-    render(createElement(App));
+    render(
+      createElement(TestApp, {
+        loadCurrentSession: async () => {
+          throw new Error("not authenticated");
+        },
+      }),
+    );
+
+    expect(await screen.findByRole("heading", { name: "Workspace login" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+  });
+
+  it("renders the workspace shell page for authenticated users", async () => {
+    window.history.pushState({}, "", "/workspaces/workspace-alpha/backtests/new");
+
+    render(
+      createElement(TestApp, {
+        loadCurrentSession: async () => authSession(),
+      }),
+    );
 
     expect(
-      screen.getByRole("heading", { name: "Workspace backtest shell" }),
+      await screen.findByRole("heading", { name: "Workspace backtest shell" }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Workspace")).toHaveValue("workspace-alpha");
+    expect(screen.getByRole("button", { name: "Log out" })).toBeInTheDocument();
+  });
+
+  it("renders saved configurations after auth bootstrap", async () => {
+    window.history.pushState({}, "", "/workspaces/workspace-alpha/backtest-configs");
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      createElement(TestApp, {
+        loadCurrentSession: async () => authSession(),
+      }),
+    );
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Saved BACKTEST configurations",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "No saved BACKTEST configurations exist for this workspace.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("logs in and navigates to the default workspace config list", async () => {
+    window.history.pushState({}, "", "/login");
+    const session = authSession();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(session), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      createElement(TestApp, {
+        loadCurrentSession: async () => {
+          throw new Error("not authenticated");
+        },
+      }),
+    );
+
+    fireEvent.change(await screen.findByLabelText("Email"), {
+      target: { value: "trader@example.test" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "secret-password" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(
+        "/workspaces/workspace-alpha/backtest-configs",
+      );
+    });
+    expect(
+      await screen.findByRole("heading", {
+        name: "Saved BACKTEST configurations",
+      }),
+    ).toBeInTheDocument();
   });
 });
+
+function authSession(): AuthSessionResponse {
+  return {
+    user: {
+      id: "user-001",
+      email: "trader@example.test",
+    },
+    workspaces: [
+      {
+        id: "workspace-001",
+        slug: "workspace-alpha",
+        name: "Workspace Alpha",
+      },
+    ],
+    default_workspace_slug: "workspace-alpha",
+  };
+}

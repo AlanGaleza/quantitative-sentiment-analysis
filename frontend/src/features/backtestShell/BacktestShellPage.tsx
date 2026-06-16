@@ -144,7 +144,7 @@ export function BacktestShellPage({
           <MetadataItem label="Workspace" value={workspaceId} />
           <MetadataItem label="Instrument" value="BTCUSD" />
           <MetadataItem label="Mode" value="BACKTEST" />
-          <MetadataItem label="Storage" value="Local draft" />
+          <MetadataItem label="Storage" value="Postgres workspace" />
         </dl>
       </header>
 
@@ -203,7 +203,7 @@ export function BacktestShellPage({
         <aside className="shell-result" aria-label="Draft run result">
           {submitState.status === "idle" ? (
             <p className="empty-state">
-              No draft run has been created in this browser session.
+              No draft run has been created in this workspace view.
             </p>
           ) : null}
           {submitState.status === "submitting" ? (

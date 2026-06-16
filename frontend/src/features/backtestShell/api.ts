@@ -76,6 +76,7 @@ export async function createBacktestRunShell(
 ): Promise<BacktestRunShell> {
   const response = await fetch(buildCreateBacktestRunUrl(workspaceId), {
     method: "POST",
+    credentials: "include",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -87,7 +88,10 @@ export async function createBacktestRunShell(
     throw new BacktestShellApiError(response.status, await readErrorDetail(response));
   }
 
-  return (await response.json()) as BacktestRunShell;
+  return readJson<BacktestRunShell>(
+    response,
+    "BACKTEST shell create response was empty.",
+  );
 }
 
 export async function runBacktestDataset(
@@ -96,6 +100,7 @@ export async function runBacktestDataset(
 ): Promise<DatasetRunPreview> {
   const response = await fetch(buildRunBacktestDatasetUrl(workspaceId, runId), {
     method: "POST",
+    credentials: "include",
     headers: {
       Accept: "application/json",
     },
@@ -106,7 +111,10 @@ export async function runBacktestDataset(
     throw new BacktestShellApiError(response.status, error.detail, error.payload);
   }
 
-  return (await response.json()) as DatasetRunPreview;
+  return readJson<DatasetRunPreview>(
+    response,
+    "BACKTEST dataset run response was empty.",
+  );
 }
 
 export async function fetchBacktestDataset(
@@ -114,6 +122,7 @@ export async function fetchBacktestDataset(
   runId: string,
 ): Promise<DatasetRunPreview> {
   const response = await fetch(buildBacktestDatasetUrl(workspaceId, runId), {
+    credentials: "include",
     headers: {
       Accept: "application/json",
     },
@@ -124,7 +133,10 @@ export async function fetchBacktestDataset(
     throw new BacktestShellApiError(response.status, error.detail, error.payload);
   }
 
-  return (await response.json()) as DatasetRunPreview;
+  return readJson<DatasetRunPreview>(
+    response,
+    "BACKTEST dataset response was empty.",
+  );
 }
 
 export async function fetchBacktestDatasetExport(
@@ -132,6 +144,7 @@ export async function fetchBacktestDatasetExport(
   runId: string,
 ): Promise<Blob> {
   const response = await fetch(buildBacktestDatasetExportUrl(workspaceId, runId), {
+    credentials: "include",
     headers: {
       Accept: "application/x-ndjson",
     },
@@ -170,6 +183,7 @@ export async function fetchBacktestRunShell(
   runId: string,
 ): Promise<BacktestRunShell> {
   const response = await fetch(buildBacktestRunShellUrl(workspaceId, runId), {
+    credentials: "include",
     headers: {
       Accept: "application/json",
     },
@@ -179,7 +193,10 @@ export async function fetchBacktestRunShell(
     throw new BacktestShellApiError(response.status, await readErrorDetail(response));
   }
 
-  return (await response.json()) as BacktestRunShell;
+  return readJson<BacktestRunShell>(
+    response,
+    "BACKTEST shell read response was empty.",
+  );
 }
 
 function withApiBaseUrl(path: string): string {
@@ -212,11 +229,35 @@ async function readErrorDetail(response: Response): Promise<string> {
   return (await readError(response)).detail;
 }
 
+async function readJson<T>(response: Response, emptyDetail: string): Promise<T> {
+  const text = await response.text();
+
+  if (!text.trim()) {
+    throw new BacktestShellApiError(response.status, emptyDetail);
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch (error) {
+    throw new BacktestShellApiError(
+      response.status,
+      "BACKTEST shell response was not valid JSON.",
+      error,
+    );
+  }
+}
+
 async function readError(
   response: Response,
 ): Promise<{ detail: string; payload?: unknown }> {
+  const text = await response.text();
+
+  if (!text.trim()) {
+    return { detail: `BACKTEST shell request failed with status ${response.status}` };
+  }
+
   try {
-    const body = (await response.json()) as { detail?: unknown };
+    const body = JSON.parse(text) as { detail?: unknown };
     if (typeof body.detail === "string" && body.detail.length > 0) {
       return { detail: body.detail, payload: body.detail };
     }

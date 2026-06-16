@@ -707,36 +707,36 @@ This is a no-data migration from in-memory production state to durable Postgres.
 
 #### Automated
 
-- [x] 4.1 Config schema tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_schemas.py -p no:cacheprovider`
-- [x] 4.2 Config repository CRUD tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_repository.py -p no:cacheprovider`
-- [x] 4.3 Config API ownership tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_router.py -p no:cacheprovider`
-- [x] 4.4 Draft-from-config route creates a normal durable draft run: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_draft_from_config.py -p no:cacheprovider`
-- [x] 4.5 Backend regression suite passes: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest -p no:cacheprovider`
+- [x] 4.1 Config schema tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_schemas.py -p no:cacheprovider` — dc3c972
+- [x] 4.2 Config repository CRUD tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_repository.py -p no:cacheprovider` — dc3c972
+- [x] 4.3 Config API ownership tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_router.py -p no:cacheprovider` — dc3c972
+- [x] 4.4 Draft-from-config route creates a normal durable draft run: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_draft_from_config.py -p no:cacheprovider` — dc3c972
+- [x] 4.5 Backend regression suite passes: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest -p no:cacheprovider` — dc3c972
 
 #### Manual
 
-- [x] 4.6 A logged-in user can create, view, edit, and delete a saved BTCUSD BACKTEST configuration.
-- [x] 4.7 Creating a draft from a saved config produces the same shell UX and dataset workflow as direct draft creation.
-- [x] 4.8 Deleting a saved config does not delete already-created runs, datasets, or exports.
-- [x] 4.9 Cross-workspace config URLs return not found.
+- [x] 4.6 A logged-in user can create, view, edit, and delete a saved BTCUSD BACKTEST configuration. — dc3c972
+- [x] 4.7 Creating a draft from a saved config produces the same shell UX and dataset workflow as direct draft creation. — dc3c972
+- [x] 4.8 Deleting a saved config does not delete already-created runs, datasets, or exports. — dc3c972
+- [x] 4.9 Cross-workspace config URLs return not found. — dc3c972
 
 ### Phase 5: Frontend Auth and Config Workflow
 
 #### Automated
 
-- [ ] 5.1 Auth API client tests pass: `npm --prefix frontend run test -- src/features/auth`
-- [ ] 5.2 Config API and component tests pass: `npm --prefix frontend run test -- src/features/backtestConfigs`
-- [ ] 5.3 Existing shell and quality tests pass with credentialed fetch expectations: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestQuality`
-- [ ] 5.4 App routing/auth bootstrap tests pass: `npm --prefix frontend run test -- src/App.test.ts`
-- [ ] 5.5 Frontend typecheck and build pass: `npm --prefix frontend run build`
+- [x] 5.1 Auth API client tests pass: `npm --prefix frontend run test -- src/features/auth`
+- [x] 5.2 Config API and component tests pass: `npm --prefix frontend run test -- src/features/backtestConfigs`
+- [x] 5.3 Existing shell and quality tests pass with credentialed fetch expectations: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestQuality`
+- [x] 5.4 App routing/auth bootstrap tests pass: `npm --prefix frontend run test -- src/App.test.ts`
+- [x] 5.5 Frontend typecheck and build pass: `npm --prefix frontend run build`
 
 #### Manual
 
-- [ ] 5.6 Public deployed frontend shows login before protected workspace routes.
-- [ ] 5.7 Logging in navigates to the user's default workspace and shows saved BACKTEST configurations.
-- [ ] 5.8 The browser workflow can create/update/delete a config, create a draft run, run a dataset, open quality, and download JSONL.
-- [ ] 5.9 Refreshing the page keeps the user logged in until logout/session expiry.
-- [ ] 5.10 UI copy remains BACKTEST-only analytical wording and does not present outputs as executable trading signals.
+- [x] 5.6 Public deployed frontend shows login before protected workspace routes.
+- [x] 5.7 Logging in navigates to the user's default workspace and shows saved BACKTEST configurations.
+- [x] 5.8 The browser workflow can create/update/delete a config, create a draft run, run a dataset, open quality, and download JSONL.
+- [x] 5.9 Refreshing the page keeps the user logged in until logout/session expiry.
+- [x] 5.10 UI copy remains BACKTEST-only analytical wording and does not present outputs as executable trading signals.
 
 ### Phase 6: Tests, E2E, CI/CD, and Rollout Docs
 

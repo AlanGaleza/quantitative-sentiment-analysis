@@ -99,6 +99,7 @@ describe("backtest shell API client", () => {
       "/api/workspaces/workspace-alpha/backtests/drafts",
       {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -138,6 +139,7 @@ describe("backtest shell API client", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/workspaces/workspace-alpha/backtests/draft-run-001",
       {
+        credentials: "include",
         headers: {
           Accept: "application/json",
         },
@@ -161,6 +163,7 @@ describe("backtest shell API client", () => {
       "/api/workspaces/workspace-alpha/backtests/draft-run-001/dataset/run",
       {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
         },
@@ -185,6 +188,7 @@ describe("backtest shell API client", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/workspaces/workspace-alpha/backtests/draft-run-001/dataset",
       {
+        credentials: "include",
         headers: {
           Accept: "application/json",
         },
@@ -211,6 +215,7 @@ describe("backtest shell API client", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/workspaces/workspace-alpha/backtests/draft-run-001/dataset/export.jsonl",
       {
+        credentials: "include",
         headers: {
           Accept: "application/x-ndjson",
         },
@@ -308,6 +313,20 @@ describe("backtest shell API client", () => {
     ).rejects.toMatchObject({
       status: 422,
       detail: "timeframe range is invalid",
+    } satisfies Partial<BacktestShellApiError>);
+  });
+
+  it("raises typed errors for empty successful JSON responses", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response(null, { status: 200 })),
+    );
+
+    await expect(
+      createBacktestRunShell("workspace-alpha", REQUEST),
+    ).rejects.toMatchObject({
+      status: 200,
+      detail: "BACKTEST shell create response was empty.",
     } satisfies Partial<BacktestShellApiError>);
   });
 
