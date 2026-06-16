@@ -134,11 +134,25 @@ explaining this field.
 
 ## Quality Horizon
 
-The default backtest-quality horizon is **4 hours**.
+The default backtest-quality horizon is **4 hours**, but V1 exposes a controlled
+set of report horizons through the API and UI:
 
-S-04 already uses a 4-hour default fixture horizon. S-02 should enrich completed
-BACKTEST records with deterministic later BTCUSD movement fields that map cleanly
-into the S-04 quality input contract for that horizon.
+- **1 minute**
+- **15 minutes**
+- **1 hour**
+- **4 hours**
+- **24 hours**
+
+The selected horizon is report metadata: it defines the requested evaluation
+window for quality reporting. It does not by itself enrich completed BACKTEST
+records with later BTCUSD movement. Deterministic price enrichment remains a
+separate prerequisite before real completed runs can produce non-missing
+`later_return` and `realized_direction` values.
+
+S-04 already uses a 4-hour default fixture horizon. A later price-enrichment
+slice should enrich completed BACKTEST records with deterministic later BTCUSD
+movement fields that map cleanly into the S-04 quality input contract for the
+selected supported horizon.
 
 ## Visualization Payload Policy
 
@@ -210,11 +224,12 @@ provider/scoring/config decisions that populate the existing fields.
 
 ### S-04: Backtest Quality View
 
-S-04 should use the 4 hours default horizon, correlation, hit rate, and sampled
-sentiment-vs-later-return plot as the first required quality view. Metrics may
-use the full deterministic run, but real-run chart/detail payloads must be
-bounded. The current backend policy caps chart points deterministically while
-keeping metric denominators on the full input set.
+S-04 should use the 4 hours default horizon, allow the supported V1 horizon
+presets, and show correlation, hit rate, and sampled sentiment-vs-later-return
+plot as the first required quality view. Metrics may use the full deterministic
+run, but real-run chart/detail payloads must be bounded. The current backend
+policy caps chart points deterministically while keeping metric denominators on
+the full input set.
 
 S-04 must keep BACKTEST-only analytical wording and must not fetch prices
 directly or fabricate production run data before S-02 supplies completed
@@ -234,6 +249,7 @@ enrichment exists. JSONL/CSV export remains deferred to S-03.
 - Directional-bias thresholds are `>= 0.20 LONG`, `<= -0.20 SHORT`, otherwise
   `FLAT`.
 - Confidence is classification confidence, not market certainty.
-- The default quality horizon is 4 hours.
+- The default quality horizon is 4 hours, with V1 report presets for 1 minute,
+  15 minutes, 1 hour, 4 hours, and 24 hours.
 - The first quality view uses correlation, hit rate, and a sampled plot with
   bounded payloads.

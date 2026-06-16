@@ -1,4 +1,4 @@
-import type { BacktestQualityReport } from "./types";
+import type { BacktestQualityReport, QualityHorizon } from "./types";
 
 const API_PREFIX = "/api";
 
@@ -17,10 +17,20 @@ export class QualityReportApiError extends Error {
 export function buildBacktestQualityReportUrl(
   workspaceId: string,
   runId: string,
+  horizon?: QualityHorizon,
 ): string {
-  const path = `${API_PREFIX}/workspaces/${encodeURIComponent(
+  let path = `${API_PREFIX}/workspaces/${encodeURIComponent(
     workspaceId,
   )}/backtests/${encodeURIComponent(runId)}/quality`;
+
+  if (horizon) {
+    const params = new URLSearchParams({
+      horizon_value: String(horizon.value),
+      horizon_unit: horizon.unit,
+    });
+    path = `${path}?${params.toString()}`;
+  }
+
   const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
   if (!baseUrl) {
@@ -33,13 +43,17 @@ export function buildBacktestQualityReportUrl(
 export async function fetchBacktestQualityReport(
   workspaceId: string,
   runId: string,
+  horizon?: QualityHorizon,
 ): Promise<BacktestQualityReport> {
-  const response = await fetch(buildBacktestQualityReportUrl(workspaceId, runId), {
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
+  const response = await fetch(
+    buildBacktestQualityReportUrl(workspaceId, runId, horizon),
+    {
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     throw new QualityReportApiError(response.status, await readErrorDetail(response));

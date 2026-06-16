@@ -44,7 +44,8 @@ button:disabled {
   cursor: not-allowed;
 }
 
-input {
+input,
+select {
   min-width: 0;
   width: 100%;
   min-height: 42px;
@@ -58,6 +59,24 @@ input {
 input[readonly] {
   color: #46534d;
   background: #f6f7f4;
+}
+
+.horizon-control {
+  display: block;
+  width: min(100%, 260px);
+  margin-top: 18px;
+  color: #4f5c55;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.horizon-control select {
+  margin-top: 7px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: none;
 }
 
 .quality-page {

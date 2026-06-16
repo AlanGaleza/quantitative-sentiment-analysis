@@ -508,26 +508,26 @@ derived from existing `dataset_runs` rows.
 
 #### Automated
 
-- [x] 2.1 Run-history frontend tests pass: `npm --prefix frontend run test -- src/features/backtestRuns src/App.test.ts`
-- [x] 2.2 Existing shell/config frontend regressions pass: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestConfigs`
-- [x] 2.3 Frontend build passes: `npm --prefix frontend run build`
+- [x] 2.1 Run-history frontend tests pass: `npm --prefix frontend run test -- src/features/backtestRuns src/App.test.ts` — ba3e528
+- [x] 2.2 Existing shell/config frontend regressions pass: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestConfigs` — ba3e528
+- [x] 2.3 Frontend build passes: `npm --prefix frontend run build` — ba3e528
 
 #### Manual
 
-- [x] 2.4 Log in, create a saved config draft, run a deterministic BACKTEST dataset, log out, log back in, and see the run on `/workspaces/demo-workspace/backtests`.
-- [x] 2.5 From run history, open the completed run's quality route and download JSONL.
-- [x] 2.6 A provider-limited run is visible as historical work but does not offer quality or JSONL as if it completed.
+- [x] 2.4 Log in, create a saved config draft, run a deterministic BACKTEST dataset, log out, log back in, and see the run on `/workspaces/demo-workspace/backtests`. — ba3e528
+- [x] 2.5 From run history, open the completed run's quality route and download JSONL. — ba3e528
+- [x] 2.6 A provider-limited run is visible as historical work but does not offer quality or JSONL as if it completed. — ba3e528
 
 ### Phase 3: Configurable Quality Horizon
 
 #### Automated
 
-- [ ] 3.1 Backend quality horizon tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider`
-- [ ] 3.2 Frontend quality horizon tests pass: `npm --prefix frontend run test -- src/features/backtestQuality`
-- [ ] 3.3 Backend and frontend full quality gates pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pyright && npm --prefix frontend run build`
+- [x] 3.1 Backend quality horizon tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider`
+- [x] 3.2 Frontend quality horizon tests pass: `npm --prefix frontend run test -- src/features/backtestQuality`
+- [x] 3.3 Backend and frontend full quality gates pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pyright && npm --prefix frontend run build`
 
 #### Manual
 
-- [ ] 3.4 Opening `/workspaces/demo-workspace/backtests/<run_id>/quality` shows 4 hours by default.
-- [ ] 3.5 Changing the selector to 1 minute updates the URL and report metadata to `1 minute` without inventing later movement values.
-- [ ] 3.6 Missing movement warnings remain visible for real completed runs until price enrichment exists.
+- [x] 3.4 Opening `/workspaces/demo-workspace/backtests/<run_id>/quality` shows 4 hours by default.
+- [x] 3.5 Changing the selector to 1 minute updates the URL and report metadata to `1 minute` without inventing later movement values.
+- [x] 3.6 Missing movement warnings remain visible for real completed runs until price enrichment exists.

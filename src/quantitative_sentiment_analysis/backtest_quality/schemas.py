@@ -38,6 +38,38 @@ class QualityHorizon(BaseModel):
     unit: HorizonUnit = HorizonUnit.HOURS
 
 
+class UnsupportedQualityHorizonError(ValueError):
+    """Raised when a requested quality report horizon is outside V1 presets."""
+
+
+SUPPORTED_QUALITY_HORIZON_PRESETS: tuple[tuple[int, HorizonUnit], ...] = (
+    (1, HorizonUnit.MINUTES),
+    (15, HorizonUnit.MINUTES),
+    (1, HorizonUnit.HOURS),
+    (4, HorizonUnit.HOURS),
+    (24, HorizonUnit.HOURS),
+)
+
+
+def supported_quality_horizon(value: int, unit: HorizonUnit) -> QualityHorizon:
+    horizon = QualityHorizon(value=value, unit=unit)
+    if (horizon.value, horizon.unit) not in SUPPORTED_QUALITY_HORIZON_PRESETS:
+        supported = ", ".join(
+            _horizon_preset_label(preset_value, preset_unit)
+            for preset_value, preset_unit in SUPPORTED_QUALITY_HORIZON_PRESETS
+        )
+        raise UnsupportedQualityHorizonError(
+            f"unsupported quality horizon; supported presets: {supported}"
+        )
+    return horizon
+
+
+def _horizon_preset_label(value: int, unit: HorizonUnit) -> str:
+    if value == 1:
+        return f"1 {unit.value.removesuffix('s')}"
+    return f"{value} {unit.value}"
+
+
 class QualityInputRecord(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 

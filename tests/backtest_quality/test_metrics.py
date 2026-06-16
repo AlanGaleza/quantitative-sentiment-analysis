@@ -13,6 +13,8 @@ from quantitative_sentiment_analysis.backtest_quality.metrics import (
     build_quality_report,
 )
 from quantitative_sentiment_analysis.backtest_quality.schemas import (
+    HorizonUnit,
+    QualityHorizon,
     RealizedDirection,
 )
 from tests.backtest_quality.fixtures import make_quality_record, quality_records
@@ -42,9 +44,29 @@ def test_build_quality_report_calculates_metrics_with_plan_semantics() -> None:
 
 def test_build_quality_report_is_deterministic() -> None:
     first = build_quality_report(quality_records()).model_dump(mode="json")
-    second = build_quality_report(list(reversed(quality_records()))).model_dump(mode="json")
+    second = build_quality_report(list(reversed(quality_records()))).model_dump(
+        mode="json"
+    )
 
     assert first == second
+
+
+def test_build_quality_report_echoes_explicit_horizon_without_changing_metrics() -> (
+    None
+):
+    records = quality_records()
+    default_report = build_quality_report(records)
+    selected_horizon = QualityHorizon(value=1, unit=HorizonUnit.MINUTES)
+
+    selected_report = build_quality_report(records, horizon=selected_horizon)
+
+    assert selected_report.horizon == selected_horizon
+    assert selected_report.metrics == default_report.metrics
+    assert selected_report.warnings == default_report.warnings
+    assert selected_report.chart_points == default_report.chart_points
+    assert (
+        selected_report.representative_records == default_report.representative_records
+    )
 
 
 def test_quality_payload_records_are_deterministically_capped() -> None:

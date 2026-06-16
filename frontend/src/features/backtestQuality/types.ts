@@ -9,6 +9,21 @@ export interface QualityHorizon {
   unit: HorizonUnit;
 }
 
+export interface SupportedQualityHorizon extends QualityHorizon {
+  key: string;
+  label: string;
+}
+
+export const SUPPORTED_QUALITY_HORIZONS: readonly SupportedQualityHorizon[] = [
+  { key: "1-minutes", label: "1 minute", value: 1, unit: "minutes" },
+  { key: "15-minutes", label: "15 minutes", value: 15, unit: "minutes" },
+  { key: "1-hours", label: "1 hour", value: 1, unit: "hours" },
+  { key: "4-hours", label: "4 hours", value: 4, unit: "hours" },
+  { key: "24-hours", label: "24 hours", value: 24, unit: "hours" },
+];
+
+export const DEFAULT_QUALITY_HORIZON = SUPPORTED_QUALITY_HORIZONS[3];
+
 export interface QualityInputRecord {
   workspace_id: string;
   run_id: string;

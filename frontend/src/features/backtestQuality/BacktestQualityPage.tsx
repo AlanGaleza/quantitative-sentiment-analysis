@@ -5,11 +5,20 @@ import {
   type QualityReportApiError,
 } from "./api";
 import { SentimentReturnPlot } from "./SentimentReturnPlot";
-import type { BacktestQualityReport, QualityInputRecord } from "./types";
+import {
+  DEFAULT_QUALITY_HORIZON,
+  SUPPORTED_QUALITY_HORIZONS,
+  type BacktestQualityReport,
+  type HorizonUnit,
+  type QualityHorizon,
+  type QualityInputRecord,
+  type SupportedQualityHorizon,
+} from "./types";
 
 type ReportLoader = (
   workspaceId: string,
   runId: string,
+  horizon?: QualityHorizon,
 ) => Promise<BacktestQualityReport>;
 
 interface BacktestQualityPageProps {
@@ -29,12 +38,15 @@ export function BacktestQualityPage({
   loadReport = fetchBacktestQualityReport,
 }: BacktestQualityPageProps) {
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [selectedHorizon, setSelectedHorizon] = useState<SupportedQualityHorizon>(
+    () => horizonFromSearch(window.location.search),
+  );
 
   useEffect(() => {
     let isCurrent = true;
     setState({ status: "loading" });
 
-    loadReport(workspaceId, runId)
+    loadReport(workspaceId, runId, selectedHorizon)
       .then((report) => {
         if (isCurrent) {
           setState({ status: "loaded", report });
@@ -49,12 +61,38 @@ export function BacktestQualityPage({
     return () => {
       isCurrent = false;
     };
-  }, [loadReport, runId, workspaceId]);
+  }, [
+    loadReport,
+    runId,
+    selectedHorizon,
+    selectedHorizon.unit,
+    selectedHorizon.value,
+    workspaceId,
+  ]);
+
+  useEffect(() => {
+    function handlePopState() {
+      setSelectedHorizon(horizonFromSearch(window.location.search));
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  function handleHorizonChange(nextHorizon: SupportedQualityHorizon) {
+    setSelectedHorizon(nextHorizon);
+    updateUrlHorizon(nextHorizon);
+  }
 
   if (state.status === "loading") {
     return (
       <main className="quality-page">
-        <Header workspaceId={workspaceId} runId={runId} />
+        <Header
+          workspaceId={workspaceId}
+          runId={runId}
+          selectedHorizon={selectedHorizon}
+          onHorizonChange={handleHorizonChange}
+        />
         <p role="status" className="loading-state">
           Loading BACKTEST quality report...
         </p>
@@ -65,7 +103,12 @@ export function BacktestQualityPage({
   if (state.status === "error") {
     return (
       <main className="quality-page">
-        <Header workspaceId={workspaceId} runId={runId} />
+        <Header
+          workspaceId={workspaceId}
+          runId={runId}
+          selectedHorizon={selectedHorizon}
+          onHorizonChange={handleHorizonChange}
+        />
         <div role="alert" className="error-state">
           {state.message}
         </div>
@@ -75,7 +118,13 @@ export function BacktestQualityPage({
 
   return (
     <main className="quality-page">
-      <Header workspaceId={workspaceId} runId={runId} report={state.report} />
+      <Header
+        workspaceId={workspaceId}
+        runId={runId}
+        report={state.report}
+        selectedHorizon={selectedHorizon}
+        onHorizonChange={handleHorizonChange}
+      />
       <MetricGrid report={state.report} />
       <Warnings warnings={state.report.warnings} />
       <SentimentReturnPlot points={state.report.chart_points} />
@@ -87,12 +136,17 @@ export function BacktestQualityPage({
 function Header({
   workspaceId,
   runId,
+  selectedHorizon,
+  onHorizonChange,
   report,
 }: {
   workspaceId: string;
   runId: string;
+  selectedHorizon: SupportedQualityHorizon;
+  onHorizonChange: (horizon: SupportedQualityHorizon) => void;
   report?: BacktestQualityReport;
 }) {
+  const reportHorizon = report?.horizon ?? selectedHorizon;
   return (
     <header className="quality-header">
       <div>
@@ -102,18 +156,30 @@ function Header({
           BACKTEST-only analytical dataset quality indicator for historical
           BTCUSD evaluation. This view evaluates directional bias quality only.
         </p>
+        <label className="horizon-control">
+          Quality horizon
+          <select
+            value={selectedHorizon.key}
+            onChange={(event) =>
+              onHorizonChange(horizonFromKey(event.currentTarget.value))
+            }
+          >
+            {SUPPORTED_QUALITY_HORIZONS.map((horizon) => (
+              <option key={horizon.key} value={horizon.key}>
+                {horizon.label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       <dl className="metadata-grid" aria-label="Report metadata">
         <MetadataItem label="Workspace" value={report?.workspace_id ?? workspaceId} />
         <MetadataItem label="Run" value={report?.run_id ?? runId} />
         <MetadataItem label="Instrument" value={report?.instrument ?? "BTCUSD"} />
         <MetadataItem label="Mode" value={report?.mode ?? "BACKTEST"} />
+        <MetadataItem label="Horizon" value={formatHorizon(reportHorizon)} />
         {report ? (
           <>
-            <MetadataItem
-              label="Horizon"
-              value={`${report.horizon.value} ${report.horizon.unit}`}
-            />
             <MetadataItem label="Model" value={report.model_version} />
             <MetadataItem label="Config" value={report.config_version} />
           </>
@@ -268,4 +334,51 @@ function formatReturn(value: number | null): string {
 
 function formatTimestamp(value: string): string {
   return new Date(value).toISOString().replace(".000Z", "Z");
+}
+
+function horizonFromSearch(search: string): SupportedQualityHorizon {
+  const params = new URLSearchParams(search);
+  const value = Number(params.get("horizon_value"));
+  const unit = params.get("horizon_unit");
+
+  if (!Number.isInteger(value) || !isHorizonUnit(unit)) {
+    return DEFAULT_QUALITY_HORIZON;
+  }
+
+  return findSupportedHorizon(value, unit) ?? DEFAULT_QUALITY_HORIZON;
+}
+
+function horizonFromKey(key: string): SupportedQualityHorizon {
+  return (
+    SUPPORTED_QUALITY_HORIZONS.find((horizon) => horizon.key === key) ??
+    DEFAULT_QUALITY_HORIZON
+  );
+}
+
+function findSupportedHorizon(
+  value: number,
+  unit: HorizonUnit,
+): SupportedQualityHorizon | null {
+  return (
+    SUPPORTED_QUALITY_HORIZONS.find(
+      (horizon) => horizon.value === value && horizon.unit === unit,
+    ) ?? null
+  );
+}
+
+function isHorizonUnit(value: string | null): value is HorizonUnit {
+  return value === "minutes" || value === "hours" || value === "days";
+}
+
+function updateUrlHorizon(horizon: SupportedQualityHorizon): void {
+  const url = new URL(window.location.href);
+  url.searchParams.set("horizon_value", String(horizon.value));
+  url.searchParams.set("horizon_unit", horizon.unit);
+  window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
+}
+
+function formatHorizon(horizon: QualityHorizon): string {
+  return findSupportedHorizon(horizon.value, horizon.unit)?.label ?? (
+    `${horizon.value} ${horizon.unit}`
+  );
 }

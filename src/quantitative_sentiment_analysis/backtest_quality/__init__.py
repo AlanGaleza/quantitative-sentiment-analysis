@@ -1,6 +1,8 @@
 """Backtest quality report contracts."""
 
-from quantitative_sentiment_analysis.backtest_quality.metrics import build_quality_report
+from quantitative_sentiment_analysis.backtest_quality.metrics import (
+    build_quality_report,
+)
 from quantitative_sentiment_analysis.backtest_quality.repository import (
     CompletedDatasetQualityInputProvider,
     LOCAL_FIXTURE_PROVIDER,
@@ -26,6 +28,9 @@ from quantitative_sentiment_analysis.backtest_quality.schemas import (
     QualityMetrics,
     RealizedDirection,
     RelevanceLabel,
+    SUPPORTED_QUALITY_HORIZON_PRESETS,
+    UnsupportedQualityHorizonError,
+    supported_quality_horizon,
 )
 
 __all__ = [
@@ -50,6 +55,9 @@ __all__ = [
     "QualityRunUnsupportedError",
     "RealizedDirection",
     "RelevanceLabel",
+    "SUPPORTED_QUALITY_HORIZON_PRESETS",
+    "UnsupportedQualityHorizonError",
     "build_quality_report",
     "get_quality_input_provider",
+    "supported_quality_horizon",
 ]

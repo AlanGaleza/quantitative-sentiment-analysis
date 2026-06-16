@@ -73,8 +73,8 @@ def clear_dependency_overrides() -> None:
 
 
 def test_quality_route_returns_fixture_backed_report() -> None:
-    app.dependency_overrides[get_quality_input_provider] = (
-        lambda: FixtureQualityInputProvider()
+    app.dependency_overrides[get_quality_input_provider] = lambda: (
+        FixtureQualityInputProvider()
     )
     client = TestClient(app)
 
@@ -86,14 +86,50 @@ def test_quality_route_returns_fixture_backed_report() -> None:
     assert data["run_id"] == "run-001"
     assert data["instrument"] == "BTCUSD"
     assert data["mode"] == "BACKTEST"
+    assert data["horizon"] == {"value": 4, "unit": "hours"}
     assert data["metrics"]["hit_rate"] == 0.75
     assert data["metrics"]["missing_movement_count"] == 1
     assert data["chart_points"][0]["outcome"] == "HIT"
 
 
+def test_quality_route_accepts_supported_selected_horizon() -> None:
+    app.dependency_overrides[get_quality_input_provider] = lambda: (
+        FixtureQualityInputProvider()
+    )
+    client = TestClient(app)
+
+    response = client.get(
+        "/api/workspaces/workspace-alpha/backtests/run-001/quality"
+        "?horizon_value=1&horizon_unit=minutes"
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["horizon"] == {"value": 1, "unit": "minutes"}
+    assert data["metrics"]["hit_rate"] == 0.75
+    assert data["metrics"]["missing_movement_count"] == 1
+
+
+def test_quality_route_rejects_unsupported_horizon() -> None:
+    app.dependency_overrides[get_quality_input_provider] = lambda: (
+        FixtureQualityInputProvider()
+    )
+    client = TestClient(app)
+
+    response = client.get(
+        "/api/workspaces/workspace-alpha/backtests/run-001/quality"
+        "?horizon_value=2&horizon_unit=hours"
+    )
+
+    assert response.status_code == 422
+    assert "unsupported quality horizon" in response.json()["detail"]
+    assert "1 minute" in response.json()["detail"]
+    assert "4 hours" in response.json()["detail"]
+
+
 def test_quality_route_returns_not_found_without_completed_dataset() -> None:
-    app.dependency_overrides[get_quality_input_provider] = (
-        lambda: RaisingProvider(QualityRunNotFoundError("completed BACKTEST dataset not found"))
+    app.dependency_overrides[get_quality_input_provider] = lambda: RaisingProvider(
+        QualityRunNotFoundError("completed BACKTEST dataset not found")
     )
     client = TestClient(app)
 
@@ -164,8 +200,8 @@ def test_quality_route_maps_provider_errors(
 def test_quality_route_rejects_unsupported_instrument_and_mode(
     detail: str,
 ) -> None:
-    app.dependency_overrides[get_quality_input_provider] = (
-        lambda: RaisingProvider(QualityRunUnsupportedError(detail))
+    app.dependency_overrides[get_quality_input_provider] = lambda: RaisingProvider(
+        QualityRunUnsupportedError(detail)
     )
     client = TestClient(app)
 
@@ -243,13 +279,17 @@ def test_postgres_quality_route_reads_persisted_completed_dataset(
         login(client)
         response = client.get(
             "/api/workspaces/workspace-alpha/backtests/draft-run-fixed/quality"
+            "?horizon_value=1&horizon_unit=minutes"
         )
 
     assert response.status_code == 200
     data = response.json()
     assert data["workspace_id"] == "workspace-alpha"
     assert data["run_id"] == "draft-run-fixed"
+    assert data["horizon"] == {"value": 1, "unit": "minutes"}
     assert data["metrics"]["missing_movement_count"] == 1
+    assert data["representative_records"][0]["later_return"] is None
+    assert data["representative_records"][0]["realized_direction"] is None
     assert any("missing later movement" in warning for warning in data["warnings"])
     assert "S-02" not in str(data)
     with session_factory() as session:
