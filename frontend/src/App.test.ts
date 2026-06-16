@@ -6,6 +6,7 @@ import App, {
   defaultWorkspacePath,
   parseAppRoute,
   parseConfigRoute,
+  parseHistoryRoute,
   parseQualityRoute,
   parseShellRoute,
 } from "./App";
@@ -37,6 +38,17 @@ describe("parseAppRoute", () => {
     });
   });
 
+  it("returns the workspace run history route", () => {
+    expect(parseAppRoute("/workspaces/workspace-alpha/backtests")).toEqual({
+      kind: "history",
+      workspaceId: "workspace-alpha",
+    });
+    expect(parseHistoryRoute("/workspaces/workspace-alpha/backtests")).toEqual({
+      kind: "history",
+      workspaceId: "workspace-alpha",
+    });
+  });
+
   it("returns the run-scoped quality route", () => {
     expect(parseAppRoute("/workspaces/workspace-alpha/backtests/run-001/quality")).toEqual({
       kind: "quality",
@@ -55,15 +67,16 @@ describe("parseAppRoute", () => {
 
   it("returns null for malformed encoded route segments", () => {
     expect(parseAppRoute("/workspaces/%E0%A4%A/backtest-configs")).toBeNull();
+    expect(parseAppRoute("/workspaces/%E0%A4%A/backtests")).toBeNull();
     expect(parseAppRoute("/workspaces/%E0%A4%A/backtests/new")).toBeNull();
     expect(parseAppRoute("/workspaces/%E0%A4%A/backtests/run-001/quality")).toBeNull();
   });
 });
 
 describe("defaultWorkspacePath", () => {
-  it("points authenticated users to the saved config workflow", () => {
+  it("points authenticated users to run history", () => {
     expect(defaultWorkspacePath(authSession())).toBe(
-      "/workspaces/workspace-alpha/backtest-configs",
+      "/workspaces/workspace-alpha/backtests",
     );
   });
 });
@@ -104,7 +117,39 @@ describe("App", () => {
       await screen.findByRole("heading", { name: "Workspace backtest shell" }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Workspace")).toHaveValue("workspace-alpha");
+    expect(screen.getByRole("link", { name: "Run history" })).toHaveAttribute(
+      "href",
+      "/workspaces/workspace-alpha/backtests",
+    );
+    expect(screen.getByRole("link", { name: "Saved configs" })).toHaveAttribute(
+      "href",
+      "/workspaces/workspace-alpha/backtest-configs",
+    );
     expect(screen.getByRole("button", { name: "Log out" })).toBeInTheDocument();
+  });
+
+  it("renders run history after auth bootstrap", async () => {
+    window.history.pushState({}, "", "/workspaces/workspace-alpha/backtests");
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ workspace_id: "workspace-alpha", runs: [] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      createElement(TestApp, {
+        loadCurrentSession: async () => authSession(),
+      }),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "BACKTEST run history" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("No BACKTEST runs exist for this workspace yet."),
+    ).toBeInTheDocument();
   });
 
   it("renders saved configurations after auth bootstrap", async () => {
@@ -135,7 +180,7 @@ describe("App", () => {
     ).toBeInTheDocument();
   });
 
-  it("logs in and navigates to the default workspace config list", async () => {
+  it("logs in and navigates to the default workspace run history", async () => {
     window.history.pushState({}, "", "/login");
     const session = authSession();
     const fetchMock = vi
@@ -147,7 +192,7 @@ describe("App", () => {
         }),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify([]), {
+        new Response(JSON.stringify({ workspace_id: "workspace-alpha", runs: [] }), {
           status: 200,
           headers: { "content-type": "application/json" },
         }),
@@ -172,13 +217,11 @@ describe("App", () => {
 
     await waitFor(() => {
       expect(window.location.pathname).toBe(
-        "/workspaces/workspace-alpha/backtest-configs",
+        "/workspaces/workspace-alpha/backtests",
       );
     });
     expect(
-      await screen.findByRole("heading", {
-        name: "Saved BACKTEST configurations",
-      }),
+      await screen.findByRole("heading", { name: "BACKTEST run history" }),
     ).toBeInTheDocument();
   });
 });

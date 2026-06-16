@@ -8,6 +8,7 @@ import {
 import type { AuthSessionResponse } from "./features/auth/types";
 import { BacktestConfigPage } from "./features/backtestConfigs/BacktestConfigPage";
 import { BacktestQualityPage } from "./features/backtestQuality/BacktestQualityPage";
+import { BacktestRunHistoryPage } from "./features/backtestRuns/BacktestRunHistoryPage";
 import { BacktestShellPage } from "./features/backtestShell/BacktestShellPage";
 
 interface LoginRoute {
@@ -24,13 +25,18 @@ interface ShellRoute {
   workspaceId: string;
 }
 
+interface HistoryRoute {
+  kind: "history";
+  workspaceId: string;
+}
+
 interface QualityRoute {
   kind: "quality";
   workspaceId: string;
   runId: string;
 }
 
-type AppRoute = LoginRoute | ConfigRoute | ShellRoute | QualityRoute;
+type AppRoute = LoginRoute | ConfigRoute | ShellRoute | HistoryRoute | QualityRoute;
 
 type AuthState =
   | { status: "loading" }
@@ -83,6 +89,23 @@ export function parseShellRoute(pathname: string): ShellRoute | null {
   }
 }
 
+export function parseHistoryRoute(pathname: string): HistoryRoute | null {
+  const match = /^\/workspaces\/([^/]+)\/backtests\/?$/.exec(pathname);
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return {
+      kind: "history",
+      workspaceId: decodeURIComponent(match[1]),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function parseQualityRoute(pathname: string): QualityRoute | null {
   const match = /^\/workspaces\/([^/]+)\/backtests\/([^/]+)\/quality\/?$/.exec(
     pathname,
@@ -107,6 +130,7 @@ export function parseAppRoute(pathname: string): AppRoute | null {
   return (
     parseLoginRoute(pathname) ??
     parseConfigRoute(pathname) ??
+    parseHistoryRoute(pathname) ??
     parseShellRoute(pathname) ??
     parseQualityRoute(pathname)
   );
@@ -120,7 +144,7 @@ export function defaultWorkspacePath(session: AuthSessionResponse): string {
     return "/login";
   }
 
-  return `/workspaces/${encodeURIComponent(workspaceSlug)}/backtest-configs`;
+  return `/workspaces/${encodeURIComponent(workspaceSlug)}/backtests`;
 }
 
 export default function App({
@@ -231,6 +255,7 @@ export default function App({
         <main className="quality-page">
           <section className="error-state" role="alert">
             Open a workspace BACKTEST path:
+            /workspaces/:workspaceId/backtests,
             /workspaces/:workspaceId/backtest-configs,
             /workspaces/:workspaceId/backtests/new, or
             /workspaces/:workspaceId/backtests/:runId/quality
@@ -248,6 +273,10 @@ function ProtectedRoute({ route }: { route: Exclude<AppRoute, LoginRoute> }) {
 
   if (route.kind === "shell") {
     return <BacktestShellPage workspaceId={route.workspaceId} />;
+  }
+
+  if (route.kind === "history") {
+    return <BacktestRunHistoryPage workspaceId={route.workspaceId} />;
   }
 
   return (
@@ -280,6 +309,9 @@ function AuthenticatedFrame({
         <div className="app-nav-actions">
           {defaultWorkspace ? (
             <>
+              <a href={`/workspaces/${encodeURIComponent(defaultWorkspace)}/backtests`}>
+                Run history
+              </a>
               <a href={`/workspaces/${encodeURIComponent(defaultWorkspace)}/backtest-configs`}>
                 Saved configs
               </a>

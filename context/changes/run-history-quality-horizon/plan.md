@@ -496,27 +496,27 @@ derived from existing `dataset_runs` rows.
 
 #### Automated
 
-- [x] 1.1 Backend run-history repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_shell/test_postgres_repository.py -p no:cacheprovider`
-- [x] 1.2 Backend run-history router tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_shell/test_router.py -p no:cacheprovider`
-- [x] 1.3 Backend lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pyright`
+- [x] 1.1 Backend run-history repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_shell/test_postgres_repository.py -p no:cacheprovider` — adfea41
+- [x] 1.2 Backend run-history router tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_shell/test_router.py -p no:cacheprovider` — adfea41
+- [x] 1.3 Backend lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pyright` — adfea41
 
 #### Manual
 
-- [x] 1.4 With two runs in `demo-workspace`, `GET /api/workspaces/demo-workspace/backtests` returns both after logout/login and never includes another workspace's runs.
+- [x] 1.4 With two runs in `demo-workspace`, `GET /api/workspaces/demo-workspace/backtests` returns both after logout/login and never includes another workspace's runs. — adfea41
 
 ### Phase 2: Frontend Run History and Re-Entry
 
 #### Automated
 
-- [ ] 2.1 Run-history frontend tests pass: `npm --prefix frontend run test -- src/features/backtestRuns src/App.test.ts`
-- [ ] 2.2 Existing shell/config frontend regressions pass: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestConfigs`
-- [ ] 2.3 Frontend build passes: `npm --prefix frontend run build`
+- [x] 2.1 Run-history frontend tests pass: `npm --prefix frontend run test -- src/features/backtestRuns src/App.test.ts`
+- [x] 2.2 Existing shell/config frontend regressions pass: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestConfigs`
+- [x] 2.3 Frontend build passes: `npm --prefix frontend run build`
 
 #### Manual
 
-- [ ] 2.4 Log in, create a saved config draft, run a deterministic BACKTEST dataset, log out, log back in, and see the run on `/workspaces/demo-workspace/backtests`.
-- [ ] 2.5 From run history, open the completed run's quality route and download JSONL.
-- [ ] 2.6 A provider-limited run is visible as historical work but does not offer quality or JSONL as if it completed.
+- [x] 2.4 Log in, create a saved config draft, run a deterministic BACKTEST dataset, log out, log back in, and see the run on `/workspaces/demo-workspace/backtests`.
+- [x] 2.5 From run history, open the completed run's quality route and download JSONL.
+- [x] 2.6 A provider-limited run is visible as historical work but does not offer quality or JSONL as if it completed.
 
 ### Phase 3: Configurable Quality Horizon
 
