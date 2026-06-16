@@ -1,7 +1,7 @@
 ---
 change_id: price-enrichment-quality-movement
 title: Price enrichment for quality movement
-status: implemented
+status: impl_reviewed
 created: 2026-06-16
 updated: 2026-06-16
 archived_at: null
