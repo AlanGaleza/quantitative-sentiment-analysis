@@ -8,11 +8,16 @@ from typing import Annotated, Protocol
 from urllib.parse import quote
 
 from fastapi import Depends
+from sqlalchemy import and_
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from quantitative_sentiment_analysis.backtest_shell.schemas import (
+    BacktestDatasetRunStatus,
+    BacktestRunHistoryItem,
+    BacktestRunHistoryResponse,
+    BacktestRunProviderLimitation,
     BacktestRunShell,
     BacktestRunStatus,
     CreateBacktestRunRequest,
@@ -20,7 +25,9 @@ from quantitative_sentiment_analysis.backtest_shell.schemas import (
 from quantitative_sentiment_analysis.contracts import Instrument, RunMode
 from quantitative_sentiment_analysis.persistence.database import get_database_session
 from quantitative_sentiment_analysis.persistence.models import (
+    BacktestConfigModel,
     BacktestRunModel,
+    DatasetRunModel,
     WorkspaceModel,
 )
 
@@ -46,6 +53,10 @@ class BacktestShellRepository(Protocol):
 
     def get_run(self, workspace_id: str, run_id: str) -> BacktestRunShell:
         """Return one draft run shell by workspace and run ID."""
+        ...
+
+    def list_runs(self, workspace_id: str) -> BacktestRunHistoryResponse:
+        """Return historical BACKTEST runs for one workspace."""
         ...
 
 
@@ -106,8 +117,31 @@ class InMemoryBacktestShellRepository:
             )
         return run
 
+    def list_runs(self, workspace_id: str) -> BacktestRunHistoryResponse:
+        with self._lock:
+            runs = [
+                run
+                for (stored_workspace_id, _run_id), run in self._runs.items()
+                if stored_workspace_id == workspace_id
+            ]
+        ordered_runs = sorted(
+            runs,
+            key=lambda run: (run.created_at, run.run_id),
+            reverse=True,
+        )
+        return BacktestRunHistoryResponse(
+            workspace_id=workspace_id,
+            runs=tuple(
+                _run_shell_to_history_item(run, workspace_slug=workspace_id)
+                for run in ordered_runs
+            ),
+        )
+
     def _ensure_supported(self, request: CreateBacktestRunRequest) -> None:
-        if request.instrument is not Instrument.BTCUSD or request.mode is not RunMode.BACKTEST:
+        if (
+            request.instrument is not Instrument.BTCUSD
+            or request.mode is not RunMode.BACKTEST
+        ):
             raise BacktestShellUnsupportedError(
                 "draft run shell supports only BTCUSD BACKTEST in local/dev mode"
             )
@@ -198,7 +232,9 @@ class PostgresBacktestShellRepository:
         row = self._session.execute(
             select(BacktestRunModel, WorkspaceModel.slug)
             .join(WorkspaceModel, BacktestRunModel.workspace_id == WorkspaceModel.id)
-            .where(WorkspaceModel.slug == workspace_id, BacktestRunModel.run_id == run_id)
+            .where(
+                WorkspaceModel.slug == workspace_id, BacktestRunModel.run_id == run_id
+            )
         ).one_or_none()
         if row is None:
             raise BacktestShellRunNotFoundError(
@@ -208,8 +244,52 @@ class PostgresBacktestShellRepository:
         run, workspace_slug = row
         return _run_model_to_shell(run, workspace_slug=workspace_slug)
 
+    def list_runs(self, workspace_id: str) -> BacktestRunHistoryResponse:
+        workspace = self._get_workspace(workspace_id)
+        if workspace is None:
+            raise BacktestShellRunNotFoundError(
+                f"workspace {workspace_id!r} was not found"
+            )
+
+        rows = self._session.execute(
+            select(BacktestRunModel, BacktestConfigModel, DatasetRunModel)
+            .outerjoin(
+                BacktestConfigModel,
+                and_(
+                    BacktestRunModel.config_id == BacktestConfigModel.id,
+                    BacktestConfigModel.workspace_id == BacktestRunModel.workspace_id,
+                ),
+            )
+            .outerjoin(
+                DatasetRunModel,
+                and_(
+                    DatasetRunModel.workspace_id == BacktestRunModel.workspace_id,
+                    DatasetRunModel.run_id == BacktestRunModel.run_id,
+                ),
+            )
+            .where(BacktestRunModel.workspace_id == workspace.id)
+            .order_by(
+                BacktestRunModel.created_at.desc(), BacktestRunModel.run_id.desc()
+            )
+        )
+        return BacktestRunHistoryResponse(
+            workspace_id=workspace.slug,
+            runs=tuple(
+                _run_model_to_history_item(
+                    run,
+                    config=config,
+                    dataset_run=dataset_run,
+                    workspace_slug=workspace.slug,
+                )
+                for run, config, dataset_run in rows
+            ),
+        )
+
     def _ensure_supported(self, request: CreateBacktestRunRequest) -> None:
-        if request.instrument is not Instrument.BTCUSD or request.mode is not RunMode.BACKTEST:
+        if (
+            request.instrument is not Instrument.BTCUSD
+            or request.mode is not RunMode.BACKTEST
+        ):
             raise BacktestShellUnsupportedError(
                 "draft run shell supports only BTCUSD BACKTEST"
             )
@@ -276,6 +356,20 @@ def _quality_report_path(*, workspace_id: str, run_id: str) -> str:
     )
 
 
+def _dataset_preview_path(*, workspace_id: str, run_id: str) -> str:
+    return (
+        f"/api/workspaces/{quote(workspace_id, safe='')}/backtests/"
+        f"{quote(run_id, safe='')}/dataset"
+    )
+
+
+def _dataset_export_path(*, workspace_id: str, run_id: str) -> str:
+    return (
+        f"/api/workspaces/{quote(workspace_id, safe='')}/backtests/"
+        f"{quote(run_id, safe='')}/dataset/export.jsonl"
+    )
+
+
 def _run_model_to_shell(
     run: BacktestRunModel,
     *,
@@ -293,5 +387,89 @@ def _run_model_to_shell(
         quality_report_path=_quality_report_path(
             workspace_id=workspace_slug,
             run_id=run.run_id,
+        ),
+    )
+
+
+def _run_shell_to_history_item(
+    run: BacktestRunShell,
+    *,
+    workspace_slug: str,
+) -> BacktestRunHistoryItem:
+    return BacktestRunHistoryItem(
+        workspace_id=workspace_slug,
+        run_id=run.run_id,
+        instrument=run.instrument,
+        mode=run.mode,
+        timeframe_start=run.timeframe_start,
+        timeframe_end=run.timeframe_end,
+        status=run.status,
+        created_at=run.created_at,
+    )
+
+
+def _run_model_to_history_item(
+    run: BacktestRunModel,
+    *,
+    config: BacktestConfigModel | None,
+    dataset_run: DatasetRunModel | None,
+    workspace_slug: str,
+) -> BacktestRunHistoryItem:
+    dataset_status = (
+        BacktestDatasetRunStatus(dataset_run.status)
+        if dataset_run is not None
+        else None
+    )
+    is_completed = dataset_status is BacktestDatasetRunStatus.COMPLETED
+    provider_limitation = None
+    if dataset_run is not None and dataset_run.provider_limitation_reason is not None:
+        provider_limitation = BacktestRunProviderLimitation(
+            provider_name=(
+                dataset_run.provider_limitation_provider_name
+                or dataset_run.provider_name
+            ),
+            reason=dataset_run.provider_limitation_reason,
+            detail=dataset_run.provider_limitation_detail,
+        )
+
+    return BacktestRunHistoryItem(
+        workspace_id=workspace_slug,
+        run_id=run.run_id,
+        config_id=str(config.id) if config is not None else None,
+        config_name=config.name if config is not None else None,
+        instrument=Instrument(run.instrument),
+        mode=RunMode(run.mode),
+        timeframe_start=run.timeframe_start,
+        timeframe_end=run.timeframe_end,
+        status=BacktestRunStatus(run.status),
+        created_at=run.created_at,
+        dataset_status=dataset_status,
+        provider_name=dataset_run.provider_name if dataset_run is not None else None,
+        record_count=dataset_run.record_count if dataset_run is not None else None,
+        relevant_count=dataset_run.relevant_count if dataset_run is not None else None,
+        noise_count=dataset_run.noise_count if dataset_run is not None else None,
+        irrelevant_count=(
+            dataset_run.irrelevant_count if dataset_run is not None else None
+        ),
+        model_version=dataset_run.model_version if dataset_run is not None else None,
+        config_version=dataset_run.config_version if dataset_run is not None else None,
+        input_fingerprint=(
+            dataset_run.input_fingerprint if dataset_run is not None else None
+        ),
+        provider_limitation=provider_limitation,
+        dataset_preview_path=(
+            _dataset_preview_path(workspace_id=workspace_slug, run_id=run.run_id)
+            if dataset_run is not None
+            else None
+        ),
+        dataset_export_path=(
+            _dataset_export_path(workspace_id=workspace_slug, run_id=run.run_id)
+            if is_completed
+            else None
+        ),
+        quality_report_path=(
+            _quality_report_path(workspace_id=workspace_slug, run_id=run.run_id)
+            if is_completed
+            else None
         ),
     )

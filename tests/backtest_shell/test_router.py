@@ -96,6 +96,42 @@ def test_get_draft_run_uses_workspace_and_run_id() -> None:
     assert response.json()["run_id"] == run.run_id
 
 
+def test_list_draft_runs_returns_workspace_history() -> None:
+    repository = make_repository()
+    request = CreateBacktestRunRequest.model_validate(draft_payload())
+    run = repository.create_draft_run("workspace-alpha", request)
+    app.dependency_overrides[get_backtest_shell_repository] = lambda: repository
+    client = TestClient(app)
+
+    response = client.get("/api/workspaces/workspace-alpha/backtests")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["workspace_id"] == "workspace-alpha"
+    assert [item["run_id"] for item in data["runs"]] == [run.run_id]
+    assert data["runs"][0]["dataset_status"] is None
+    assert data["runs"][0]["quality_report_path"] is None
+
+
+def test_list_draft_runs_returns_empty_workspace_history() -> None:
+    repository = make_repository()
+    app.dependency_overrides[get_backtest_shell_repository] = lambda: repository
+    client = TestClient(app)
+
+    response = client.get("/api/workspaces/workspace-alpha/backtests")
+
+    assert response.status_code == 200
+    assert response.json() == {"workspace_id": "workspace-alpha", "runs": []}
+
+
+def test_run_id_alone_is_not_a_backtest_history_route() -> None:
+    client = TestClient(app)
+
+    response = client.get("/api/backtests/draft-run-fixed")
+
+    assert response.status_code == 404
+
+
 def test_get_draft_run_returns_404_for_missing_run() -> None:
     repository = make_repository()
     app.dependency_overrides[get_backtest_shell_repository] = lambda: repository
@@ -122,7 +158,9 @@ def test_get_draft_run_returns_404_for_cross_workspace_read() -> None:
 @pytest.mark.parametrize(
     "payload",
     [
-        draft_payload(timeframe_end=datetime(2026, 7, 2, 12, 0, tzinfo=UTC).isoformat()),
+        draft_payload(
+            timeframe_end=datetime(2026, 7, 2, 12, 0, tzinfo=UTC).isoformat()
+        ),
         draft_payload(
             timeframe_start=TIMEFRAME_END.isoformat(),
             timeframe_end=TIMEFRAME_START.isoformat(),
@@ -165,7 +203,9 @@ def test_create_draft_run_does_not_start_dataset_or_quality_work() -> None:
         def get_run(self, workspace_id: str, run_id: str) -> BacktestRunShell:
             raise AssertionError("create route must not fetch completed quality inputs")
 
-    app.dependency_overrides[get_backtest_shell_repository] = lambda: CreateOnlyRepository()
+    app.dependency_overrides[get_backtest_shell_repository] = lambda: (
+        CreateOnlyRepository()
+    )
     client = TestClient(app)
 
     response = client.post(
@@ -231,8 +271,10 @@ def test_postgres_shell_route_requires_authenticated_user(
             json=draft_payload(),
             headers={"Origin": FRONTEND_ORIGIN},
         )
+        list_response = client.get("/api/workspaces/workspace-alpha/backtests")
 
     assert response.status_code == 401
+    assert list_response.status_code == 401
     with session_factory() as session:
         clear_database(session)
     engine.dispose()
@@ -261,10 +303,13 @@ def test_postgres_shell_route_authenticated_owner_creates_and_reads_draft(
         run_id = create_response.json()["run_id"]
 
         get_response = client.get(f"/api/workspaces/workspace-alpha/backtests/{run_id}")
+        list_response = client.get("/api/workspaces/workspace-alpha/backtests")
 
     assert get_response.status_code == 200
     assert get_response.json()["workspace_id"] == "workspace-alpha"
     assert get_response.json()["run_id"] == run_id
+    assert list_response.status_code == 200
+    assert [run["run_id"] for run in list_response.json()["runs"]] == [run_id]
     with session_factory() as session:
         clear_database(session)
     engine.dispose()
@@ -295,8 +340,10 @@ def test_postgres_shell_route_returns_404_for_cross_owned_workspace(
             json=draft_payload(),
             headers={"Origin": FRONTEND_ORIGIN},
         )
+        list_response = client.get("/api/workspaces/workspace-beta/backtests")
 
     assert response.status_code == 404
+    assert list_response.status_code == 404
     with session_factory() as session:
         clear_database(session)
     engine.dispose()

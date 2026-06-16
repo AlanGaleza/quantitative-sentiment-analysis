@@ -12,6 +12,7 @@ from quantitative_sentiment_analysis.backtest_shell.repository import (
     get_backtest_shell_repository,
 )
 from quantitative_sentiment_analysis.backtest_shell.schemas import (
+    BacktestRunHistoryResponse,
     BacktestRunShell,
     CreateBacktestRunRequest,
 )
@@ -35,6 +36,23 @@ def create_draft_backtest_run(
 ) -> BacktestRunShell:
     try:
         return repository.create_draft_run(workspace_id, request)
+    except BacktestShellUnsupportedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.get("", response_model=BacktestRunHistoryResponse)
+def list_backtest_runs(
+    workspace_id: str,
+    owned_workspace: Annotated[WorkspaceModel, Depends(require_owned_workspace)],
+    repository: Annotated[
+        BacktestShellRepository,
+        Depends(get_backtest_shell_repository),
+    ],
+) -> BacktestRunHistoryResponse:
+    try:
+        return repository.list_runs(workspace_id)
+    except BacktestShellRunNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     except BacktestShellUnsupportedError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 

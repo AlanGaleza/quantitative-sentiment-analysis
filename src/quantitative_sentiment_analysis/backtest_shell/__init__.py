@@ -11,6 +11,10 @@ from quantitative_sentiment_analysis.backtest_shell.repository import (
 )
 from quantitative_sentiment_analysis.backtest_shell.schemas import (
     MAX_BACKTEST_RANGE_DAYS,
+    BacktestDatasetRunStatus,
+    BacktestRunHistoryItem,
+    BacktestRunHistoryResponse,
+    BacktestRunProviderLimitation,
     BacktestRunShell,
     BacktestRunStatus,
     CreateBacktestRunRequest,
@@ -18,6 +22,10 @@ from quantitative_sentiment_analysis.backtest_shell.schemas import (
 
 __all__ = [
     "MAX_BACKTEST_RANGE_DAYS",
+    "BacktestDatasetRunStatus",
+    "BacktestRunHistoryItem",
+    "BacktestRunHistoryResponse",
+    "BacktestRunProviderLimitation",
     "BacktestRunShell",
     "BacktestRunStatus",
     "BacktestShellRepository",
