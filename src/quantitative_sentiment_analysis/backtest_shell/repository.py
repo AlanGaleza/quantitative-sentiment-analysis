@@ -126,7 +126,7 @@ class PostgresBacktestShellRepository:
         clock: Clock | None = None,
     ) -> None:
         self._session = session
-        self._run_id_factory = run_id_factory or create_sequence_run_id_factory()
+        self._run_id_factory = run_id_factory
         self._clock = clock or (lambda: datetime.now(UTC))
 
     def create_draft_run(
@@ -167,7 +167,11 @@ class PostgresBacktestShellRepository:
                 f"workspace {workspace_id!r} was not found"
             )
 
-        run_id = self._run_id_factory(workspace_id, request)
+        run_id = self._next_run_id(
+            workspace=workspace,
+            workspace_id=workspace_id,
+            request=request,
+        )
         run = BacktestRunModel(
             workspace_id=workspace.id,
             run_id=run_id,
@@ -214,6 +218,30 @@ class PostgresBacktestShellRepository:
         return self._session.scalar(
             select(WorkspaceModel).where(WorkspaceModel.slug == workspace_id)
         )
+
+    def _next_run_id(
+        self,
+        *,
+        workspace: WorkspaceModel,
+        workspace_id: str,
+        request: CreateBacktestRunRequest,
+    ) -> str:
+        if self._run_id_factory is not None:
+            return self._run_id_factory(workspace_id, request)
+
+        prefix = "draft-run"
+        existing_run_ids = self._session.scalars(
+            select(BacktestRunModel.run_id).where(
+                BacktestRunModel.workspace_id == workspace.id,
+                BacktestRunModel.run_id.like(f"{prefix}-%"),
+            )
+        )
+        highest_sequence = 0
+        for run_id in existing_run_ids:
+            suffix = run_id.removeprefix(f"{prefix}-")
+            if suffix.isdigit():
+                highest_sequence = max(highest_sequence, int(suffix))
+        return f"{prefix}-{highest_sequence + 1:06d}"
 
 
 def create_sequence_run_id_factory(prefix: str = "draft-run") -> RunIdFactory:

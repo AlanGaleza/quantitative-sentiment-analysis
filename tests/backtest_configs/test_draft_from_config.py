@@ -91,6 +91,34 @@ def test_draft_from_config_creates_normal_durable_draft_run(
         assert str(stored_run.config_id) == config_id
 
 
+def test_draft_from_config_continues_sequence_after_existing_persisted_run(
+    client_and_session_factory,
+) -> None:
+    client, _session_factory = client_and_session_factory
+    login(client)
+    create_response = client.post(
+        "/api/workspaces/workspace-alpha/backtest-configs",
+        json=config_payload(),
+        headers={"Origin": FRONTEND_ORIGIN},
+    )
+    assert create_response.status_code == 200
+    config_id = create_response.json()["id"]
+
+    first_response = client.post(
+        f"/api/workspaces/workspace-alpha/backtest-configs/{config_id}/drafts",
+        headers={"Origin": FRONTEND_ORIGIN},
+    )
+    second_response = client.post(
+        f"/api/workspaces/workspace-alpha/backtest-configs/{config_id}/drafts",
+        headers={"Origin": FRONTEND_ORIGIN},
+    )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert first_response.json()["run_id"] == "draft-run-000001"
+    assert second_response.json()["run_id"] == "draft-run-000002"
+
+
 def test_deleting_config_keeps_already_created_draft_run(
     client_and_session_factory,
 ) -> None:
