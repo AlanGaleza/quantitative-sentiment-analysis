@@ -731,24 +731,24 @@ depending on a half-created cache table.
 
 #### Automated
 
-- [x] 1.1 Price movement unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_movement.py -p no:cacheprovider`
-- [x] 1.2 Backend lint/type checks pass for the new package: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check src/quantitative_sentiment_analysis/price_enrichment tests/price_enrichment && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
+- [x] 1.1 Price movement unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_movement.py -p no:cacheprovider` — 21572cb
+- [x] 1.2 Backend lint/type checks pass for the new package: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check src/quantitative_sentiment_analysis/price_enrichment tests/price_enrichment && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright` — 21572cb
 
 #### Manual
 
-- [x] 1.3 Review the movement policy and confirm the close-to-close plus epsilon behavior matches the selected planning decisions.
+- [x] 1.3 Review the movement policy and confirm the close-to-close plus epsilon behavior matches the selected planning decisions. — 21572cb
 
 ### Phase 2: Postgres Candle Cache
 
 #### Automated
 
-- [ ] 2.1 Persistence metadata tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/persistence/test_models.py -p no:cacheprovider`
-- [ ] 2.2 Postgres candle repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_postgres_repository.py -p no:cacheprovider`
-- [ ] 2.3 Migration applies cleanly on a test database: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run alembic upgrade head`
+- [x] 2.1 Persistence metadata tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/persistence/test_models.py -p no:cacheprovider`
+- [x] 2.2 Postgres candle repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_postgres_repository.py -p no:cacheprovider`
+- [x] 2.3 Migration applies cleanly on a test database: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run alembic upgrade head`
 
 #### Manual
 
-- [ ] 2.4 Inspect the generated `price_candles` schema in local Postgres and confirm the unique provider/symbol/interval/open-time constraint exists.
+- [x] 2.4 Inspect the generated `price_candles` schema in local Postgres and confirm the unique provider/symbol/interval/open-time constraint exists.
 
 ### Phase 3: Binance Price Provider
 

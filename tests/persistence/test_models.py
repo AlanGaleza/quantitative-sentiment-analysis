@@ -15,7 +15,10 @@ EXPECTED_TABLES = {
     "backtest_runs",
     "dataset_runs",
     "dataset_records",
+    "price_candles",
 }
+
+INITIAL_MIGRATION_TABLES = EXPECTED_TABLES - {"price_candles"}
 
 
 def constraint_names(table_name: str, constraint_type: type) -> set[str]:
@@ -66,6 +69,23 @@ def test_backtest_run_tables_preserve_workspace_run_identity() -> None:
     assert "ix_backtest_runs_workspace_created_run" in index_names("backtest_runs")
 
 
+def test_price_candle_cache_constraints_support_provider_symbol_interval_lookup() -> (
+    None
+):
+    assert "uq_price_candles_provider_symbol_interval_open" in constraint_names(
+        "price_candles",
+        UniqueConstraint,
+    )
+    assert "ix_price_candles_lookup" in index_names("price_candles")
+
+    names = constraint_names("price_candles", CheckConstraint)
+    assert "ck_price_candles_interval_1m" in names
+    assert "ck_price_candles_time_order" in names
+    assert "ck_price_candles_open_price_positive" in names
+    assert "ck_price_candles_high_price_bounds" in names
+    assert "ck_price_candles_low_price_bounds" in names
+
+
 def test_btcusd_backtest_and_dataset_record_contract_constraints_exist() -> None:
     for table_name in ("backtest_configs", "backtest_runs", "dataset_runs"):
         names = constraint_names(table_name, CheckConstraint)
@@ -85,7 +105,7 @@ def test_initial_migration_mentions_every_metadata_table() -> None:
         "migrations/versions/20260616_0001_create_auth_workspace_backtest_tables.py"
     ).read_text(encoding="utf-8")
 
-    for table_name in EXPECTED_TABLES:
+    for table_name in INITIAL_MIGRATION_TABLES:
         assert f'"{table_name}"' in migration
 
 
@@ -96,3 +116,13 @@ def test_run_history_sort_index_migration_exists() -> None:
 
     assert "ix_backtest_runs_workspace_created_run" in migration
     assert '["workspace_id", "created_at", "run_id"]' in migration
+
+
+def test_price_candle_cache_migration_exists() -> None:
+    migration = Path(
+        "migrations/versions/20260616_0003_create_price_candles.py"
+    ).read_text(encoding="utf-8")
+
+    assert "price_candles" in migration
+    assert "uq_price_candles_provider_symbol_interval_open" in migration
+    assert "ix_price_candles_lookup" in migration

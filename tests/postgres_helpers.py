@@ -22,6 +22,7 @@ from quantitative_sentiment_analysis.persistence.models import (
     BacktestRunModel,
     DatasetRecordModel,
     DatasetRunModel,
+    PriceCandleModel,
     SessionModel,
     UserModel,
     WorkspaceModel,
@@ -51,6 +52,7 @@ def override_database_session(app: FastAPI, engine: Engine) -> None:
 
 
 def clear_database(session: Session) -> None:
+    session.execute(delete(PriceCandleModel))
     session.execute(delete(DatasetRecordModel))
     session.execute(delete(DatasetRunModel))
     session.execute(delete(BacktestRunModel))

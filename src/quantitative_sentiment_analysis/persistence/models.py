@@ -402,3 +402,75 @@ class DatasetRecordModel(Base):
     config_version: Mapped[str] = mapped_column(String(128), nullable=False)
 
     dataset_run: Mapped[DatasetRunModel] = relationship(back_populates="records")
+
+
+class PriceCandleModel(Base):
+    __tablename__ = "price_candles"
+    __table_args__ = (
+        UniqueConstraint(
+            "provider_name",
+            "symbol",
+            "interval",
+            "open_time",
+            name="uq_price_candles_provider_symbol_interval_open",
+        ),
+        CheckConstraint("interval = '1m'", name="ck_price_candles_interval_1m"),
+        CheckConstraint(
+            "close_time > open_time",
+            name="ck_price_candles_time_order",
+        ),
+        CheckConstraint("open_price > 0", name="ck_price_candles_open_price_positive"),
+        CheckConstraint("high_price > 0", name="ck_price_candles_high_price_positive"),
+        CheckConstraint("low_price > 0", name="ck_price_candles_low_price_positive"),
+        CheckConstraint("close_price > 0", name="ck_price_candles_close_price_positive"),
+        CheckConstraint(
+            "high_price >= open_price "
+            "AND high_price >= low_price "
+            "AND high_price >= close_price",
+            name="ck_price_candles_high_price_bounds",
+        ),
+        CheckConstraint(
+            "low_price <= open_price "
+            "AND low_price <= high_price "
+            "AND low_price <= close_price",
+            name="ck_price_candles_low_price_bounds",
+        ),
+        CheckConstraint(
+            "volume IS NULL OR volume >= 0",
+            name="ck_price_candles_volume_nonnegative",
+        ),
+        CheckConstraint(
+            "quote_volume IS NULL OR quote_volume >= 0",
+            name="ck_price_candles_quote_volume_nonnegative",
+        ),
+        Index(
+            "ix_price_candles_lookup",
+            "provider_name",
+            "symbol",
+            "interval",
+            "open_time",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    provider_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    symbol: Mapped[str] = mapped_column(String(32), nullable=False)
+    interval: Mapped[str] = mapped_column(String(16), nullable=False)
+    open_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    close_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    open_price: Mapped[float] = mapped_column(Float, nullable=False)
+    high_price: Mapped[float] = mapped_column(Float, nullable=False)
+    low_price: Mapped[float] = mapped_column(Float, nullable=False)
+    close_price: Mapped[float] = mapped_column(Float, nullable=False)
+    volume: Mapped[float | None] = mapped_column(Float)
+    quote_volume: Mapped[float | None] = mapped_column(Float)
+    provider_metadata: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
