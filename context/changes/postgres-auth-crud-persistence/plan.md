@@ -690,35 +690,35 @@ This is a no-data migration from in-memory production state to durable Postgres.
 
 #### Automated
 
-- [x] 3.1 Postgres shell repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_postgres_repository.py -p no:cacheprovider`
-- [x] 3.2 Postgres dataset repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_postgres_repository.py -p no:cacheprovider`
-- [x] 3.3 Authenticated shell/dataset/export route tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_router.py tests/backtest_dataset/test_router.py -p no:cacheprovider`
-- [x] 3.4 Quality route reads persisted completed datasets: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider`
-- [x] 3.5 JSONL determinism still passes after Postgres persistence: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_export.py tests/backtest_dataset/test_determinism.py tests/contracts/test_serialization.py -p no:cacheprovider`
+- [x] 3.1 Postgres shell repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_postgres_repository.py -p no:cacheprovider` — 8562a24
+- [x] 3.2 Postgres dataset repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_postgres_repository.py -p no:cacheprovider` — 8562a24
+- [x] 3.3 Authenticated shell/dataset/export route tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_router.py tests/backtest_dataset/test_router.py -p no:cacheprovider` — 8562a24
+- [x] 3.4 Quality route reads persisted completed datasets: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider` — 8562a24
+- [x] 3.5 JSONL determinism still passes after Postgres persistence: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_export.py tests/backtest_dataset/test_determinism.py tests/contracts/test_serialization.py -p no:cacheprovider` — 8562a24
 
 #### Manual
 
-- [x] 3.6 A logged-in user can create a draft run, generate a dataset, refresh the browser, and still fetch the run/dataset from Postgres.
-- [x] 3.7 The quality route no longer shows an S-02 unavailable message for a completed deterministic dataset.
-- [x] 3.8 Manually changing the URL to another workspace slug returns not found behavior instead of showing data.
-- [x] 3.9 JSONL export downloaded before and after a backend restart is byte-identical for the same completed run.
+- [x] 3.6 A logged-in user can create a draft run, generate a dataset, refresh the browser, and still fetch the run/dataset from Postgres. — 8562a24
+- [x] 3.7 The quality route no longer shows an S-02 unavailable message for a completed deterministic dataset. — 8562a24
+- [x] 3.8 Manually changing the URL to another workspace slug returns not found behavior instead of showing data. — 8562a24
+- [x] 3.9 JSONL export downloaded before and after a backend restart is byte-identical for the same completed run. — 8562a24
 
 ### Phase 4: Saved Backtest Configurations CRUD
 
 #### Automated
 
-- [ ] 4.1 Config schema tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_schemas.py -p no:cacheprovider`
-- [ ] 4.2 Config repository CRUD tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_repository.py -p no:cacheprovider`
-- [ ] 4.3 Config API ownership tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_router.py -p no:cacheprovider`
-- [ ] 4.4 Draft-from-config route creates a normal durable draft run: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_draft_from_config.py -p no:cacheprovider`
-- [ ] 4.5 Backend regression suite passes: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest -p no:cacheprovider`
+- [x] 4.1 Config schema tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_schemas.py -p no:cacheprovider`
+- [x] 4.2 Config repository CRUD tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_repository.py -p no:cacheprovider`
+- [x] 4.3 Config API ownership tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_router.py -p no:cacheprovider`
+- [x] 4.4 Draft-from-config route creates a normal durable draft run: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_configs/test_draft_from_config.py -p no:cacheprovider`
+- [x] 4.5 Backend regression suite passes: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest -p no:cacheprovider`
 
 #### Manual
 
-- [ ] 4.6 A logged-in user can create, view, edit, and delete a saved BTCUSD BACKTEST configuration.
-- [ ] 4.7 Creating a draft from a saved config produces the same shell UX and dataset workflow as direct draft creation.
-- [ ] 4.8 Deleting a saved config does not delete already-created runs, datasets, or exports.
-- [ ] 4.9 Cross-workspace config URLs return not found.
+- [x] 4.6 A logged-in user can create, view, edit, and delete a saved BTCUSD BACKTEST configuration.
+- [x] 4.7 Creating a draft from a saved config produces the same shell UX and dataset workflow as direct draft creation.
+- [x] 4.8 Deleting a saved config does not delete already-created runs, datasets, or exports.
+- [x] 4.9 Cross-workspace config URLs return not found.
 
 ### Phase 5: Frontend Auth and Config Workflow
 

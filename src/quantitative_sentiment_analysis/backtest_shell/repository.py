@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
 from threading import Lock
@@ -133,6 +134,32 @@ class PostgresBacktestShellRepository:
         workspace_id: str,
         request: CreateBacktestRunRequest,
     ) -> BacktestRunShell:
+        return self._create_draft_run(
+            workspace_id=workspace_id,
+            request=request,
+            config_id=None,
+        )
+
+    def create_draft_run_from_config(
+        self,
+        *,
+        workspace_id: str,
+        config_id: uuid.UUID,
+        request: CreateBacktestRunRequest,
+    ) -> BacktestRunShell:
+        return self._create_draft_run(
+            workspace_id=workspace_id,
+            request=request,
+            config_id=config_id,
+        )
+
+    def _create_draft_run(
+        self,
+        *,
+        workspace_id: str,
+        request: CreateBacktestRunRequest,
+        config_id: uuid.UUID | None,
+    ) -> BacktestRunShell:
         self._ensure_supported(request)
         workspace = self._get_workspace(workspace_id)
         if workspace is None:
@@ -144,6 +171,7 @@ class PostgresBacktestShellRepository:
         run = BacktestRunModel(
             workspace_id=workspace.id,
             run_id=run_id,
+            config_id=config_id,
             instrument=request.instrument.value,
             mode=request.mode.value,
             timeframe_start=request.timeframe_start,

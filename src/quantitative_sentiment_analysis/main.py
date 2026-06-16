@@ -12,6 +12,9 @@ from starlette.responses import Response
 from quantitative_sentiment_analysis import __version__
 from quantitative_sentiment_analysis.auth.router import router as auth_router
 from quantitative_sentiment_analysis.auth.security import session_cookie_settings
+from quantitative_sentiment_analysis.backtest_configs.router import (
+    router as config_router,
+)
 from quantitative_sentiment_analysis.backtest_dataset.router import (
     router as dataset_router,
 )
@@ -66,6 +69,7 @@ def create_app(cors_allowed_origins: Sequence[str] | None = None) -> FastAPI:
     add_cookie_auth_origin_guard(application, allowed_origins)
 
     application.include_router(auth_router)
+    application.include_router(config_router)
     application.include_router(shell_router)
     application.include_router(dataset_router)
     application.include_router(quality_router)

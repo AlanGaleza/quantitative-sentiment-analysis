@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 from fastapi.testclient import TestClient
 
+from quantitative_sentiment_analysis.auth.dependencies import require_owned_workspace
 from quantitative_sentiment_analysis.backtest_quality import (
     DirectionalBias as QualityDirectionalBias,
 )
@@ -84,6 +85,7 @@ def test_quality_input_record_maps_to_foundation_dataset_record() -> None:
 
 
 def test_quality_route_preserves_s04_response_shape() -> None:
+    app.dependency_overrides[require_owned_workspace] = lambda: object()
     app.dependency_overrides[get_quality_input_provider] = (
         lambda: FixtureQualityInputProvider()
     )
