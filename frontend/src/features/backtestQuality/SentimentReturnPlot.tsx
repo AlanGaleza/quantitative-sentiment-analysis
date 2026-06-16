@@ -30,6 +30,30 @@ export function SentimentReturnPlot({ points }: SentimentReturnPlotProps) {
     (point) => point.later_return !== null,
   ) as Array<QualityChartPoint & { later_return: number }>;
   const missingPoints = points.filter((point) => point.later_return === null);
+
+  if (numericPoints.length === 0) {
+    return (
+      <section className="plot-panel" aria-labelledby="plot-heading">
+        <div className="section-heading">
+          <h2 id="plot-heading">Sentiment vs later BTCUSD return</h2>
+          <span>0 numeric pairs</span>
+        </div>
+        <p role="status" className="empty-state plot-empty-state">
+          No numeric later return pairs are available for the selected BACKTEST
+          horizon. {missingPoints.length} chart point
+          {missingPoints.length === 1 ? "" : "s"} missing numeric later return.
+        </p>
+        <ul aria-label="Chart point outcomes">
+          {points.map((point, index) => (
+            <li key={`${point.event_timestamp}-${index}`}>
+              {pointLabel(point, index)}
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
+
   const returnDomain = buildReturnDomain(numericPoints.map((point) => point.later_return));
   const plottedPoints: NumericPoint[] = numericPoints.map((point) => ({
     point,

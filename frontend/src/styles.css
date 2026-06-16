@@ -350,6 +350,22 @@ td {
   color: #526058;
 }
 
+.plot-empty-state {
+  margin-bottom: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.plot-panel > ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #46534d;
+}
+
+.plot-panel > ul li {
+  margin: 6px 0;
+}
+
 .shell-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);

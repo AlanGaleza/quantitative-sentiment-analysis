@@ -5,6 +5,8 @@ import { BacktestQualityPage } from "./BacktestQualityPage";
 import {
   backtestQualityReport,
   emptyBacktestQualityReport,
+  enrichedBacktestQualityReport,
+  zeroNumericBacktestQualityReport,
 } from "./testFixtures";
 
 describe("BacktestQualityPage", () => {
@@ -51,6 +53,56 @@ describe("BacktestQualityPage", () => {
     expect(screen.getByText("BTCUSD quality fixture with missing movement")).toBeInTheDocument();
     expect(screen.getAllByText("missing").length).toBeGreaterThan(0);
     expect(screen.getByText(/counted as misses/i)).toBeInTheDocument();
+  });
+
+  it("renders enriched numeric returns and backend warning copy", async () => {
+    const loadReport = vi.fn().mockResolvedValue({
+      ...enrichedBacktestQualityReport,
+      warnings: [
+        "Price candle cache write failed; fetched candles were used only for this report.",
+      ],
+    });
+
+    render(
+      <BacktestQualityPage
+        workspaceId="workspace-alpha"
+        runId="run-001"
+        loadReport={loadReport}
+      />,
+    );
+
+    const plot = await screen.findByRole("region", {
+      name: "Sentiment vs later BTCUSD return",
+    });
+    expect(within(plot).getByText("5 numeric pairs")).toBeInTheDocument();
+    expect(screen.getByText("Price candle cache write failed", { exact: false })).toBeInTheDocument();
+    expect(screen.getAllByText("4.00%").length).toBeGreaterThan(0);
+    expect(screen.getByText("1.30%")).toBeInTheDocument();
+    expect(screen.queryByText(/^missing$/i)).not.toBeInTheDocument();
+  });
+
+  it("renders partial reports with backend enrichment warnings", async () => {
+    const loadReport = vi.fn().mockResolvedValue(zeroNumericBacktestQualityReport);
+
+    render(
+      <BacktestQualityPage
+        workspaceId="workspace-alpha"
+        runId="run-001"
+        loadReport={loadReport}
+      />,
+    );
+
+    const plot = await screen.findByRole("region", {
+      name: "Sentiment vs later BTCUSD return",
+    });
+    expect(within(plot).getByText("0 numeric pairs")).toBeInTheDocument();
+    expect(
+      screen.getByText(/horizon price candle was unavailable/i),
+    ).toBeInTheDocument();
+    expect(
+      within(plot).getByText(/No numeric later return pairs are available/i),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("missing").length).toBeGreaterThan(0);
   });
 
   it("loads a selected horizon from URL state", async () => {

@@ -130,3 +130,56 @@ export const emptyBacktestQualityReport: BacktestQualityReport = {
   chart_points: [],
   representative_records: [],
 };
+
+export const zeroNumericBacktestQualityReport: BacktestQualityReport = {
+  ...backtestQualityReport,
+  metrics: {
+    ...backtestQualityReport.metrics,
+    correlation: null,
+    correlation_pair_count: 0,
+    hit_count: 0,
+    miss_count: 2,
+    missing_movement_count: 2,
+  },
+  warnings: [
+    "2 record(s) missing later movement were counted as misses.",
+    "2 record(s) missing price movement because the horizon price candle was unavailable.",
+  ],
+  chart_points: backtestQualityReport.chart_points.slice(0, 2).map((point) => ({
+    ...point,
+    later_return: null,
+    realized_direction: null,
+    outcome: "MISS",
+  })),
+  representative_records: backtestQualityReport.representative_records.map((record) => ({
+    ...record,
+    later_return: null,
+    realized_direction: null,
+  })),
+};
+
+export const enrichedBacktestQualityReport: BacktestQualityReport = {
+  ...backtestQualityReport,
+  metrics: {
+    ...backtestQualityReport.metrics,
+    correlation: 0.998,
+    correlation_pair_count: 5,
+    hit_count: 4,
+    miss_count: 0,
+    missing_movement_count: 0,
+  },
+  warnings: [],
+  chart_points: backtestQualityReport.chart_points.map((point, index) => ({
+    ...point,
+    later_return: point.later_return ?? 0.012 + index * 0.001,
+    realized_direction: point.realized_direction ?? "UP",
+    outcome: point.outcome === "MISS" ? "HIT" : point.outcome,
+  })),
+  representative_records: backtestQualityReport.representative_records.map(
+    (record, index) => ({
+      ...record,
+      later_return: record.later_return ?? 0.012 + index * 0.001,
+      realized_direction: record.realized_direction ?? "UP",
+    }),
+  ),
+};

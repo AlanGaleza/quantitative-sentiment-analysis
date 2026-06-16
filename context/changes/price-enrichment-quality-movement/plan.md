@@ -765,25 +765,25 @@ depending on a half-created cache table.
 
 #### Automated
 
-- [x] 4.1 Quality adapter tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider`
-- [x] 4.2 Quality router and metrics tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider`
-- [x] 4.3 Backend full checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
+- [x] 4.1 Quality adapter tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider` — 9069bef
+- [x] 4.2 Quality router and metrics tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider` — 9069bef
+- [x] 4.3 Backend full checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright` — 9069bef
 
 #### Manual
 
-- [x] 4.4 On the local app, open a completed run quality report with fixture price data and confirm `1 minute` and `4 hours` horizons produce non-null `later_return` values and visible numeric chart points.
-- [x] 4.5 Temporarily force the price provider to fail locally and confirm the route returns a partial report with warning copy instead of a 500.
+- [x] 4.4 On the local app, open a completed run quality report with fixture price data and confirm `1 minute` and `4 hours` horizons produce non-null `later_return` values and visible numeric chart points. — 9069bef
+- [x] 4.5 Temporarily force the price provider to fail locally and confirm the route returns a partial report with warning copy instead of a 500. — 9069bef
 
 ### Phase 5: Frontend Empty State and UX
 
 #### Automated
 
-- [ ] 5.1 Quality frontend tests pass: `npm --prefix frontend run test -- src/features/backtestQuality`
-- [ ] 5.2 Frontend build passes: `npm --prefix frontend run build`
+- [x] 5.1 Quality frontend tests pass: `npm --prefix frontend run test -- src/features/backtestQuality`
+- [x] 5.2 Frontend build passes: `npm --prefix frontend run build`
 
 #### Manual
 
-- [ ] 5.3 In the browser, confirm an enriched report draws numeric dots and a report with zero numeric pairs shows a clear empty state instead of a flat-looking chart.
+- [x] 5.3 In the browser, confirm an enriched report draws numeric dots and a report with zero numeric pairs shows a clear empty state instead of a flat-looking chart.
 
 ### Phase 6: Docs, Smoke, and Rollout
 
