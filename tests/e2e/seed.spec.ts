@@ -17,6 +17,29 @@ test.describe("seed: BACKTEST shell semantic safety", () => {
     const draftApiRoute = `**/api/workspaces/${encodeURIComponent(
       uniqueWorkspaceId,
     )}/backtests/drafts`;
+    const authMeRoute = "**/api/auth/me";
+
+    await page.route(authMeRoute, async (route, request) => {
+      expect(request.method()).toBe("GET");
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          user: {
+            id: "seed-user-001",
+            email: "seed@example.test",
+          },
+          workspaces: [
+            {
+              id: "seed-workspace-001",
+              slug: uniqueWorkspaceId,
+              name: "Seed Workspace",
+            },
+          ],
+          default_workspace_slug: uniqueWorkspaceId,
+        }),
+      });
+    });
 
     await page.route(draftApiRoute, async (route, request) => {
       expect(request.method()).toBe("POST");
@@ -90,13 +113,18 @@ test.describe("seed: BACKTEST shell semantic safety", () => {
         ),
       ).toHaveCount(0);
     } finally {
-      await cleanupSeedState(page, draftApiRoute);
+      await cleanupSeedState(page, draftApiRoute, authMeRoute);
     }
   });
 });
 
-async function cleanupSeedState(page: Page, draftApiRoute: string): Promise<void> {
+async function cleanupSeedState(
+  page: Page,
+  draftApiRoute: string,
+  authMeRoute: string,
+): Promise<void> {
   await page.unroute(draftApiRoute).catch(() => undefined);
+  await page.unroute(authMeRoute).catch(() => undefined);
   await page
     .evaluate(() => {
       window.localStorage.clear();

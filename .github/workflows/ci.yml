@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "24"
+  AUTH_SECRET: ci-auth-secret-with-at-least-32-characters
+  QSA_SESSION_COOKIE_SECURE: "false"
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: qsa_ci
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/qsa_ci
+      QSA_CORS_ALLOWED_ORIGINS: http://127.0.0.1:3100
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - name: Install backend dependencies
+        run: uv sync --locked --dev
+      - name: Apply migrations
+        run: uv run alembic upgrade head
+      - name: Lint backend
+        run: uv run ruff check .
+      - name: Typecheck backend
+        run: uv run pyright
+      - name: Test backend
+        run: uv run pytest -p no:cacheprovider
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+      - name: Test frontend
+        run: npm --prefix frontend run test
+      - name: Build frontend
+        run: npm --prefix frontend run build
+
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: qsa_e2e
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/qsa_e2e
+      PLAYWRIGHT_HOST: 127.0.0.1
+      PLAYWRIGHT_PORT: "3100"
+      PLAYWRIGHT_API_HOST: 127.0.0.1
+      PLAYWRIGHT_API_PORT: "8000"
+      QSA_E2E_USER_EMAIL: e2e-trader@example.test
+      QSA_E2E_USER_PASSWORD: e2e-correct-password
+      QSA_E2E_WORKSPACE_SLUG: demo-workspace
+      QSA_E2E_WORKSPACE_NAME: Demo Workspace
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+      - name: Install backend dependencies
+        run: uv sync --locked --dev
+      - name: Install E2E dependencies
+        run: npm ci
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+      - name: Install Playwright browser
+        run: node node_modules/@playwright/test/cli.js install --with-deps chromium
+      - name: Run Playwright E2E
+        run: npm run e2e

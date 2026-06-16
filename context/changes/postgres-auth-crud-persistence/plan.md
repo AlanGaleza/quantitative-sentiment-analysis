@@ -724,28 +724,28 @@ This is a no-data migration from in-memory production state to durable Postgres.
 
 #### Automated
 
-- [x] 5.1 Auth API client tests pass: `npm --prefix frontend run test -- src/features/auth`
-- [x] 5.2 Config API and component tests pass: `npm --prefix frontend run test -- src/features/backtestConfigs`
-- [x] 5.3 Existing shell and quality tests pass with credentialed fetch expectations: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestQuality`
-- [x] 5.4 App routing/auth bootstrap tests pass: `npm --prefix frontend run test -- src/App.test.ts`
-- [x] 5.5 Frontend typecheck and build pass: `npm --prefix frontend run build`
+- [x] 5.1 Auth API client tests pass: `npm --prefix frontend run test -- src/features/auth` — a8be700
+- [x] 5.2 Config API and component tests pass: `npm --prefix frontend run test -- src/features/backtestConfigs` — a8be700
+- [x] 5.3 Existing shell and quality tests pass with credentialed fetch expectations: `npm --prefix frontend run test -- src/features/backtestShell src/features/backtestQuality` — a8be700
+- [x] 5.4 App routing/auth bootstrap tests pass: `npm --prefix frontend run test -- src/App.test.ts` — a8be700
+- [x] 5.5 Frontend typecheck and build pass: `npm --prefix frontend run build` — a8be700
 
 #### Manual
 
-- [x] 5.6 Public deployed frontend shows login before protected workspace routes.
-- [x] 5.7 Logging in navigates to the user's default workspace and shows saved BACKTEST configurations.
-- [x] 5.8 The browser workflow can create/update/delete a config, create a draft run, run a dataset, open quality, and download JSONL.
-- [x] 5.9 Refreshing the page keeps the user logged in until logout/session expiry.
-- [x] 5.10 UI copy remains BACKTEST-only analytical wording and does not present outputs as executable trading signals.
+- [x] 5.6 Public deployed frontend shows login before protected workspace routes. — a8be700
+- [x] 5.7 Logging in navigates to the user's default workspace and shows saved BACKTEST configurations. — a8be700
+- [x] 5.8 The browser workflow can create/update/delete a config, create a draft run, run a dataset, open quality, and download JSONL. — a8be700
+- [x] 5.9 Refreshing the page keeps the user logged in until logout/session expiry. — a8be700
+- [x] 5.10 UI copy remains BACKTEST-only analytical wording and does not present outputs as executable trading signals. — a8be700
 
 ### Phase 6: Tests, E2E, CI/CD, and Rollout Docs
 
 #### Automated
 
-- [ ] 6.1 Backend CI-equivalent gate passes locally or in CI: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest -p no:cacheprovider`
-- [ ] 6.2 Backend lint/type gates pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run ruff check .` and `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pyright`
-- [ ] 6.3 Frontend CI-equivalent gate passes: `npm --prefix frontend ci && npm --prefix frontend run test && npm --prefix frontend run build`
-- [ ] 6.4 Playwright E2E passes: `npm run e2e`
+- [x] 6.1 Backend CI-equivalent gate passes locally or in CI: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest -p no:cacheprovider`
+- [x] 6.2 Backend lint/type gates pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run ruff check .` and `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pyright`
+- [x] 6.3 Frontend CI-equivalent gate passes: `npm --prefix frontend ci && npm --prefix frontend run test && npm --prefix frontend run build`
+- [x] 6.4 Playwright E2E passes: `npm run e2e`
 - [ ] 6.5 GitHub Actions workflow passes on the branch/PR.
 
 #### Manual
