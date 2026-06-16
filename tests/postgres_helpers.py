@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from quantitative_sentiment_analysis.auth.security import AUTH_SECRET_ENV, hash_password
@@ -38,7 +39,15 @@ def postgres_engine_or_skip(monkeypatch: pytest.MonkeyPatch) -> Engine:
     database_url = _database_url_or_skip()
     monkeypatch.setenv(AUTH_SECRET_ENV, AUTH_SECRET)
     reset_database_state_for_tests()
-    return get_engine(database_url)
+    engine = get_engine(database_url)
+    try:
+        with engine.connect():
+            pass
+    except (OSError, SQLAlchemyError) as exc:
+        engine.dispose()
+        reset_database_state_for_tests()
+        pytest.skip(f"{DATABASE_URL_ENV} is not reachable: {exc}")
+    return engine
 
 
 def override_database_session(app: FastAPI, engine: Engine) -> None:

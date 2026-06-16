@@ -22,6 +22,9 @@ from quantitative_sentiment_analysis.price_enrichment.provider import (
     PriceProviderUnavailableError,
     PriceProviderUnsupportedScopeError,
 )
+from quantitative_sentiment_analysis.price_enrichment.service import (
+    PriceEnrichmentService,
+)
 from quantitative_sentiment_analysis.price_enrichment.schemas import (
     PriceCandle,
     PriceMissingReason,
@@ -46,6 +49,7 @@ __all__ = [
     "PriceProviderLimitationError",
     "PriceProviderUnavailableError",
     "PriceProviderUnsupportedScopeError",
+    "PriceEnrichmentService",
     "classify_realized_direction",
     "compute_price_movement",
     "floor_to_utc_minute",

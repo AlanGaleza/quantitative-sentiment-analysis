@@ -42,8 +42,12 @@ def get_backtest_quality_report(
 ) -> BacktestQualityReport:
     try:
         horizon = supported_quality_horizon(horizon_value, horizon_unit)
-        records = provider.get_quality_inputs(workspace_id, run_id)
-        report = build_quality_report(records, horizon=horizon)
+        batch = provider.get_quality_inputs(workspace_id, run_id, horizon)
+        report = build_quality_report(
+            batch.records,
+            horizon=horizon,
+            extra_warnings=batch.extra_warnings,
+        )
     except UnsupportedQualityHorizonError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except QualityRunNotReadyError as exc:

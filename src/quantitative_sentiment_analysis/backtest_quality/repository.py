@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Generator, Sequence
+from collections.abc import Generator
 from datetime import UTC, datetime, timedelta
 import os
 from typing import Protocol
@@ -15,11 +15,22 @@ from quantitative_sentiment_analysis.backtest_dataset.repository import (
 from quantitative_sentiment_analysis.backtest_dataset.schemas import DatasetRunStatus
 from quantitative_sentiment_analysis.backtest_quality.schemas import (
     DirectionalBias,
+    QualityHorizon,
+    QualityInputBatch,
     QualityInputRecord,
     RealizedDirection,
     RelevanceLabel,
 )
 from quantitative_sentiment_analysis.persistence.database import get_session_factory
+from quantitative_sentiment_analysis.price_enrichment.dependencies import (
+    get_historical_price_provider,
+)
+from quantitative_sentiment_analysis.price_enrichment.repository import (
+    PostgresPriceCandleRepository,
+)
+from quantitative_sentiment_analysis.price_enrichment.service import (
+    PriceEnrichmentService,
+)
 
 QSA_RUNTIME_ENV = "QSA_RUNTIME_ENV"
 QSA_BACKTEST_QUALITY_PROVIDER = "QSA_BACKTEST_QUALITY_PROVIDER"
@@ -47,7 +58,8 @@ class QualityInputProvider(Protocol):
         self,
         workspace_id: str,
         run_id: str,
-    ) -> Sequence[QualityInputRecord]:
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
         """Return deterministic quality inputs for one completed BACKTEST run."""
         ...
 
@@ -63,7 +75,8 @@ class NotReadyQualityInputProvider:
         self,
         workspace_id: str,
         run_id: str,
-    ) -> Sequence[QualityInputRecord]:
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
         raise QualityRunNotReadyError(self.message)
 
 
@@ -72,21 +85,30 @@ class LocalFixtureQualityInputProvider:
         self,
         workspace_id: str,
         run_id: str,
-    ) -> Sequence[QualityInputRecord]:
-        return _local_fixture_records(workspace_id=workspace_id, run_id=run_id)
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
+        return QualityInputBatch(
+            records=tuple(_local_fixture_records(workspace_id=workspace_id, run_id=run_id))
+        )
 
 
 class CompletedDatasetQualityInputProvider:
     """Maps completed S-02 canonical dataset records into S-04 quality inputs."""
 
-    def __init__(self, repository: CompletedDatasetRepository) -> None:
+    def __init__(
+        self,
+        repository: CompletedDatasetRepository,
+        price_enrichment_service: PriceEnrichmentService,
+    ) -> None:
         self._repository = repository
+        self._price_enrichment_service = price_enrichment_service
 
     def get_quality_inputs(
         self,
         workspace_id: str,
         run_id: str,
-    ) -> Sequence[QualityInputRecord]:
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
         try:
             preview = self._repository.get_run(workspace_id, run_id)
             records = self._repository.list_records(workspace_id, run_id)
@@ -106,27 +128,11 @@ class CompletedDatasetQualityInputProvider:
                 "completed BACKTEST dataset has no records for quality evaluation"
             )
 
-        return tuple(
-            QualityInputRecord(
-                workspace_id=record.workspace_id,
-                run_id=record.run_id,
-                record_id=record.record_id,
-                instrument=record.instrument.value,
-                mode=record.mode.value,
-                event_timestamp=record.timestamp,
-                headline=record.headline,
-                source_id=record.source_id,
-                source_name=record.source_name,
-                sentiment_score=record.sentiment_score,
-                directional_bias=record.directional_bias,
-                confidence=record.confidence,
-                relevance=record.relevance,
-                later_return=None,
-                realized_direction=None,
-                model_version=record.model_version,
-                config_version=record.config_version,
-            )
-            for record in records
+        return self._price_enrichment_service.enrich_quality_inputs(
+            records=records,
+            horizon=horizon,
+            run_timeframe_start=preview.summary.timeframe_start,
+            run_timeframe_end=preview.summary.timeframe_end,
         )
 
 
@@ -150,7 +156,11 @@ def get_quality_input_provider() -> Generator[QualityInputProvider, None, None]:
     session_factory = get_session_factory()
     with session_factory() as session:
         yield CompletedDatasetQualityInputProvider(
-            PostgresCompletedDatasetRepository(session)
+            PostgresCompletedDatasetRepository(session),
+            PriceEnrichmentService(
+                candle_repository=PostgresPriceCandleRepository(session),
+                price_provider=get_historical_price_provider(),
+            ),
         )
 
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 
 from quantitative_sentiment_analysis.backtest_quality import (
@@ -8,6 +7,8 @@ from quantitative_sentiment_analysis.backtest_quality import (
     RelevanceLabel,
 )
 from quantitative_sentiment_analysis.backtest_quality.schemas import (
+    QualityHorizon,
+    QualityInputBatch,
     QualityInputRecord,
     RealizedDirection,
 )
@@ -110,5 +111,8 @@ class FixtureQualityInputProvider:
         self,
         workspace_id: str,
         run_id: str,
-    ) -> Sequence[QualityInputRecord]:
-        return quality_records(workspace_id=workspace_id, run_id=run_id)
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
+        return QualityInputBatch(
+            records=quality_records(workspace_id=workspace_id, run_id=run_id)
+        )

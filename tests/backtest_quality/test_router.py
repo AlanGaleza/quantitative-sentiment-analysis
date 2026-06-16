@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from datetime import UTC, datetime
 
 import pytest
@@ -24,12 +23,14 @@ from quantitative_sentiment_analysis.backtest_quality import (
     LOCAL_FIXTURE_PROVIDER,
     QSA_BACKTEST_QUALITY_PROVIDER,
     QSA_RUNTIME_ENV,
-    QualityInputRecord,
+    QualityHorizon,
+    QualityInputBatch,
     QualityRunIncompleteError,
     QualityRunNotFoundError,
     QualityRunUnsupportedError,
     get_quality_input_provider,
 )
+from quantitative_sentiment_analysis.backtest_quality.schemas import RealizedDirection
 from quantitative_sentiment_analysis.contracts import (
     DatasetRecord,
     DirectionalBias,
@@ -41,6 +42,17 @@ from quantitative_sentiment_analysis.persistence.database import (
     create_session_factory,
     reset_database_state_for_tests,
 )
+from quantitative_sentiment_analysis.price_enrichment.binance import (
+    BINANCE_SPOT_PROVIDER_NAME,
+)
+from quantitative_sentiment_analysis.price_enrichment.repository import (
+    PostgresPriceCandleRepository,
+)
+from quantitative_sentiment_analysis.price_enrichment.schemas import PriceCandle
+from tests.backtest_quality.fixtures import (
+    FixtureQualityInputProvider,
+    make_quality_record,
+)
 from tests.postgres_helpers import (
     FRONTEND_ORIGIN,
     clear_database,
@@ -49,7 +61,6 @@ from tests.postgres_helpers import (
     postgres_engine_or_skip,
     seed_user_with_workspace,
 )
-from tests.backtest_quality.fixtures import FixtureQualityInputProvider
 
 
 class RaisingProvider:
@@ -60,8 +71,34 @@ class RaisingProvider:
         self,
         workspace_id: str,
         run_id: str,
-    ) -> Sequence[QualityInputRecord]:
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
         raise self.exc
+
+
+class PartialWarningProvider:
+    def get_quality_inputs(
+        self,
+        workspace_id: str,
+        run_id: str,
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
+        return QualityInputBatch(
+            records=[
+                make_quality_record(
+                    1,
+                    workspace_id=workspace_id,
+                    run_id=run_id,
+                    sentiment_score=0.7,
+                    directional_bias=DirectionalBias.LONG,
+                    later_return=None,
+                    realized_direction=None,
+                )
+            ],
+            extra_warnings=(
+                "Price provider was unavailable; price movement remains partial.",
+            ),
+        )
 
 
 @pytest.fixture(autouse=True)
@@ -93,9 +130,8 @@ def test_quality_route_returns_fixture_backed_report() -> None:
 
 
 def test_quality_route_accepts_supported_selected_horizon() -> None:
-    app.dependency_overrides[get_quality_input_provider] = lambda: (
-        FixtureQualityInputProvider()
-    )
+    fixture_provider = FixtureQualityInputProvider()
+    app.dependency_overrides[get_quality_input_provider] = lambda: fixture_provider
     client = TestClient(app)
 
     response = client.get(
@@ -190,6 +226,19 @@ def test_quality_route_maps_provider_errors(
     assert response.json()["detail"] == str(exc)
 
 
+def test_quality_route_returns_partial_report_with_enrichment_warning() -> None:
+    app.dependency_overrides[get_quality_input_provider] = lambda: PartialWarningProvider()
+    client = TestClient(app)
+
+    response = client.get("/api/workspaces/workspace-alpha/backtests/run-001/quality")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["metrics"]["missing_movement_count"] == 1
+    assert data["representative_records"][0]["later_return"] is None
+    assert any("Price provider was unavailable" in warning for warning in data["warnings"])
+
+
 @pytest.mark.parametrize(
     "detail",
     [
@@ -274,6 +323,32 @@ def test_postgres_quality_route_reads_persisted_completed_dataset(
                 )
             ],
         )
+        PostgresPriceCandleRepository(session).upsert_candles(
+            [
+                PriceCandle(
+                    provider_name=BINANCE_SPOT_PROVIDER_NAME,
+                    symbol="BTCUSDT",
+                    interval="1m",
+                    open_time=datetime(2026, 6, 2, 9, 30, tzinfo=UTC),
+                    close_time=datetime(2026, 6, 2, 9, 31, tzinfo=UTC),
+                    open_price=100.0,
+                    high_price=100.0,
+                    low_price=100.0,
+                    close_price=100.0,
+                ),
+                PriceCandle(
+                    provider_name=BINANCE_SPOT_PROVIDER_NAME,
+                    symbol="BTCUSDT",
+                    interval="1m",
+                    open_time=datetime(2026, 6, 2, 9, 31, tzinfo=UTC),
+                    close_time=datetime(2026, 6, 2, 9, 32, tzinfo=UTC),
+                    open_price=101.0,
+                    high_price=101.0,
+                    low_price=101.0,
+                    close_price=101.0,
+                ),
+            ]
+        )
 
     with TestClient(test_app, base_url="https://api.example.test") as client:
         login(client)
@@ -287,10 +362,12 @@ def test_postgres_quality_route_reads_persisted_completed_dataset(
     assert data["workspace_id"] == "workspace-alpha"
     assert data["run_id"] == "draft-run-fixed"
     assert data["horizon"] == {"value": 1, "unit": "minutes"}
-    assert data["metrics"]["missing_movement_count"] == 1
-    assert data["representative_records"][0]["later_return"] is None
-    assert data["representative_records"][0]["realized_direction"] is None
-    assert any("missing later movement" in warning for warning in data["warnings"])
+    assert data["metrics"]["missing_movement_count"] == 0
+    assert data["representative_records"][0]["later_return"] == pytest.approx(0.01)
+    assert data["representative_records"][0]["realized_direction"] == (
+        RealizedDirection.UP
+    )
+    assert not any("missing later movement" in warning for warning in data["warnings"])
     assert "S-02" not in str(data)
     with session_factory() as session:
         clear_database(session)

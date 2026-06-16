@@ -123,6 +123,31 @@ def test_correlation_is_none_for_insufficient_pairs() -> None:
     assert any("Correlation is unavailable" in warning for warning in report.warnings)
 
 
+def test_build_quality_report_appends_extra_warnings_deterministically() -> None:
+    extra_warnings = (
+        "Price provider was unavailable; price movement remains partial.",
+        "Price provider was unavailable; price movement remains partial.",
+        "1 record(s) missing price movement because the horizon price candle was unavailable.",
+    )
+
+    first = build_quality_report(
+        quality_records(),
+        extra_warnings=extra_warnings,
+    )
+    second = build_quality_report(
+        list(reversed(quality_records())),
+        extra_warnings=tuple(reversed(extra_warnings)),
+    )
+
+    assert first.warnings[-2:] == [
+        "Price provider was unavailable; price movement remains partial.",
+        "1 record(s) missing price movement because the horizon price candle was unavailable.",
+    ]
+    assert second.warnings.count(
+        "Price provider was unavailable; price movement remains partial."
+    ) == 1
+
+
 def test_build_quality_report_requires_shared_run_metadata() -> None:
     records = quality_records()
     records[1] = make_quality_record(

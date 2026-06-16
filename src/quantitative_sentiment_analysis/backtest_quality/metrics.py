@@ -26,6 +26,7 @@ class QualityReportInputError(ValueError):
 def build_quality_report(
     records: Sequence[QualityInputRecord],
     horizon: QualityHorizon | None = None,
+    extra_warnings: Sequence[str] = (),
 ) -> BacktestQualityReport:
     ordered_records = sorted(
         records,
@@ -104,7 +105,7 @@ def build_quality_report(
         model_version=first.model_version,
         config_version=first.config_version,
         metrics=metrics,
-        warnings=_build_warnings(metrics),
+        warnings=_build_warnings(metrics, extra_warnings=extra_warnings),
         chart_points=_sample_chart_points(chart_points),
         representative_records=_sample_representative_records(ordered_records),
     )
@@ -193,7 +194,11 @@ def _sample_chart_points(
     ]
 
 
-def _build_warnings(metrics: QualityMetrics) -> list[str]:
+def _build_warnings(
+    metrics: QualityMetrics,
+    *,
+    extra_warnings: Sequence[str] = (),
+) -> list[str]:
     warnings: list[str] = []
     if metrics.missing_movement_count:
         warnings.append(
@@ -210,4 +215,7 @@ def _build_warnings(metrics: QualityMetrics) -> list[str]:
             "Correlation is unavailable because fewer than two evaluable numeric "
             "return pairs exist or one side has zero variance."
         )
+    for warning in extra_warnings:
+        if warning not in warnings:
+            warnings.append(warning)
     return warnings

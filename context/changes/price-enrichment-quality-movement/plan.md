@@ -754,25 +754,25 @@ depending on a half-created cache table.
 
 #### Automated
 
-- [x] 3.1 Price provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_provider.py tests/price_enrichment/test_binance.py -p no:cacheprovider`
-- [x] 3.2 Backend lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check src/quantitative_sentiment_analysis/price_enrichment tests/price_enrichment && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
+- [x] 3.1 Price provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_provider.py tests/price_enrichment/test_binance.py -p no:cacheprovider` — 866bc89
+- [x] 3.2 Backend lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check src/quantitative_sentiment_analysis/price_enrichment tests/price_enrichment && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright` — 866bc89
 
 #### Manual
 
-- [x] 3.3 With the local app configured for the default provider, run a controlled one-day candle fetch through a small script or REPL and confirm valid `BTCUSDT` 1 minute candles are returned without requiring an API key.
+- [x] 3.3 With the local app configured for the default provider, run a controlled one-day candle fetch through a small script or REPL and confirm valid `BTCUSDT` 1 minute candles are returned without requiring an API key. — 866bc89
 
 ### Phase 4: Quality Adapter Enrichment
 
 #### Automated
 
-- [ ] 4.1 Quality adapter tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider`
-- [ ] 4.2 Quality router and metrics tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider`
-- [ ] 4.3 Backend full checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
+- [x] 4.1 Quality adapter tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider`
+- [x] 4.2 Quality router and metrics tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider`
+- [x] 4.3 Backend full checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
 
 #### Manual
 
-- [ ] 4.4 On the local app, open a completed run quality report with fixture price data and confirm `1 minute` and `4 hours` horizons produce non-null `later_return` values and visible numeric chart points.
-- [ ] 4.5 Temporarily force the price provider to fail locally and confirm the route returns a partial report with warning copy instead of a 500.
+- [x] 4.4 On the local app, open a completed run quality report with fixture price data and confirm `1 minute` and `4 hours` horizons produce non-null `later_return` values and visible numeric chart points.
+- [x] 4.5 Temporarily force the price provider to fail locally and confirm the route returns a partial report with warning copy instead of a 500.
 
 ### Phase 5: Frontend Empty State and UX
 

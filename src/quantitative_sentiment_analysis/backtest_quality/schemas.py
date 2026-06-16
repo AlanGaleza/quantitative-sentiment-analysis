@@ -103,6 +103,29 @@ class QualityInputRecord(BaseModel):
         return self
 
 
+class QualityInputBatch(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    records: tuple[QualityInputRecord, ...] = Field(default_factory=tuple)
+    extra_warnings: tuple[str, ...] = Field(default_factory=tuple)
+
+    @field_validator("records", mode="before")
+    @classmethod
+    def records_are_immutable(
+        cls,
+        value: tuple[QualityInputRecord, ...] | list[QualityInputRecord],
+    ) -> tuple[QualityInputRecord, ...] | list[QualityInputRecord]:
+        return tuple(value)
+
+    @field_validator("extra_warnings", mode="before")
+    @classmethod
+    def warnings_are_immutable(
+        cls,
+        value: tuple[str, ...] | list[str],
+    ) -> tuple[str, ...] | list[str]:
+        return tuple(value)
+
+
 class QualityChartPoint(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
