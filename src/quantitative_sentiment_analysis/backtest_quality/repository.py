@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Generator, Sequence
 from datetime import UTC, datetime, timedelta
 import os
 from typing import Protocol
@@ -9,7 +9,8 @@ from quantitative_sentiment_analysis.backtest_dataset.repository import (
     CompletedDatasetRepository,
     CompletedDatasetRunIncompleteError,
     CompletedDatasetRunNotFoundError,
-    get_completed_dataset_repository,
+    CompletedDatasetRunUnsupportedError,
+    PostgresCompletedDatasetRepository,
 )
 from quantitative_sentiment_analysis.backtest_dataset.schemas import DatasetRunStatus
 from quantitative_sentiment_analysis.backtest_quality.schemas import (
@@ -18,6 +19,7 @@ from quantitative_sentiment_analysis.backtest_quality.schemas import (
     RealizedDirection,
     RelevanceLabel,
 )
+from quantitative_sentiment_analysis.persistence.database import get_session_factory
 
 QSA_RUNTIME_ENV = "QSA_RUNTIME_ENV"
 QSA_BACKTEST_QUALITY_PROVIDER = "QSA_BACKTEST_QUALITY_PROVIDER"
@@ -92,6 +94,8 @@ class CompletedDatasetQualityInputProvider:
             raise QualityRunNotFoundError(str(exc)) from exc
         except CompletedDatasetRunIncompleteError as exc:
             raise QualityRunIncompleteError(str(exc)) from exc
+        except CompletedDatasetRunUnsupportedError as exc:
+            raise QualityRunUnsupportedError(str(exc)) from exc
 
         if preview.summary.status is not DatasetRunStatus.COMPLETED:
             raise QualityRunIncompleteError(
@@ -126,21 +130,28 @@ class CompletedDatasetQualityInputProvider:
         )
 
 
-def get_quality_input_provider() -> QualityInputProvider:
+def get_quality_input_provider() -> Generator[QualityInputProvider, None, None]:
     configured_provider = os.getenv(QSA_BACKTEST_QUALITY_PROVIDER, "").strip()
     if configured_provider == LOCAL_FIXTURE_PROVIDER:
         if os.getenv(QSA_RUNTIME_ENV, "").strip() != "local":
-            return NotReadyQualityInputProvider(
+            yield NotReadyQualityInputProvider(
                 "local fixture quality provider requires QSA_RUNTIME_ENV=local"
             )
-        return LocalFixtureQualityInputProvider()
+            return
+        yield LocalFixtureQualityInputProvider()
+        return
 
     if configured_provider:
-        return NotReadyQualityInputProvider(
+        yield NotReadyQualityInputProvider(
             f"quality input provider {configured_provider!r} is not available"
         )
+        return
 
-    return CompletedDatasetQualityInputProvider(get_completed_dataset_repository())
+    session_factory = get_session_factory()
+    with session_factory() as session:
+        yield CompletedDatasetQualityInputProvider(
+            PostgresCompletedDatasetRepository(session)
+        )
 
 
 def _local_fixture_records(

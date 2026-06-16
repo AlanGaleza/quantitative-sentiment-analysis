@@ -3,8 +3,13 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import UTC, datetime
 from threading import Lock
-from typing import Protocol
+from typing import Annotated, Protocol
 from urllib.parse import quote
+
+from fastapi import Depends
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from quantitative_sentiment_analysis.backtest_shell.schemas import (
     BacktestRunShell,
@@ -12,6 +17,11 @@ from quantitative_sentiment_analysis.backtest_shell.schemas import (
     CreateBacktestRunRequest,
 )
 from quantitative_sentiment_analysis.contracts import Instrument, RunMode
+from quantitative_sentiment_analysis.persistence.database import get_database_session
+from quantitative_sentiment_analysis.persistence.models import (
+    BacktestRunModel,
+    WorkspaceModel,
+)
 
 
 class BacktestShellRunNotFoundError(RuntimeError):
@@ -102,6 +112,82 @@ class InMemoryBacktestShellRepository:
             )
 
 
+class PostgresBacktestShellRepository:
+    """Postgres-backed storage for workspace-owned draft BACKTEST shells."""
+
+    storage_description = "postgres durable draft BACKTEST run shell storage"
+
+    def __init__(
+        self,
+        session: Session,
+        *,
+        run_id_factory: RunIdFactory | None = None,
+        clock: Clock | None = None,
+    ) -> None:
+        self._session = session
+        self._run_id_factory = run_id_factory or create_sequence_run_id_factory()
+        self._clock = clock or (lambda: datetime.now(UTC))
+
+    def create_draft_run(
+        self,
+        workspace_id: str,
+        request: CreateBacktestRunRequest,
+    ) -> BacktestRunShell:
+        self._ensure_supported(request)
+        workspace = self._get_workspace(workspace_id)
+        if workspace is None:
+            raise BacktestShellRunNotFoundError(
+                f"workspace {workspace_id!r} was not found"
+            )
+
+        run_id = self._run_id_factory(workspace_id, request)
+        run = BacktestRunModel(
+            workspace_id=workspace.id,
+            run_id=run_id,
+            instrument=request.instrument.value,
+            mode=request.mode.value,
+            timeframe_start=request.timeframe_start,
+            timeframe_end=request.timeframe_end,
+            status=BacktestRunStatus.DRAFT.value,
+            created_at=self._clock(),
+        )
+        self._session.add(run)
+        try:
+            self._session.commit()
+        except IntegrityError as exc:
+            self._session.rollback()
+            raise BacktestShellUnsupportedError(
+                "draft run could not be stored with a unique workspace/run identity"
+            ) from exc
+        self._session.refresh(run)
+        return _run_model_to_shell(run, workspace_slug=workspace.slug)
+
+    def get_run(self, workspace_id: str, run_id: str) -> BacktestRunShell:
+        row = self._session.execute(
+            select(BacktestRunModel, WorkspaceModel.slug)
+            .join(WorkspaceModel, BacktestRunModel.workspace_id == WorkspaceModel.id)
+            .where(WorkspaceModel.slug == workspace_id, BacktestRunModel.run_id == run_id)
+        ).one_or_none()
+        if row is None:
+            raise BacktestShellRunNotFoundError(
+                "Postgres BACKTEST run shell was not found "
+                f"for workspace {workspace_id!r} and run {run_id!r}"
+            )
+        run, workspace_slug = row
+        return _run_model_to_shell(run, workspace_slug=workspace_slug)
+
+    def _ensure_supported(self, request: CreateBacktestRunRequest) -> None:
+        if request.instrument is not Instrument.BTCUSD or request.mode is not RunMode.BACKTEST:
+            raise BacktestShellUnsupportedError(
+                "draft run shell supports only BTCUSD BACKTEST"
+            )
+
+    def _get_workspace(self, workspace_id: str) -> WorkspaceModel | None:
+        return self._session.scalar(
+            select(WorkspaceModel).where(WorkspaceModel.slug == workspace_id)
+        )
+
+
 def create_sequence_run_id_factory(prefix: str = "draft-run") -> RunIdFactory:
     counter = 0
     lock = Lock()
@@ -121,12 +207,35 @@ def create_sequence_run_id_factory(prefix: str = "draft-run") -> RunIdFactory:
 _default_repository = InMemoryBacktestShellRepository()
 
 
-def get_backtest_shell_repository() -> BacktestShellRepository:
-    return _default_repository
+def get_backtest_shell_repository(
+    session: Annotated[Session, Depends(get_database_session)],
+) -> BacktestShellRepository:
+    return PostgresBacktestShellRepository(session)
 
 
 def _quality_report_path(*, workspace_id: str, run_id: str) -> str:
     return (
         f"/workspaces/{quote(workspace_id, safe='')}/backtests/"
         f"{quote(run_id, safe='')}/quality"
+    )
+
+
+def _run_model_to_shell(
+    run: BacktestRunModel,
+    *,
+    workspace_slug: str,
+) -> BacktestRunShell:
+    return BacktestRunShell(
+        workspace_id=workspace_slug,
+        run_id=run.run_id,
+        instrument=Instrument(run.instrument),
+        mode=RunMode(run.mode),
+        timeframe_start=run.timeframe_start,
+        timeframe_end=run.timeframe_end,
+        status=BacktestRunStatus(run.status),
+        created_at=run.created_at,
+        quality_report_path=_quality_report_path(
+            workspace_id=workspace_slug,
+            run_id=run.run_id,
+        ),
     )

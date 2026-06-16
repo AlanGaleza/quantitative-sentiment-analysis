@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 import pytest
 from fastapi.testclient import TestClient
 
+from quantitative_sentiment_analysis.auth.dependencies import require_owned_workspace
 from quantitative_sentiment_analysis.backtest_dataset import (
     DatasetProviderLimitation,
     DatasetRunStatus,
@@ -89,6 +90,7 @@ def make_repository() -> InMemoryCompletedDatasetRepository:
 @pytest.fixture(autouse=True)
 def clear_dependency_overrides() -> None:
     app.dependency_overrides.clear()
+    app.dependency_overrides[require_owned_workspace] = lambda: object()
     yield
     app.dependency_overrides.clear()
 

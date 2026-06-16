@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from quantitative_sentiment_analysis.auth.dependencies import require_owned_workspace
 from quantitative_sentiment_analysis.backtest_shell.repository import (
     BacktestShellRepository,
     BacktestShellRunNotFoundError,
@@ -14,6 +15,7 @@ from quantitative_sentiment_analysis.backtest_shell.schemas import (
     BacktestRunShell,
     CreateBacktestRunRequest,
 )
+from quantitative_sentiment_analysis.persistence.models import WorkspaceModel
 
 router = APIRouter(
     prefix="/api/workspaces/{workspace_id}/backtests",
@@ -25,6 +27,7 @@ router = APIRouter(
 def create_draft_backtest_run(
     workspace_id: str,
     request: CreateBacktestRunRequest,
+    owned_workspace: Annotated[WorkspaceModel, Depends(require_owned_workspace)],
     repository: Annotated[
         BacktestShellRepository,
         Depends(get_backtest_shell_repository),
@@ -40,6 +43,7 @@ def create_draft_backtest_run(
 def get_backtest_run_shell(
     workspace_id: str,
     run_id: str,
+    owned_workspace: Annotated[WorkspaceModel, Depends(require_owned_workspace)],
     repository: Annotated[
         BacktestShellRepository,
         Depends(get_backtest_shell_repository),

@@ -674,34 +674,34 @@ This is a no-data migration from in-memory production state to durable Postgres.
 
 #### Automated
 
-- [x] 2.1 Auth unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_security.py tests/auth/test_schemas.py -p no:cacheprovider`
-- [x] 2.2 Auth integration tests pass against a migrated test DB: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_router.py -p no:cacheprovider`
-- [x] 2.3 CORS credential tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/test_main.py -p no:cacheprovider`
-- [x] 2.4 Existing unauthenticated route tests are updated or explicitly overridden and still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell tests/backtest_dataset tests/backtest_quality -p no:cacheprovider`
+- [x] 2.1 Auth unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_security.py tests/auth/test_schemas.py -p no:cacheprovider` — c9fb325
+- [x] 2.2 Auth integration tests pass against a migrated test DB: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_router.py -p no:cacheprovider` — c9fb325
+- [x] 2.3 CORS credential tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/test_main.py -p no:cacheprovider` — c9fb325
+- [x] 2.4 Existing unauthenticated route tests are updated or explicitly overridden and still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell tests/backtest_dataset tests/backtest_quality -p no:cacheprovider` — c9fb325
 
 #### Manual
 
-- [x] 2.5 Seed command creates the initial user and default workspace without printing the password.
-- [x] 2.6 Login from the deployed frontend origin sets an HttpOnly session cookie.
-- [x] 2.7 Logout revokes the session; a new `/api/auth/me` request returns `401`.
-- [x] 2.8 Browser devtools show production cookie attributes as `Secure`, `HttpOnly`, and `SameSite=None`.
+- [x] 2.5 Seed command creates the initial user and default workspace without printing the password. — c9fb325
+- [x] 2.6 Login from the deployed frontend origin sets an HttpOnly session cookie. — c9fb325
+- [x] 2.7 Logout revokes the session; a new `/api/auth/me` request returns `401`. — c9fb325
+- [x] 2.8 Browser devtools show production cookie attributes as `Secure`, `HttpOnly`, and `SameSite=None`. — c9fb325
 
 ### Phase 3: Workspace Ownership and Persistent Existing Runs
 
 #### Automated
 
-- [ ] 3.1 Postgres shell repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_postgres_repository.py -p no:cacheprovider`
-- [ ] 3.2 Postgres dataset repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_postgres_repository.py -p no:cacheprovider`
-- [ ] 3.3 Authenticated shell/dataset/export route tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_router.py tests/backtest_dataset/test_router.py -p no:cacheprovider`
-- [ ] 3.4 Quality route reads persisted completed datasets: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider`
-- [ ] 3.5 JSONL determinism still passes after Postgres persistence: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_export.py tests/backtest_dataset/test_determinism.py tests/contracts/test_serialization.py -p no:cacheprovider`
+- [x] 3.1 Postgres shell repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_postgres_repository.py -p no:cacheprovider`
+- [x] 3.2 Postgres dataset repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_postgres_repository.py -p no:cacheprovider`
+- [x] 3.3 Authenticated shell/dataset/export route tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell/test_router.py tests/backtest_dataset/test_router.py -p no:cacheprovider`
+- [x] 3.4 Quality route reads persisted completed datasets: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_dataset_adapter.py -p no:cacheprovider`
+- [x] 3.5 JSONL determinism still passes after Postgres persistence: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_dataset/test_export.py tests/backtest_dataset/test_determinism.py tests/contracts/test_serialization.py -p no:cacheprovider`
 
 #### Manual
 
-- [ ] 3.6 A logged-in user can create a draft run, generate a dataset, refresh the browser, and still fetch the run/dataset from Postgres.
-- [ ] 3.7 The quality route no longer shows an S-02 unavailable message for a completed deterministic dataset.
-- [ ] 3.8 Manually changing the URL to another workspace slug returns not found behavior instead of showing data.
-- [ ] 3.9 JSONL export downloaded before and after a backend restart is byte-identical for the same completed run.
+- [x] 3.6 A logged-in user can create a draft run, generate a dataset, refresh the browser, and still fetch the run/dataset from Postgres.
+- [x] 3.7 The quality route no longer shows an S-02 unavailable message for a completed deterministic dataset.
+- [x] 3.8 Manually changing the URL to another workspace slug returns not found behavior instead of showing data.
+- [x] 3.9 JSONL export downloaded before and after a backend restart is byte-identical for the same completed run.
 
 ### Phase 4: Saved Backtest Configurations CRUD
 

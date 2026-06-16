@@ -5,6 +5,7 @@ import json
 
 from fastapi.testclient import TestClient
 
+from quantitative_sentiment_analysis.auth.dependencies import require_owned_workspace
 from quantitative_sentiment_analysis.backtest_dataset import (
     DatasetProviderLimitationError,
     FixtureNewsProvider,
@@ -26,6 +27,18 @@ from quantitative_sentiment_analysis.backtest_shell import (
     get_backtest_shell_repository,
 )
 from quantitative_sentiment_analysis.main import app, create_app
+from quantitative_sentiment_analysis.persistence.database import (
+    create_session_factory,
+    reset_database_state_for_tests,
+)
+from tests.postgres_helpers import (
+    FRONTEND_ORIGIN,
+    clear_database,
+    login,
+    override_database_session,
+    postgres_engine_or_skip,
+    seed_user_with_workspace,
+)
 
 TIMEFRAME_START = datetime(2026, 6, 1, 12, 0, tzinfo=UTC)
 TIMEFRAME_END = datetime(2026, 6, 8, 12, 0, tzinfo=UTC)
@@ -74,6 +87,7 @@ def setup_dependencies(
     provider: object | None = None,
 ) -> tuple[InMemoryBacktestShellRepository, InMemoryCompletedDatasetRepository]:
     app.dependency_overrides.clear()
+    app.dependency_overrides[require_owned_workspace] = lambda: object()
     shell_repository = shell_repository or make_shell_repository()
     completed_repository = completed_repository or InMemoryCompletedDatasetRepository()
     provider = provider or FixtureNewsProvider(fixture_records())
@@ -407,3 +421,87 @@ def test_cors_preflight_allows_dataset_export_route() -> None:
         response.headers["access-control-allow-origin"]
         == "https://frontend.example.test"
     )
+
+
+def test_postgres_authenticated_dataset_workflow_persists_preview_and_export(
+    monkeypatch,
+) -> None:
+    engine = postgres_engine_or_skip(monkeypatch)
+    session_factory = create_session_factory(engine)
+    test_app = create_app(cors_allowed_origins=[FRONTEND_ORIGIN])
+    override_database_session(test_app, engine)
+    test_app.dependency_overrides[get_historical_news_provider] = (
+        lambda: FixtureNewsProvider(fixture_records(count=3))
+    )
+    with session_factory() as session:
+        clear_database(session)
+        seed_user_with_workspace(session, workspace_slug="workspace-alpha")
+
+    with TestClient(test_app, base_url="https://api.example.test") as client:
+        login(client)
+        draft_response = client.post(
+            "/api/workspaces/workspace-alpha/backtests/drafts",
+            json=draft_payload(),
+            headers={"Origin": FRONTEND_ORIGIN},
+        )
+        assert draft_response.status_code == 200
+        run_id = draft_response.json()["run_id"]
+
+        run_response = client.post(
+            f"/api/workspaces/workspace-alpha/backtests/{run_id}/dataset/run",
+            headers={"Origin": FRONTEND_ORIGIN},
+        )
+        assert run_response.status_code == 200
+        get_response = client.get(
+            f"/api/workspaces/workspace-alpha/backtests/{run_id}/dataset"
+        )
+        export_response = client.get(
+            f"/api/workspaces/workspace-alpha/backtests/{run_id}/dataset/export.jsonl"
+        )
+
+    assert get_response.status_code == 200
+    assert get_response.json() == run_response.json()
+    assert export_response.status_code == 200
+    assert len(export_response.content.decode("utf-8").splitlines()) == 3
+    with session_factory() as session:
+        clear_database(session)
+    engine.dispose()
+    reset_database_state_for_tests()
+
+
+def test_postgres_dataset_route_does_not_authorize_by_run_id_alone(
+    monkeypatch,
+) -> None:
+    engine = postgres_engine_or_skip(monkeypatch)
+    session_factory = create_session_factory(engine)
+    test_app = create_app(cors_allowed_origins=[FRONTEND_ORIGIN])
+    override_database_session(test_app, engine)
+    with session_factory() as session:
+        clear_database(session)
+        seed_user_with_workspace(session, workspace_slug="workspace-alpha")
+        seed_user_with_workspace(
+            session,
+            email="other@example.test",
+            workspace_slug="workspace-beta",
+            workspace_name="Workspace Beta",
+        )
+
+    with TestClient(test_app, base_url="https://api.example.test") as client:
+        login(client)
+        draft_response = client.post(
+            "/api/workspaces/workspace-alpha/backtests/drafts",
+            json=draft_payload(),
+            headers={"Origin": FRONTEND_ORIGIN},
+        )
+        assert draft_response.status_code == 200
+        run_id = draft_response.json()["run_id"]
+
+        response = client.get(
+            f"/api/workspaces/workspace-beta/backtests/{run_id}/dataset"
+        )
+
+    assert response.status_code == 404
+    with session_factory() as session:
+        clear_database(session)
+    engine.dispose()
+    reset_database_state_for_tests()

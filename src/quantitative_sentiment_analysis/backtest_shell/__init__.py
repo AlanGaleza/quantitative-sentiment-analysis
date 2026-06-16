@@ -5,6 +5,7 @@ from quantitative_sentiment_analysis.backtest_shell.repository import (
     BacktestShellRunNotFoundError,
     BacktestShellUnsupportedError,
     InMemoryBacktestShellRepository,
+    PostgresBacktestShellRepository,
     create_sequence_run_id_factory,
     get_backtest_shell_repository,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "BacktestShellUnsupportedError",
     "CreateBacktestRunRequest",
     "InMemoryBacktestShellRepository",
+    "PostgresBacktestShellRepository",
     "create_sequence_run_id_factory",
     "get_backtest_shell_repository",
 ]

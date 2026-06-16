@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.encoders import jsonable_encoder
 
+from quantitative_sentiment_analysis.auth.dependencies import require_owned_workspace
 from quantitative_sentiment_analysis.backtest_dataset.export import (
     DatasetExportNotReadyError,
     export_dataset_jsonl_bytes,
@@ -33,6 +34,7 @@ from quantitative_sentiment_analysis.backtest_shell.repository import (
     BacktestShellUnsupportedError,
     get_backtest_shell_repository,
 )
+from quantitative_sentiment_analysis.persistence.models import WorkspaceModel
 
 router = APIRouter(
     prefix="/api/workspaces/{workspace_id}/backtests",
@@ -69,6 +71,7 @@ def get_dataset_orchestrator(
 def run_backtest_dataset(
     workspace_id: str,
     run_id: str,
+    owned_workspace: Annotated[WorkspaceModel, Depends(require_owned_workspace)],
     orchestrator: Annotated[
         DatasetOrchestrator,
         Depends(get_dataset_orchestrator),
@@ -90,6 +93,7 @@ def run_backtest_dataset(
 def export_backtest_dataset_jsonl(
     workspace_id: str,
     run_id: str,
+    owned_workspace: Annotated[WorkspaceModel, Depends(require_owned_workspace)],
     repository: Annotated[
         CompletedDatasetRepository,
         Depends(get_completed_dataset_repository),
@@ -124,6 +128,7 @@ def export_backtest_dataset_jsonl(
 def get_backtest_dataset(
     workspace_id: str,
     run_id: str,
+    owned_workspace: Annotated[WorkspaceModel, Depends(require_owned_workspace)],
     repository: Annotated[
         CompletedDatasetRepository,
         Depends(get_completed_dataset_repository),

@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from quantitative_sentiment_analysis.auth.dependencies import require_owned_workspace
 from quantitative_sentiment_analysis.backtest_quality.metrics import (
     QualityReportInputError,
     build_quality_report,
@@ -19,6 +20,7 @@ from quantitative_sentiment_analysis.backtest_quality.repository import (
 from quantitative_sentiment_analysis.backtest_quality.schemas import (
     BacktestQualityReport,
 )
+from quantitative_sentiment_analysis.persistence.models import WorkspaceModel
 
 router = APIRouter(
     prefix="/api/workspaces/{workspace_id}/backtests",
@@ -30,6 +32,7 @@ router = APIRouter(
 def get_backtest_quality_report(
     workspace_id: str,
     run_id: str,
+    owned_workspace: Annotated[WorkspaceModel, Depends(require_owned_workspace)],
     provider: Annotated[QualityInputProvider, Depends(get_quality_input_provider)],
 ) -> BacktestQualityReport:
     try:

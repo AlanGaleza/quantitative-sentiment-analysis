@@ -6,6 +6,7 @@ from quantitative_sentiment_analysis.backtest_dataset.repository import (
     CompletedDatasetRunNotFoundError,
     CompletedDatasetRunUnsupportedError,
     InMemoryCompletedDatasetRepository,
+    PostgresCompletedDatasetRepository,
     get_completed_dataset_repository,
 )
 from quantitative_sentiment_analysis.backtest_dataset.schemas import (
@@ -65,6 +66,7 @@ __all__ = [
     "FixtureNewsProvider",
     "HistoricalNewsProvider",
     "InMemoryCompletedDatasetRepository",
+    "PostgresCompletedDatasetRepository",
     "MAX_DATASET_PREVIEW_RECORDS",
     "DEFAULT_DATASET_SEED",
     "NormalizedNewsRecord",
