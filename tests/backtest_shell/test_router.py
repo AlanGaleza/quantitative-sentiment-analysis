@@ -113,6 +113,36 @@ def test_list_draft_runs_returns_workspace_history() -> None:
     assert data["runs"][0]["quality_report_path"] is None
 
 
+def test_list_draft_runs_respects_limit_query() -> None:
+    run_ids = iter(["draft-run-000001", "draft-run-000002"])
+    repository = InMemoryBacktestShellRepository(
+        run_id_factory=lambda workspace_id, request: next(run_ids),
+        clock=lambda: CREATED_AT,
+    )
+    request = CreateBacktestRunRequest.model_validate(draft_payload())
+    repository.create_draft_run("workspace-alpha", request)
+    repository.create_draft_run("workspace-alpha", request)
+    app.dependency_overrides[get_backtest_shell_repository] = lambda: repository
+    client = TestClient(app)
+
+    response = client.get("/api/workspaces/workspace-alpha/backtests?limit=1")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["workspace_id"] == "workspace-alpha"
+    assert [item["run_id"] for item in data["runs"]] == ["draft-run-000002"]
+
+
+@pytest.mark.parametrize("limit", ["0", "101"])
+def test_list_draft_runs_rejects_out_of_range_limit(limit: str) -> None:
+    app.dependency_overrides[get_backtest_shell_repository] = lambda: make_repository()
+    client = TestClient(app)
+
+    response = client.get(f"/api/workspaces/workspace-alpha/backtests?limit={limit}")
+
+    assert response.status_code == 422
+
+
 def test_list_draft_runs_returns_empty_workspace_history() -> None:
     repository = make_repository()
     app.dependency_overrides[get_backtest_shell_repository] = lambda: repository

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from quantitative_sentiment_analysis.auth.dependencies import require_owned_workspace
 from quantitative_sentiment_analysis.backtest_shell.repository import (
@@ -15,6 +15,8 @@ from quantitative_sentiment_analysis.backtest_shell.schemas import (
     BacktestRunHistoryResponse,
     BacktestRunShell,
     CreateBacktestRunRequest,
+    DEFAULT_BACKTEST_RUN_HISTORY_LIMIT,
+    MAX_BACKTEST_RUN_HISTORY_LIMIT,
 )
 from quantitative_sentiment_analysis.persistence.models import WorkspaceModel
 
@@ -48,9 +50,14 @@ def list_backtest_runs(
         BacktestShellRepository,
         Depends(get_backtest_shell_repository),
     ],
+    limit: int = Query(
+        default=DEFAULT_BACKTEST_RUN_HISTORY_LIMIT,
+        ge=1,
+        le=MAX_BACKTEST_RUN_HISTORY_LIMIT,
+    ),
 ) -> BacktestRunHistoryResponse:
     try:
-        return repository.list_runs(workspace_id)
+        return repository.list_runs(workspace_id, limit=limit)
     except BacktestShellRunNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except BacktestShellUnsupportedError as exc:

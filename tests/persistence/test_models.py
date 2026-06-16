@@ -26,6 +26,10 @@ def constraint_names(table_name: str, constraint_type: type) -> set[str]:
     }
 
 
+def index_names(table_name: str) -> set[str]:
+    return {index.name or "" for index in Base.metadata.tables[table_name].indexes}
+
+
 def test_metadata_declares_required_tables() -> None:
     assert set(Base.metadata.tables) == EXPECTED_TABLES
 
@@ -59,6 +63,7 @@ def test_backtest_run_tables_preserve_workspace_run_identity() -> None:
         "dataset_records",
         UniqueConstraint,
     )
+    assert "ix_backtest_runs_workspace_created_run" in index_names("backtest_runs")
 
 
 def test_btcusd_backtest_and_dataset_record_contract_constraints_exist() -> None:
@@ -82,3 +87,12 @@ def test_initial_migration_mentions_every_metadata_table() -> None:
 
     for table_name in EXPECTED_TABLES:
         assert f'"{table_name}"' in migration
+
+
+def test_run_history_sort_index_migration_exists() -> None:
+    migration = Path(
+        "migrations/versions/20260616_0002_add_backtest_run_history_sort_index.py"
+    ).read_text(encoding="utf-8")
+
+    assert "ix_backtest_runs_workspace_created_run" in migration
+    assert '["workspace_id", "created_at", "run_id"]' in migration

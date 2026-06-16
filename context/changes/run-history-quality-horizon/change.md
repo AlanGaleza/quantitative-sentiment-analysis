@@ -1,7 +1,7 @@
 ---
 change_id: run-history-quality-horizon
 title: Run history and quality horizon
-status: implemented
+status: impl_reviewed
 created: 2026-06-16
 updated: 2026-06-16
 archived_at: null

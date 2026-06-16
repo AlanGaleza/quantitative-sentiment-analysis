@@ -242,12 +242,20 @@ def test_postgres_shell_repository_lists_workspace_run_history(session_factory) 
         )
 
         history = PostgresBacktestShellRepository(session).list_runs("workspace-alpha")
+        limited_history = PostgresBacktestShellRepository(session).list_runs(
+            "workspace-alpha",
+            limit=2,
+        )
 
     assert history.workspace_id == "workspace-alpha"
     assert [run.run_id for run in history.runs] == [
         "draft-run-000003",
         "draft-run-000002",
         "draft-run-000001",
+    ]
+    assert [run.run_id for run in limited_history.runs] == [
+        "draft-run-000003",
+        "draft-run-000002",
     ]
 
     provider_limited = history.runs[0]

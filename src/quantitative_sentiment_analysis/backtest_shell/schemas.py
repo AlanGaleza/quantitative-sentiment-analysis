@@ -11,6 +11,8 @@ from quantitative_sentiment_analysis.contracts.schemas import require_aware_date
 
 MAX_BACKTEST_RANGE_DAYS = 30
 MAX_BACKTEST_RANGE = timedelta(days=MAX_BACKTEST_RANGE_DAYS)
+DEFAULT_BACKTEST_RUN_HISTORY_LIMIT = 50
+MAX_BACKTEST_RUN_HISTORY_LIMIT = 100
 
 
 class BacktestRunStatus(StrEnum):

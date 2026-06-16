@@ -202,6 +202,12 @@ class BacktestRunModel(Base):
             name="ck_backtest_runs_timeframe_order",
         ),
         Index("ix_backtest_runs_workspace_run_id", "workspace_id", "run_id"),
+        Index(
+            "ix_backtest_runs_workspace_created_run",
+            "workspace_id",
+            "created_at",
+            "run_id",
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(

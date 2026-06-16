@@ -21,6 +21,8 @@ from quantitative_sentiment_analysis.backtest_shell.schemas import (
     BacktestRunShell,
     BacktestRunStatus,
     CreateBacktestRunRequest,
+    DEFAULT_BACKTEST_RUN_HISTORY_LIMIT,
+    MAX_BACKTEST_RUN_HISTORY_LIMIT,
 )
 from quantitative_sentiment_analysis.contracts import Instrument, RunMode
 from quantitative_sentiment_analysis.persistence.database import get_database_session
@@ -55,7 +57,12 @@ class BacktestShellRepository(Protocol):
         """Return one draft run shell by workspace and run ID."""
         ...
 
-    def list_runs(self, workspace_id: str) -> BacktestRunHistoryResponse:
+    def list_runs(
+        self,
+        workspace_id: str,
+        *,
+        limit: int = DEFAULT_BACKTEST_RUN_HISTORY_LIMIT,
+    ) -> BacktestRunHistoryResponse:
         """Return historical BACKTEST runs for one workspace."""
         ...
 
@@ -117,7 +124,13 @@ class InMemoryBacktestShellRepository:
             )
         return run
 
-    def list_runs(self, workspace_id: str) -> BacktestRunHistoryResponse:
+    def list_runs(
+        self,
+        workspace_id: str,
+        *,
+        limit: int = DEFAULT_BACKTEST_RUN_HISTORY_LIMIT,
+    ) -> BacktestRunHistoryResponse:
+        _require_valid_history_limit(limit)
         with self._lock:
             runs = [
                 run
@@ -129,11 +142,12 @@ class InMemoryBacktestShellRepository:
             key=lambda run: (run.created_at, run.run_id),
             reverse=True,
         )
+        limited_runs = ordered_runs[:limit]
         return BacktestRunHistoryResponse(
             workspace_id=workspace_id,
             runs=tuple(
                 _run_shell_to_history_item(run, workspace_slug=workspace_id)
-                for run in ordered_runs
+                for run in limited_runs
             ),
         )
 
@@ -244,7 +258,13 @@ class PostgresBacktestShellRepository:
         run, workspace_slug = row
         return _run_model_to_shell(run, workspace_slug=workspace_slug)
 
-    def list_runs(self, workspace_id: str) -> BacktestRunHistoryResponse:
+    def list_runs(
+        self,
+        workspace_id: str,
+        *,
+        limit: int = DEFAULT_BACKTEST_RUN_HISTORY_LIMIT,
+    ) -> BacktestRunHistoryResponse:
+        _require_valid_history_limit(limit)
         workspace = self._get_workspace(workspace_id)
         if workspace is None:
             raise BacktestShellRunNotFoundError(
@@ -271,6 +291,7 @@ class PostgresBacktestShellRepository:
             .order_by(
                 BacktestRunModel.created_at.desc(), BacktestRunModel.run_id.desc()
             )
+            .limit(limit)
         )
         return BacktestRunHistoryResponse(
             workspace_id=workspace.slug,
@@ -338,6 +359,14 @@ def create_sequence_run_id_factory(prefix: str = "draft-run") -> RunIdFactory:
             return f"{prefix}-{counter:06d}"
 
     return next_run_id
+
+
+def _require_valid_history_limit(limit: int) -> None:
+    if limit < 1 or limit > MAX_BACKTEST_RUN_HISTORY_LIMIT:
+        raise BacktestShellUnsupportedError(
+            "run history limit must be between "
+            f"1 and {MAX_BACKTEST_RUN_HISTORY_LIMIT}"
+        )
 
 
 _default_repository = InMemoryBacktestShellRepository()
