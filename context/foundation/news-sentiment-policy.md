@@ -3,7 +3,7 @@ project: Quantitative Sentiment Analysis
 version: 1
 status: active
 created: 2026-06-15
-updated: 2026-06-15
+updated: 2026-06-16
 roadmap_id: F-02
 change_id: choose-news-and-sentiment-policy
 ---
@@ -132,7 +132,7 @@ The formula must be bounded, auditable, and versioned. Product copy, API
 messages, and exports must keep the phrase `classification confidence` when
 explaining this field.
 
-## Quality Horizon
+## Quality Horizon And Price Enrichment
 
 The default backtest-quality horizon is **4 hours**, but V1 exposes a controlled
 set of report horizons through the API and UI:
@@ -144,15 +144,26 @@ set of report horizons through the API and UI:
 - **24 hours**
 
 The selected horizon is report metadata: it defines the requested evaluation
-window for quality reporting. It does not by itself enrich completed BACKTEST
-records with later BTCUSD movement. Deterministic price enrichment remains a
-separate prerequisite before real completed runs can produce non-missing
-`later_return` and `realized_direction` values.
+window for quality reporting. Completed BACKTEST quality reports may enrich
+S-04 inputs with deterministic later movement for that selected horizon while
+leaving canonical dataset and JSONL export records unchanged.
 
-S-04 already uses a 4-hour default fixture horizon. A later price-enrichment
-slice should enrich completed BACKTEST records with deterministic later BTCUSD
-movement fields that map cleanly into the S-04 quality input contract for the
-selected supported horizon.
+V1 price enrichment uses Binance Spot `BTCUSDT` 1 minute klines as the practical
+BTCUSD proxy price source. The proxy choice must remain visible in operator docs
+and warning copy so users do not mistake it for a direct BTCUSD venue feed.
+
+Movement is computed close-to-close: for a news timestamp `t`, floor `t` to the
+UTC minute and use the close price of that 1 minute candle. The horizon price
+uses the same rule for `t + horizon`. `later_return` is
+`(horizon_close - event_close) / event_close`. Realized movement is `UP` when the
+return is greater than `0.0005`, `DOWN` when less than `-0.0005`, and `FLAT`
+otherwise.
+
+If provider access fails, the price cache is unavailable, or a specific event or
+horizon candle cannot be resolved, S-04 must return a partial report instead of
+fabricating zero movement. Affected records keep `later_return=null` and
+`realized_direction=null`, and warnings distinguish missing price data from real
+flat movement.
 
 ## Visualization Payload Policy
 
@@ -231,13 +242,13 @@ run, but real-run chart/detail payloads must be bounded. The current backend
 policy caps chart points deterministically while keeping metric denominators on
 the full input set.
 
-S-04 must keep BACKTEST-only analytical wording and must not fetch prices
-directly or fabricate production run data before S-02 supplies completed
-deterministic BACKTEST records.
+S-04 must keep BACKTEST-only analytical wording and must not fabricate production
+run data before S-02 supplies completed deterministic BACKTEST records.
 
-The S-02 quality adapter feeds completed canonical dataset records to S-04 while
-leaving `later_return` and `realized_direction` missing until deterministic price
-enrichment exists. JSONL/CSV export remains deferred to S-03.
+The S-02 quality adapter feeds completed canonical dataset records to S-04 and
+may enrich those S-04 quality inputs through the price-enrichment boundary for
+the selected supported horizon. JSONL/CSV export remains canonical S-03 output
+and must not add price movement fields.
 
 ## Acceptance Checklist
 
@@ -251,5 +262,7 @@ enrichment exists. JSONL/CSV export remains deferred to S-03.
 - Confidence is classification confidence, not market certainty.
 - The default quality horizon is 4 hours, with V1 report presets for 1 minute,
   15 minutes, 1 hour, 4 hours, and 24 hours.
+- Completed BACKTEST quality reports use Binance Spot `BTCUSDT` 1 minute candles
+  as the documented BTCUSD proxy for close-to-close movement enrichment.
 - The first quality view uses correlation, hit rate, and a sampled plot with
   bounded payloads.

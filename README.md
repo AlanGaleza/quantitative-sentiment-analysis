@@ -26,6 +26,11 @@ Run the API with deterministic local fixture data for the S-04 quality view:
 
 `QSA_RUNTIME_ENV=local QSA_BACKTEST_QUALITY_PROVIDER=local-fixture uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
 
+Run the API with deterministic local fixture price candles for completed-run
+quality enrichment:
+
+`QSA_RUNTIME_ENV=local QSA_PRICE_PROVIDER=fixture uv run uvicorn quantitative_sentiment_analysis.main:app --host 127.0.0.1 --port 8000`
+
 Run the Vite frontend locally:
 
 `npm --prefix frontend run dev`
@@ -88,7 +93,14 @@ npm ci
 npm run e2e
 ```
 
-Local Vite development may leave `VITE_API_BASE_URL` unset; Vite proxies relative `/api` requests to FastAPI on `127.0.0.1:8000`. Deployed frontend builds must set `VITE_API_BASE_URL` to the FastAPI service origin. The API accepts cross-origin browser calls only from the comma-separated `QSA_CORS_ALLOWED_ORIGINS` list, with local Vite origins enabled by default and no wildcard production origin. The fixture provider is only for local S-04 contract/UI verification and requires both `QSA_RUNTIME_ENV=local` and `QSA_BACKTEST_QUALITY_PROVIDER=local-fixture`; default quality behavior reads completed datasets from Postgres, with movement fields pending price enrichment.
+Local Vite development may leave `VITE_API_BASE_URL` unset; Vite proxies relative `/api` requests to FastAPI on `127.0.0.1:8000`. Deployed frontend builds must set `VITE_API_BASE_URL` to the FastAPI service origin. The API accepts cross-origin browser calls only from the comma-separated `QSA_CORS_ALLOWED_ORIGINS` list, with local Vite origins enabled by default and no wildcard production origin. The S-04 report fixture provider is only for local contract/UI verification and requires both `QSA_RUNTIME_ENV=local` and `QSA_BACKTEST_QUALITY_PROVIDER=local-fixture`; default quality behavior reads completed datasets from Postgres.
+
+Completed-run quality reports enrich movement through `QSA_PRICE_PROVIDER`.
+The default is `binance`, which uses public Binance Spot `BTCUSDT` 1 minute
+klines as the documented V1 BTCUSD proxy; no Binance API key is required for
+that market-data path. `QSA_PRICE_PROVIDER=fixture` is local-only and requires
+`QSA_RUNTIME_ENV=local`. Unknown provider values degrade to typed quality-report
+warnings instead of a backend 500.
 
 `DATABASE_URL` is required only for Postgres-backed persistence and Alembic
 migrations. Do not commit database URLs, passwords, or generated exports. For
@@ -123,6 +135,8 @@ not require it.
   - configure `DATABASE_URL` from the existing Render Postgres Internal Database URL
   - configure `AUTH_SECRET` as a generated Render secret
   - configure `QSA_CORS_ALLOWED_ORIGINS` to the deployed frontend origin
+  - optionally configure `QSA_PRICE_PROVIDER=binance`; this is the default and
+    uses Binance Spot `BTCUSDT` 1 minute candles as the V1 BTCUSD proxy
 - Frontend static site:
   - root directory: `frontend`
   - build: `npm ci && npm run build`
@@ -135,8 +149,9 @@ Create the first Render service from the GitHub repository Blueprint after pushi
 Render Postgres migrations are manual operator actions. After `DATABASE_URL` is
 configured on the backend service, run `uv run alembic upgrade head` from the
 backend service environment or an equivalent Render shell/job that already has
-the backend environment variables loaded. Do not paste the Internal Database URL
-into chat or commit it to the repository.
+the backend environment variables loaded. This creates or updates the
+`price_candles` cache used by quality movement enrichment. Do not paste the
+Internal Database URL into chat or commit it to the repository.
 
 After migrations, seed the first user from the Render backend service
 environment:
@@ -155,8 +170,11 @@ Post-deploy smoke path:
 2. Confirm protected workspace routes show login before authentication.
 3. Log in, create/update/delete a saved BTCUSD BACKTEST configuration.
 4. Create a draft run, run the deterministic dataset, open quality, and
-   download JSONL.
-5. Redeploy or restart the backend and confirm persisted configs/runs/datasets
+   confirm the quality route returns numeric movement pairs or an explicit
+   price-provider warning with no `500 Internal Server Error`.
+5. Download JSONL for the same run and confirm it remains canonical dataset
+   output without price movement fields.
+6. Redeploy or restart the backend and confirm persisted configs/runs/datasets
    remain available.
-6. Try an unauthenticated protected request and a different workspace slug; the
+7. Try an unauthenticated protected request and a different workspace slug; the
    expected behavior is `401` or not-found access.

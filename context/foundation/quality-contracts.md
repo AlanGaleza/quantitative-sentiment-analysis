@@ -3,7 +3,7 @@ project: Quantitative Sentiment Analysis
 version: 1
 status: active
 created: 2026-06-11
-updated: 2026-06-15
+updated: 2026-06-16
 roadmap_id: F-01
 change_id: define-quality-contracts
 ---
@@ -232,10 +232,10 @@ durable export storage, and implicit dataset generation remain out of scope.
 
 ### S-04: Backtest Quality View
 
-S-04 may use response-specific fields such as `event_timestamp`, but its input
-records must remain compatible with the foundation dataset contract. S-04 must
-not fetch prices directly or fabricate production run data before S-02 supplies
-completed deterministic BACKTEST records.
+S-04 may use response-specific fields such as `event_timestamp`, `later_return`,
+and `realized_direction`, but its input records must remain compatible with the
+foundation dataset contract. S-04 must not fabricate production run data before
+S-02 supplies completed deterministic BACKTEST records.
 
 S-04 compatibility aliases should reuse the shared `DirectionalBias` and
 `RelevanceLabel` contract values while preserving the existing quality response
@@ -243,10 +243,11 @@ shape. In particular, S-04 JSON responses may keep `event_timestamp`; export and
 dataset contracts continue to use canonical `timestamp`.
 
 `deterministic-news-dataset` adds the first real adapter from completed S-02
-records into S-04 quality inputs. Until a price-enrichment slice exists, the
-adapter maps canonical `timestamp` to S-04 `event_timestamp` and leaves
-`later_return` plus `realized_direction` missing so quality reports warn instead
-of inventing movement data.
+records into S-04 quality inputs. `price-enrichment-quality-movement` lets that
+adapter enrich S-04 quality inputs with deterministic BTCUSD proxy movement for
+the selected quality horizon through the price-enrichment boundary. Canonical
+dataset records and JSONL export records remain unchanged and do not include
+`later_return` or `realized_direction`.
 
 Before real S-02 data is exposed through S-04, quality-report payloads must cap,
 sample, paginate, or explicitly limit large `chart_points` and detail outputs.

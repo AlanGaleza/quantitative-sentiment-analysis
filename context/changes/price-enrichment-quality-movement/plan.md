@@ -778,23 +778,23 @@ depending on a half-created cache table.
 
 #### Automated
 
-- [x] 5.1 Quality frontend tests pass: `npm --prefix frontend run test -- src/features/backtestQuality`
-- [x] 5.2 Frontend build passes: `npm --prefix frontend run build`
+- [x] 5.1 Quality frontend tests pass: `npm --prefix frontend run test -- src/features/backtestQuality` — 9fb439f
+- [x] 5.2 Frontend build passes: `npm --prefix frontend run build` — 9fb439f
 
 #### Manual
 
-- [x] 5.3 In the browser, confirm an enriched report draws numeric dots and a report with zero numeric pairs shows a clear empty state instead of a flat-looking chart.
+- [x] 5.3 In the browser, confirm an enriched report draws numeric dots and a report with zero numeric pairs shows a clear empty state instead of a flat-looking chart. — 9fb439f
 
 ### Phase 6: Docs, Smoke, and Rollout
 
 #### Automated
 
-- [ ] 6.1 Backend test suite for affected areas passes: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment tests/backtest_quality tests/persistence/test_models.py -p no:cacheprovider`
-- [ ] 6.2 Frontend quality tests and build pass: `npm --prefix frontend run test -- src/features/backtestQuality && npm --prefix frontend run build`
-- [ ] 6.3 Final lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
+- [x] 6.1 Backend test suite for affected areas passes: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment tests/backtest_quality tests/persistence/test_models.py -p no:cacheprovider`
+- [x] 6.2 Frontend quality tests and build pass: `npm --prefix frontend run test -- src/features/backtestQuality && npm --prefix frontend run build`
+- [x] 6.3 Final lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
 
 #### Manual
 
-- [ ] 6.4 Local smoke: create or reuse a completed `demo-workspace` BACKTEST run, open quality for `1 minute`, and confirm numeric movement pairs or a specific price provider warning.
-- [ ] 6.5 Render smoke: after deploy and `alembic upgrade head`, open the deployed completed run quality route for `1 minute` and confirm numeric movement pairs or a specific price provider warning, with no `500 Internal Server Error`.
-- [ ] 6.6 Confirm JSONL export output for the same run remains canonical dataset output and does not include price movement fields.
+- [x] 6.4 Local smoke: create or reuse a completed `demo-workspace` BACKTEST run, open quality for `1 minute`, and confirm numeric movement pairs or a specific price provider warning.
+- [x] 6.5 Render smoke: after deploy and `alembic upgrade head`, open the deployed completed run quality route for `1 minute` and confirm numeric movement pairs or a specific price provider warning, with no `500 Internal Server Error`.
+- [x] 6.6 Confirm JSONL export output for the same run remains canonical dataset output and does not include price movement fields.

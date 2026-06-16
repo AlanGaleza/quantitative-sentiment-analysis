@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from datetime import UTC, datetime, timedelta
 import os
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from quantitative_sentiment_analysis.backtest_dataset.repository import (
     CompletedDatasetRepository,
@@ -22,15 +22,11 @@ from quantitative_sentiment_analysis.backtest_quality.schemas import (
     RelevanceLabel,
 )
 from quantitative_sentiment_analysis.persistence.database import get_session_factory
-from quantitative_sentiment_analysis.price_enrichment.dependencies import (
-    get_historical_price_provider,
-)
-from quantitative_sentiment_analysis.price_enrichment.repository import (
-    PostgresPriceCandleRepository,
-)
-from quantitative_sentiment_analysis.price_enrichment.service import (
-    PriceEnrichmentService,
-)
+
+if TYPE_CHECKING:
+    from quantitative_sentiment_analysis.price_enrichment.service import (
+        PriceEnrichmentService,
+    )
 
 QSA_RUNTIME_ENV = "QSA_RUNTIME_ENV"
 QSA_BACKTEST_QUALITY_PROVIDER = "QSA_BACKTEST_QUALITY_PROVIDER"
@@ -155,6 +151,16 @@ def get_quality_input_provider() -> Generator[QualityInputProvider, None, None]:
 
     session_factory = get_session_factory()
     with session_factory() as session:
+        from quantitative_sentiment_analysis.price_enrichment.dependencies import (
+            get_historical_price_provider,
+        )
+        from quantitative_sentiment_analysis.price_enrichment.repository import (
+            PostgresPriceCandleRepository,
+        )
+        from quantitative_sentiment_analysis.price_enrichment.service import (
+            PriceEnrichmentService,
+        )
+
         yield CompletedDatasetQualityInputProvider(
             PostgresCompletedDatasetRepository(session),
             PriceEnrichmentService(
