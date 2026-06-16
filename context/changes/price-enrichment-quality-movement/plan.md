@@ -742,24 +742,24 @@ depending on a half-created cache table.
 
 #### Automated
 
-- [x] 2.1 Persistence metadata tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/persistence/test_models.py -p no:cacheprovider`
-- [x] 2.2 Postgres candle repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_postgres_repository.py -p no:cacheprovider`
-- [x] 2.3 Migration applies cleanly on a test database: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run alembic upgrade head`
+- [x] 2.1 Persistence metadata tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/persistence/test_models.py -p no:cacheprovider` — 3aa5734
+- [x] 2.2 Postgres candle repository tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_postgres_repository.py -p no:cacheprovider` — 3aa5734
+- [x] 2.3 Migration applies cleanly on a test database: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run alembic upgrade head` — 3aa5734
 
 #### Manual
 
-- [x] 2.4 Inspect the generated `price_candles` schema in local Postgres and confirm the unique provider/symbol/interval/open-time constraint exists.
+- [x] 2.4 Inspect the generated `price_candles` schema in local Postgres and confirm the unique provider/symbol/interval/open-time constraint exists. — 3aa5734
 
 ### Phase 3: Binance Price Provider
 
 #### Automated
 
-- [ ] 3.1 Price provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_provider.py tests/price_enrichment/test_binance.py -p no:cacheprovider`
-- [ ] 3.2 Backend lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check src/quantitative_sentiment_analysis/price_enrichment tests/price_enrichment && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
+- [x] 3.1 Price provider tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pytest tests/price_enrichment/test_provider.py tests/price_enrichment/test_binance.py -p no:cacheprovider`
+- [x] 3.2 Backend lint/type checks pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run ruff check src/quantitative_sentiment_analysis/price_enrichment tests/price_enrichment && UV_PROJECT_ENVIRONMENT=/tmp/qsa-price-enrichment-venv uv run pyright`
 
 #### Manual
 
-- [ ] 3.3 With the local app configured for the default provider, run a controlled one-day candle fetch through a small script or REPL and confirm valid `BTCUSDT` 1 minute candles are returned without requiring an API key.
+- [x] 3.3 With the local app configured for the default provider, run a controlled one-day candle fetch through a small script or REPL and confirm valid `BTCUSDT` 1 minute candles are returned without requiring an API key.
 
 ### Phase 4: Quality Adapter Enrichment
 
