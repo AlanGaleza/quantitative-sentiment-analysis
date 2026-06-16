@@ -110,11 +110,92 @@ class InMemoryPriceCandleRepository:
 class FailingPriceProvider:
     provider_name = "FixturePrice"
 
+    def __init__(
+        self,
+        message: str = "fixture price provider unavailable",
+    ) -> None:
+        self.message = message
+
     def fetch_price_candles(
         self,
         request: PriceFetchRequest,
     ) -> tuple[PriceCandle, ...]:
-        raise PriceProviderUnavailableError("fixture price provider unavailable")
+        raise PriceProviderUnavailableError(self.message)
+
+
+class RecordingRangePriceProvider:
+    provider_name = "FixturePrice"
+
+    def __init__(self) -> None:
+        self.requests: list[PriceFetchRequest] = []
+
+    def fetch_price_candles(
+        self,
+        request: PriceFetchRequest,
+    ) -> tuple[PriceCandle, ...]:
+        self.requests.append(request)
+        candles: list[PriceCandle] = []
+        open_time = request.timeframe_start
+        while open_time <= request.timeframe_end:
+            candles.append(make_candle(open_time, close_price=100.0))
+            open_time += timedelta(minutes=1)
+        return tuple(candles)
+
+
+class FailingCacheReadRepository:
+    def upsert_candles(self, candles: Iterable[PriceCandle]) -> tuple[PriceCandle, ...]:
+        return tuple(candles)
+
+    def list_candles(
+        self,
+        *,
+        provider_name: str,
+        symbol: str,
+        interval: str,
+        start_open_time: datetime,
+        end_open_time: datetime,
+    ) -> tuple[PriceCandle, ...]:
+        return ()
+
+    def get_candles_by_open_time(
+        self,
+        *,
+        provider_name: str,
+        symbol: str,
+        interval: str,
+        open_times: Iterable[datetime],
+    ) -> dict[datetime, PriceCandle]:
+        raise RuntimeError(
+            "SELECT * FROM price_candles on internal-db.local leaked detail"
+        )
+
+
+class FailingCacheWriteRepository:
+    def upsert_candles(self, candles: Iterable[PriceCandle]) -> tuple[PriceCandle, ...]:
+        raise RuntimeError(
+            "INSERT INTO price_candles on internal-db.local leaked detail"
+        )
+
+    def list_candles(
+        self,
+        *,
+        provider_name: str,
+        symbol: str,
+        interval: str,
+        start_open_time: datetime,
+        end_open_time: datetime,
+    ) -> tuple[PriceCandle, ...]:
+        return ()
+
+    def get_candles_by_open_time(
+        self,
+        *,
+        provider_name: str,
+        symbol: str,
+        interval: str,
+        open_times: Iterable[datetime],
+    ) -> dict[datetime, PriceCandle]:
+        return {}
 
 
 def make_summary(**overrides: object) -> DatasetRunSummary:
@@ -314,6 +395,90 @@ def test_adapter_provider_failure_leaves_null_movement_with_warning() -> None:
     assert batch.records[0].realized_direction is None
     assert any("provider was unavailable" in warning for warning in batch.extra_warnings)
     assert any("could not be fetched" in warning for warning in batch.extra_warnings)
+
+
+@pytest.mark.parametrize(
+    ("service", "expected_warning"),
+    [
+        (
+            PriceEnrichmentService(
+                candle_repository=InMemoryPriceCandleRepository(),
+                price_provider=FailingPriceProvider(
+                    "https://internal-provider.local/private leaked detail"
+                ),
+            ),
+            "provider was unavailable",
+        ),
+        (
+            make_service(
+                [
+                    make_candle(EVENT_TIME, close_price=100.0),
+                    make_candle(EVENT_TIME + timedelta(minutes=1), close_price=101.0),
+                ],
+                repository=FailingCacheReadRepository(),
+            ),
+            "cache read failed",
+        ),
+        (
+            make_service(
+                [
+                    make_candle(EVENT_TIME, close_price=100.0),
+                    make_candle(EVENT_TIME + timedelta(minutes=1), close_price=101.0),
+                ],
+                repository=FailingCacheWriteRepository(),
+            ),
+            "cache write failed",
+        ),
+    ],
+)
+def test_adapter_enrichment_warnings_do_not_expose_internal_exception_details(
+    service: PriceEnrichmentService,
+    expected_warning: str,
+) -> None:
+    provider = make_provider(service=service)
+
+    batch = provider.get_quality_inputs(
+        "workspace-alpha",
+        "draft-run-fixed",
+        ONE_MINUTE,
+    )
+    warnings = "\n".join(batch.extra_warnings)
+
+    assert expected_warning in warnings
+    assert "Detail:" not in warnings
+    assert "internal-" not in warnings
+    assert "price_candles" not in warnings
+    assert "https://" not in warnings
+
+
+def test_adapter_enrichment_coalesces_sparse_fetches_and_caps_provider_windows() -> None:
+    records = [
+        make_record(1, timestamp=EVENT_TIME),
+        make_record(2, timestamp=EVENT_TIME + timedelta(minutes=5)),
+        make_record(3, timestamp=EVENT_TIME + timedelta(minutes=20)),
+    ]
+    price_provider = RecordingRangePriceProvider()
+    service = PriceEnrichmentService(
+        candle_repository=InMemoryPriceCandleRepository(),
+        price_provider=price_provider,
+        max_fetch_windows=1,
+        max_fetch_window_minutes=10,
+    )
+    provider = make_provider(repository=make_repository(records), service=service)
+
+    batch = provider.get_quality_inputs(
+        "workspace-alpha",
+        "draft-run-fixed",
+        ONE_MINUTE,
+    )
+
+    assert len(price_provider.requests) == 1
+    assert price_provider.requests[0].timeframe_start == EVENT_TIME
+    assert price_provider.requests[0].timeframe_end == EVENT_TIME + timedelta(minutes=6)
+    assert batch.records[0].later_return == pytest.approx(0.0)
+    assert batch.records[1].later_return == pytest.approx(0.0)
+    assert batch.records[2].later_return is None
+    assert any("fetch budget reached" in warning for warning in batch.extra_warnings)
 
 
 def test_adapter_preserves_noise_and_irrelevant_records_during_enrichment() -> None:

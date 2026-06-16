@@ -129,6 +129,24 @@ def test_quality_route_returns_fixture_backed_report() -> None:
     assert data["chart_points"][0]["outcome"] == "HIT"
 
 
+def test_quality_route_returns_deterministic_json_response() -> None:
+    app.dependency_overrides[get_quality_input_provider] = lambda: (
+        FixtureQualityInputProvider()
+    )
+    client = TestClient(app)
+    url = (
+        "/api/workspaces/workspace-alpha/backtests/run-001/quality"
+        "?horizon_value=1&horizon_unit=minutes"
+    )
+
+    first_response = client.get(url)
+    second_response = client.get(url)
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert first_response.json() == second_response.json()
+
+
 def test_quality_route_accepts_supported_selected_horizon() -> None:
     fixture_provider = FixtureQualityInputProvider()
     app.dependency_overrides[get_quality_input_provider] = lambda: fixture_provider

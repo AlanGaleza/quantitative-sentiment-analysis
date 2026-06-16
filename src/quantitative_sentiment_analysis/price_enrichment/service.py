@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime, timedelta
+import logging
 
 from quantitative_sentiment_analysis.backtest_quality.schemas import (
     QualityHorizon,
@@ -34,6 +35,9 @@ from quantitative_sentiment_analysis.price_enrichment.schemas import (
 )
 
 _ONE_MINUTE = timedelta(minutes=1)
+_DEFAULT_MAX_FETCH_WINDOWS = 50
+_DEFAULT_MAX_FETCH_WINDOW_MINUTES = 1000
+_LOGGER = logging.getLogger(__name__)
 
 
 class PriceEnrichmentService:
@@ -44,9 +48,17 @@ class PriceEnrichmentService:
         *,
         candle_repository: PriceCandleRepository,
         price_provider: HistoricalPriceProvider,
+        max_fetch_windows: int = _DEFAULT_MAX_FETCH_WINDOWS,
+        max_fetch_window_minutes: int = _DEFAULT_MAX_FETCH_WINDOW_MINUTES,
     ) -> None:
+        if max_fetch_windows < 1:
+            raise ValueError("max_fetch_windows must be greater than zero")
+        if max_fetch_window_minutes < 1:
+            raise ValueError("max_fetch_window_minutes must be greater than zero")
         self._candle_repository = candle_repository
         self._price_provider = price_provider
+        self._max_fetch_windows = max_fetch_windows
+        self._max_fetch_window_minutes = max_fetch_window_minutes
 
     def enrich_quality_inputs(
         self,
@@ -141,10 +153,14 @@ class PriceEnrichmentService:
                 interval=PRICE_INTERVAL_1M,
                 open_times=open_times,
             )
-        except Exception as exc:
+        except Exception:
+            _LOGGER.warning(
+                "Price candle cache read failed during quality enrichment.",
+                exc_info=True,
+            )
             warnings.append(
                 "Price candle cache read failed; price movement remains partial "
-                f"for this report. Detail: {exc}"
+                "for this report."
             )
             return {}
 
@@ -158,7 +174,20 @@ class PriceEnrichmentService:
     ) -> tuple[PriceCandle, ...]:
         fetched: list[PriceCandle] = []
         failed_window_count = 0
-        for start_open_time, end_open_time in _contiguous_windows(missing_open_times):
+        fetch_windows, budget_skipped_open_time_count = _bounded_fetch_windows(
+            missing_open_times,
+            max_window_minutes=self._max_fetch_window_minutes,
+            max_windows=self._max_fetch_windows,
+        )
+        if budget_skipped_open_time_count:
+            warnings.append(
+                "Price enrichment fetch budget reached after "
+                f"{len(fetch_windows)} provider window(s); "
+                f"{budget_skipped_open_time_count} requested candle open time(s) "
+                "were left for a later retry."
+            )
+
+        for window_index, (start_open_time, end_open_time) in enumerate(fetch_windows):
             request = PriceFetchRequest(
                 instrument=Instrument.BTCUSD,
                 mode=RunMode.BACKTEST,
@@ -172,30 +201,65 @@ class PriceEnrichmentService:
             )
             try:
                 fetched.extend(self._price_provider.fetch_price_candles(request))
-            except PriceProviderConfigurationError as exc:
+            except PriceProviderConfigurationError:
+                _LOGGER.warning(
+                    "Price provider configuration failed during quality enrichment.",
+                    exc_info=True,
+                )
                 failed_window_count += 1
                 warnings.append(
                     "Price provider configuration failed; price movement remains "
-                    f"partial. Detail: {exc}"
+                    "partial."
                 )
-            except PriceProviderUnavailableError as exc:
+                _append_skipped_after_failure_warning(
+                    warnings,
+                    remaining_window_count=len(fetch_windows) - window_index - 1,
+                )
+                break
+            except PriceProviderUnavailableError:
+                _LOGGER.warning(
+                    "Price provider was unavailable during quality enrichment.",
+                    exc_info=True,
+                )
                 failed_window_count += 1
                 warnings.append(
-                    "Price provider was unavailable; price movement remains partial. "
-                    f"Detail: {exc}"
+                    "Price provider was unavailable; price movement remains partial."
                 )
-            except PriceProviderLimitationError as exc:
+                _append_skipped_after_failure_warning(
+                    warnings,
+                    remaining_window_count=len(fetch_windows) - window_index - 1,
+                )
+                break
+            except PriceProviderLimitationError:
+                _LOGGER.warning(
+                    "Price provider returned unusable candle data during quality "
+                    "enrichment.",
+                    exc_info=True,
+                )
                 failed_window_count += 1
                 warnings.append(
                     "Price provider returned unusable candle data; price movement "
-                    f"remains partial. Detail: {exc}"
+                    "remains partial."
                 )
-            except PriceProviderError as exc:
+                _append_skipped_after_failure_warning(
+                    warnings,
+                    remaining_window_count=len(fetch_windows) - window_index - 1,
+                )
+                break
+            except PriceProviderError:
+                _LOGGER.warning(
+                    "Price provider failed during quality enrichment.",
+                    exc_info=True,
+                )
                 failed_window_count += 1
                 warnings.append(
-                    "Price provider failed; price movement remains partial. "
-                    f"Detail: {exc}"
+                    "Price provider failed; price movement remains partial."
                 )
+                _append_skipped_after_failure_warning(
+                    warnings,
+                    remaining_window_count=len(fetch_windows) - window_index - 1,
+                )
+                break
         if failed_window_count:
             warnings.append(
                 f"{failed_window_count} missing price candle window(s) could not be "
@@ -213,32 +277,54 @@ class PriceEnrichmentService:
             return
         try:
             self._candle_repository.upsert_candles(candles)
-        except Exception as exc:
+        except Exception:
+            _LOGGER.warning(
+                "Price candle cache write failed during quality enrichment.",
+                exc_info=True,
+            )
             warnings.append(
                 "Price candle cache write failed; fetched candles were used only "
-                f"for this report. Detail: {exc}"
+                "for this report."
             )
 
 
-def _contiguous_windows(
+def _bounded_fetch_windows(
     open_times: Sequence[datetime],
-) -> tuple[tuple[datetime, datetime], ...]:
+    *,
+    max_window_minutes: int,
+    max_windows: int,
+) -> tuple[tuple[tuple[datetime, datetime], ...], int]:
     sorted_open_times = tuple(sorted(set(open_times)))
     if not sorted_open_times:
-        return ()
+        return (), 0
 
     windows: list[tuple[datetime, datetime]] = []
-    start = sorted_open_times[0]
-    previous = start
-    for open_time in sorted_open_times[1:]:
-        if open_time - previous == _ONE_MINUTE:
-            previous = open_time
-            continue
-        windows.append((start, previous))
-        start = open_time
-        previous = open_time
-    windows.append((start, previous))
-    return tuple(windows)
+    index = 0
+    while index < len(sorted_open_times):
+        if len(windows) >= max_windows:
+            return tuple(windows), len(sorted_open_times) - index
+
+        start = sorted_open_times[index]
+        end_limit = start + (max_window_minutes - 1) * _ONE_MINUTE
+        index += 1
+        while index < len(sorted_open_times) and sorted_open_times[index] <= end_limit:
+            index += 1
+        windows.append((start, sorted_open_times[index - 1]))
+
+    return tuple(windows), 0
+
+
+def _append_skipped_after_failure_warning(
+    warnings: list[str],
+    *,
+    remaining_window_count: int,
+) -> None:
+    if remaining_window_count <= 0:
+        return
+    warnings.append(
+        f"{remaining_window_count} missing price candle window(s) were skipped after "
+        "the configured provider failed."
+    )
 
 
 def _missing_reason_warnings(
