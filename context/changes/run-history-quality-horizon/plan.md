@@ -522,12 +522,12 @@ derived from existing `dataset_runs` rows.
 
 #### Automated
 
-- [x] 3.1 Backend quality horizon tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider`
-- [x] 3.2 Frontend quality horizon tests pass: `npm --prefix frontend run test -- src/features/backtestQuality`
-- [x] 3.3 Backend and frontend full quality gates pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pyright && npm --prefix frontend run build`
+- [x] 3.1 Backend quality horizon tests pass: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pytest tests/backtest_quality/test_router.py tests/backtest_quality/test_metrics.py -p no:cacheprovider` — b4c1b8e
+- [x] 3.2 Frontend quality horizon tests pass: `npm --prefix frontend run test -- src/features/backtestQuality` — b4c1b8e
+- [x] 3.3 Backend and frontend full quality gates pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run ruff check . && UV_PROJECT_ENVIRONMENT=/tmp/qsa-run-history-venv uv run pyright && npm --prefix frontend run build` — b4c1b8e
 
 #### Manual
 
-- [x] 3.4 Opening `/workspaces/demo-workspace/backtests/<run_id>/quality` shows 4 hours by default.
-- [x] 3.5 Changing the selector to 1 minute updates the URL and report metadata to `1 minute` without inventing later movement values.
-- [x] 3.6 Missing movement warnings remain visible for real completed runs until price enrichment exists.
+- [x] 3.4 Opening `/workspaces/demo-workspace/backtests/<run_id>/quality` shows 4 hours by default. — b4c1b8e
+- [x] 3.5 Changing the selector to 1 minute updates the URL and report metadata to `1 minute` without inventing later movement values. — b4c1b8e
+- [x] 3.6 Missing movement warnings remain visible for real completed runs until price enrichment exists. — b4c1b8e
