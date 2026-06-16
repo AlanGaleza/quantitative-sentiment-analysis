@@ -9,6 +9,10 @@ services:
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_SECRET
+        generateValue: true
       - key: QSA_CORS_ALLOWED_ORIGINS
         sync: false
 

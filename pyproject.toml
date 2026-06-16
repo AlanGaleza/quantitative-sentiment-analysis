@@ -5,7 +5,11 @@ description = "FastAPI service for deterministic BTCUSD sentiment backtest datas
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.17",
+    "argon2-cffi>=25.1.0",
     "fastapi>=0.136.3",
+    "psycopg[binary]>=3.2",
+    "sqlalchemy>=2.0",
     "uvicorn>=0.49.0",
 ]
 
