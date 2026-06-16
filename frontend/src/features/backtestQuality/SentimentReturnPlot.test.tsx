@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { SentimentReturnPlot } from "./SentimentReturnPlot";
@@ -62,6 +62,17 @@ describe("SentimentReturnPlot", () => {
     expect(
       screen.getByText("Point 4: LONG directional bias, later return missing, MISS"),
     ).toBeInTheDocument();
+    const legend = screen.getByLabelText("Plot legend");
+    expect(within(legend).getByText("HIT")).toBeInTheDocument();
+    expect(within(legend).getByText("MISS")).toBeInTheDocument();
+    expect(within(legend).getByText("EXCLUDED")).toBeInTheDocument();
+    expect(screen.getByText("sentiment score")).toBeInTheDocument();
+    expect(screen.getByText("-1")).toBeInTheDocument();
+    expect(screen.getByText("-0.5")).toBeInTheDocument();
+    expect(screen.getByText("+0.5")).toBeInTheDocument();
+    expect(screen.getByText("+1")).toBeInTheDocument();
+    expect(screen.getByText("later return")).toBeInTheDocument();
+    expect(screen.getByText("0.00%")).toBeInTheDocument();
     expect(
       screen.getByText(
         "Chart points may be a deterministic sample of the full BACKTEST report; metrics above use the report denominator.",

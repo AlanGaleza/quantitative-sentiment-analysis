@@ -13,6 +13,8 @@ interface NumericPoint {
 const WIDTH = 720;
 const HEIGHT = 320;
 const PADDING = 48;
+const SENTIMENT_TICKS = [-1, -0.5, 0, 0.5, 1];
+const RETURN_TICK_COUNT = 5;
 
 export function SentimentReturnPlot({ points }: SentimentReturnPlotProps) {
   if (points.length === 0) {
@@ -60,7 +62,7 @@ export function SentimentReturnPlot({ points }: SentimentReturnPlotProps) {
     x: scaleSentiment(point.sentiment_score),
     y: scaleReturn(point.later_return, returnDomain),
   }));
-  const zeroY = scaleReturn(0, returnDomain);
+  const returnTicks = buildReturnTicks(returnDomain);
 
   return (
     <section className="plot-panel" aria-labelledby="plot-heading">
@@ -75,13 +77,23 @@ export function SentimentReturnPlot({ points }: SentimentReturnPlotProps) {
         role="img"
         aria-label="Sentiment versus later BTCUSD return plot"
       >
-        <line
-          x1={PADDING}
-          y1={zeroY}
-          x2={WIDTH - PADDING}
-          y2={zeroY}
-          className="axis-line axis-zero"
-        />
+        {returnTicks.map((tick) => {
+          const y = scaleReturn(tick, returnDomain);
+          return (
+            <g key={`return-tick-${tick}`}>
+              <line
+                x1={PADDING}
+                y1={y}
+                x2={WIDTH - PADDING}
+                y2={y}
+                className={isZeroTick(tick) ? "axis-line axis-zero" : "axis-grid"}
+              />
+              <text x={PADDING - 10} y={y + 4} className="axis-value" textAnchor="end">
+                {formatAxisReturn(tick)}
+              </text>
+            </g>
+          );
+        })}
         <line
           x1={PADDING}
           y1={PADDING}
@@ -96,11 +108,25 @@ export function SentimentReturnPlot({ points }: SentimentReturnPlotProps) {
           y2={HEIGHT - PADDING}
           className="axis-line"
         />
-        <text x={PADDING} y={HEIGHT - 14} className="axis-label">
-          -1 sentiment
-        </text>
-        <text x={WIDTH - PADDING - 90} y={HEIGHT - 14} className="axis-label">
-          +1 sentiment
+        {SENTIMENT_TICKS.map((tick) => {
+          const x = scaleSentiment(tick);
+          return (
+            <g key={`sentiment-tick-${tick}`}>
+              <line
+                x1={x}
+                y1={HEIGHT - PADDING}
+                x2={x}
+                y2={HEIGHT - PADDING + 6}
+                className="axis-tick"
+              />
+              <text x={x} y={HEIGHT - PADDING + 22} className="axis-value" textAnchor="middle">
+                {formatAxisSentiment(tick)}
+              </text>
+            </g>
+          );
+        })}
+        <text x={WIDTH / 2} y={HEIGHT - 10} className="axis-label" textAnchor="middle">
+          sentiment score
         </text>
         <text x={12} y={PADDING - 18} className="axis-label">
           later return
@@ -117,6 +143,21 @@ export function SentimentReturnPlot({ points }: SentimentReturnPlotProps) {
           </g>
         ))}
       </svg>
+
+      <ul className="plot-legend" aria-label="Plot legend">
+        <li>
+          <span className="legend-swatch plot-dot-hit" aria-hidden="true" />
+          HIT
+        </li>
+        <li>
+          <span className="legend-swatch plot-dot-miss" aria-hidden="true" />
+          MISS
+        </li>
+        <li>
+          <span className="legend-swatch plot-dot-excluded" aria-hidden="true" />
+          EXCLUDED
+        </li>
+      </ul>
 
       <div className="plot-summary">
         <p>
@@ -158,12 +199,42 @@ function buildReturnDomain(values: number[]): [number, number] {
   return [min - padding, max + padding];
 }
 
+function buildReturnTicks([min, max]: [number, number]): number[] {
+  if (min === max) {
+    return [min];
+  }
+  if (min < 0 && max > 0) {
+    return [min, min / 2, 0, max / 2, max];
+  }
+
+  const step = (max - min) / (RETURN_TICK_COUNT - 1);
+  return Array.from({ length: RETURN_TICK_COUNT }, (_, index) => min + step * index);
+}
+
 function scaleSentiment(value: number): number {
   return PADDING + ((value + 1) / 2) * (WIDTH - PADDING * 2);
 }
 
 function scaleReturn(value: number, [min, max]: [number, number]): number {
   return HEIGHT - PADDING - ((value - min) / (max - min)) * (HEIGHT - PADDING * 2);
+}
+
+function isZeroTick(value: number): boolean {
+  return Math.abs(value) < 0.0000001;
+}
+
+function formatAxisSentiment(value: number): string {
+  if (value > 0) {
+    return `+${value}`;
+  }
+  return `${value}`;
+}
+
+function formatAxisReturn(value: number): string {
+  if (isZeroTick(value)) {
+    return "0.00%";
+  }
+  return `${(value * 100).toFixed(2)}%`;
 }
 
 function pointLabel(point: QualityChartPoint, index: number): string {
