@@ -37,6 +37,7 @@ def test_cors_allows_configured_frontend_origin() -> None:
         response.headers["access-control-allow-origin"]
         == "https://frontend.example.test"
     )
+    assert response.headers["access-control-allow-credentials"] == "true"
 
 
 def test_cors_rejects_unconfigured_frontend_origin() -> None:
@@ -88,3 +89,43 @@ def test_cors_env_normalizes_trailing_slashes(monkeypatch) -> None:
         "https://frontend.example.test",
         "http://localhost:5173",
     ]
+
+
+def test_cors_allows_explicit_crud_methods_and_headers() -> None:
+    client = TestClient(
+        create_app(cors_allowed_origins=["https://frontend.example.test"])
+    )
+
+    response = client.options(
+        "/api/workspaces/workspace-alpha/backtest-configs/config-001",
+        headers={
+            "Origin": "https://frontend.example.test",
+            "Access-Control-Request-Method": "DELETE",
+            "Access-Control-Request-Headers": "Content-Type",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "DELETE" in response.headers["access-control-allow-methods"]
+    assert "Content-Type" in response.headers["access-control-allow-headers"]
+
+
+def test_cookie_authenticated_unsafe_request_requires_allowed_origin() -> None:
+    client = TestClient(
+        create_app(cors_allowed_origins=["https://frontend.example.test"])
+    )
+    client.cookies.set("qsa_session", "opaque-cookie")
+
+    response = client.post(
+        "/api/workspaces/workspace-alpha/backtests/drafts",
+        json={
+            "instrument": "BTCUSD",
+            "mode": "BACKTEST",
+            "timeframe_start": "2026-06-01T12:00:00Z",
+            "timeframe_end": "2026-06-08T12:00:00Z",
+        },
+        headers={"Origin": "https://other.example.test"},
+    )
+
+    assert response.status_code == 403
+    assert "origin" in response.json()["detail"]

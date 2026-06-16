@@ -659,32 +659,32 @@ This is a no-data migration from in-memory production state to durable Postgres.
 
 #### Automated
 
-- [x] 1.1 Dependencies install from the lockfile: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv UV_LINK_MODE=copy uv sync --locked --dev`
-- [x] 1.2 Alembic migration applies to a test Postgres database: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run alembic upgrade head`
-- [x] 1.3 Persistence module tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/persistence -p no:cacheprovider`
-- [x] 1.4 Backend imports still compile: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run python -m compileall src`
+- [x] 1.1 Dependencies install from the lockfile: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv UV_LINK_MODE=copy uv sync --locked --dev` — ae7f549
+- [x] 1.2 Alembic migration applies to a test Postgres database: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run alembic upgrade head` — ae7f549
+- [x] 1.3 Persistence module tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/persistence -p no:cacheprovider` — ae7f549
+- [x] 1.4 Backend imports still compile: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run python -m compileall src` — ae7f549
 
 #### Manual
 
-- [x] 1.5 Render backend has `DATABASE_URL`, `AUTH_SECRET`, and session/CORS env vars configured without exposing values in git or chat.
-- [x] 1.6 Manual Render migration command runs against the Render backend service environment and reports Alembic at `head`.
-- [x] 1.7 `/health` still returns OK after migration and redeploy.
+- [x] 1.5 Render backend has `DATABASE_URL`, `AUTH_SECRET`, and session/CORS env vars configured without exposing values in git or chat. — ae7f549
+- [x] 1.6 Manual Render migration command runs against the Render backend service environment and reports Alembic at `head`. — ae7f549
+- [x] 1.7 `/health` still returns OK after migration and redeploy. — ae7f549
 
 ### Phase 2: Backend Auth and Session Cookies
 
 #### Automated
 
-- [ ] 2.1 Auth unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_security.py tests/auth/test_schemas.py -p no:cacheprovider`
-- [ ] 2.2 Auth integration tests pass against a migrated test DB: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_router.py -p no:cacheprovider`
-- [ ] 2.3 CORS credential tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/test_main.py -p no:cacheprovider`
-- [ ] 2.4 Existing unauthenticated route tests are updated or explicitly overridden and still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell tests/backtest_dataset tests/backtest_quality -p no:cacheprovider`
+- [x] 2.1 Auth unit tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_security.py tests/auth/test_schemas.py -p no:cacheprovider`
+- [x] 2.2 Auth integration tests pass against a migrated test DB: `DATABASE_URL=$QSA_TEST_DATABASE_URL UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/auth/test_router.py -p no:cacheprovider`
+- [x] 2.3 CORS credential tests pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/test_main.py -p no:cacheprovider`
+- [x] 2.4 Existing unauthenticated route tests are updated or explicitly overridden and still pass: `UV_PROJECT_ENVIRONMENT=/tmp/qsa-postgres-auth-venv uv run pytest tests/backtest_shell tests/backtest_dataset tests/backtest_quality -p no:cacheprovider`
 
 #### Manual
 
-- [ ] 2.5 Seed command creates the initial user and default workspace without printing the password.
-- [ ] 2.6 Login from the deployed frontend origin sets an HttpOnly session cookie.
-- [ ] 2.7 Logout revokes the session; a new `/api/auth/me` request returns `401`.
-- [ ] 2.8 Browser devtools show production cookie attributes as `Secure`, `HttpOnly`, and `SameSite=None`.
+- [x] 2.5 Seed command creates the initial user and default workspace without printing the password.
+- [x] 2.6 Login from the deployed frontend origin sets an HttpOnly session cookie.
+- [x] 2.7 Logout revokes the session; a new `/api/auth/me` request returns `401`.
+- [x] 2.8 Browser devtools show production cookie attributes as `Secure`, `HttpOnly`, and `SameSite=None`.
 
 ### Phase 3: Workspace Ownership and Persistent Existing Runs
 
