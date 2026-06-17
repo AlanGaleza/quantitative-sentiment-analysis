@@ -81,6 +81,70 @@ describe("BacktestQualityPage", () => {
     expect(screen.queryByText(/^missing$/i)).not.toBeInTheDocument();
   });
 
+  it("filters representative records by text, directional bias, and relevance", async () => {
+    const loadReport = vi.fn().mockResolvedValue({
+      ...backtestQualityReport,
+      representative_records: [
+        ...backtestQualityReport.representative_records,
+        {
+          ...backtestQualityReport.representative_records[0],
+          record_id: "record-short",
+          event_timestamp: "2026-06-08T12:06:00Z",
+          headline: "Miner selling pressure weighs on BTCUSD",
+          source_name: "Miner Desk",
+          sentiment_score: -0.6,
+          directional_bias: "SHORT" as const,
+          relevance: "NOISE" as const,
+          later_return: -0.02,
+          realized_direction: "DOWN" as const,
+        },
+      ],
+    });
+
+    render(
+      <BacktestQualityPage
+        workspaceId="workspace-alpha"
+        runId="run-001"
+        loadReport={loadReport}
+      />,
+    );
+
+    expect(
+      await screen.findByText("Miner selling pressure weighs on BTCUSD"),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Directional bias"), {
+      target: { value: "SHORT" },
+    });
+
+    expect(
+      screen.getByText("Miner selling pressure weighs on BTCUSD"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("BTCUSD quality fixture 1")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Relevance"), {
+      target: { value: "RELEVANT" },
+    });
+
+    expect(
+      screen.getByText("No representative records match the selected filters."),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Directional bias"), {
+      target: { value: "ALL" },
+    });
+    fireEvent.change(screen.getByLabelText("Filter records"), {
+      target: { value: "missing movement" },
+    });
+
+    expect(
+      screen.getByText("BTCUSD quality fixture with missing movement"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Miner selling pressure weighs on BTCUSD"),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders partial reports with backend enrichment warnings", async () => {
     const loadReport = vi.fn().mockResolvedValue(zeroNumericBacktestQualityReport);
 

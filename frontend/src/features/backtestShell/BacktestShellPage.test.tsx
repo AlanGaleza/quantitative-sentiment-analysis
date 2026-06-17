@@ -155,6 +155,44 @@ describe("BacktestShellPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("renders preview records inside a scrollable table region", async () => {
+    const createRun = vi
+      .fn()
+      .mockImplementation(
+        async (_workspaceId: string, request: CreateBacktestRunRequest) =>
+          createdRun(request),
+      );
+    const preview = datasetPreview({
+      records: Array.from({ length: 12 }, (_, index) => ({
+        ...datasetPreview().records[0],
+        record_id: `fixturenews:record-${index + 1}`,
+        timestamp: `2026-06-02T${String(index).padStart(2, "0")}:00:00Z`,
+        headline: `Preview record ${index + 1}`,
+      })),
+    });
+    const runDataset = vi.fn().mockResolvedValue(preview);
+
+    render(
+      <BacktestShellPage
+        workspaceId="workspace-alpha"
+        now={FIXED_NOW}
+        createRun={createRun}
+        runDataset={runDataset}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Create draft run" }));
+    await screen.findByText("Draft run created");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Run deterministic BACKTEST dataset" }),
+    );
+
+    const table = await screen.findByLabelText("Dataset preview records");
+    expect(table.closest(".dataset-preview-table-wrap")).toBeInTheDocument();
+    expect(screen.getByText("Preview record 1")).toBeInTheDocument();
+    expect(screen.getByText("Preview record 12")).toBeInTheDocument();
+  });
+
   it("downloads JSONL export only after completed dataset generation", async () => {
     const createRun = vi
       .fn()

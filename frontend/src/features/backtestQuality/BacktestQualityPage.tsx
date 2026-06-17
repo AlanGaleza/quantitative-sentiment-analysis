@@ -9,9 +9,11 @@ import {
   DEFAULT_QUALITY_HORIZON,
   SUPPORTED_QUALITY_HORIZONS,
   type BacktestQualityReport,
+  type DirectionalBias,
   type HorizonUnit,
   type QualityHorizon,
   type QualityInputRecord,
+  type RelevanceLabel,
   type SupportedQualityHorizon,
 } from "./types";
 
@@ -262,15 +264,74 @@ function Warnings({ warnings }: { warnings: string[] }) {
 }
 
 function RecordsTable({ records }: { records: QualityInputRecord[] }) {
+  const [filterText, setFilterText] = useState("");
+  const [biasFilter, setBiasFilter] = useState<DirectionalBias | "ALL">("ALL");
+  const [relevanceFilter, setRelevanceFilter] = useState<RelevanceLabel | "ALL">(
+    "ALL",
+  );
+  const visibleRecords = records.filter((record) =>
+    recordMatchesFilters(record, {
+      bias: biasFilter,
+      relevance: relevanceFilter,
+      text: filterText,
+    }),
+  );
+
   return (
     <section className="records-panel" aria-labelledby="records-heading">
       <div className="section-heading">
         <h2 id="records-heading">Representative records</h2>
-        <span>{records.length}</span>
+        <span>
+          {visibleRecords.length}/{records.length}
+        </span>
       </div>
+      {records.length > 0 ? (
+        <div className="filter-bar" aria-label="Representative records filters">
+          <label>
+            Filter records
+            <input
+              value={filterText}
+              onChange={(event) => setFilterText(event.currentTarget.value)}
+              placeholder="Headline, source, timestamp"
+            />
+          </label>
+          <label>
+            Directional bias
+            <select
+              value={biasFilter}
+              onChange={(event) =>
+                setBiasFilter(event.currentTarget.value as DirectionalBias | "ALL")
+              }
+            >
+              <option value="ALL">All</option>
+              <option value="LONG">LONG</option>
+              <option value="SHORT">SHORT</option>
+              <option value="FLAT">FLAT</option>
+            </select>
+          </label>
+          <label>
+            Relevance
+            <select
+              value={relevanceFilter}
+              onChange={(event) =>
+                setRelevanceFilter(event.currentTarget.value as RelevanceLabel | "ALL")
+              }
+            >
+              <option value="ALL">All</option>
+              <option value="RELEVANT">RELEVANT</option>
+              <option value="NOISE">NOISE</option>
+              <option value="IRRELEVANT">IRRELEVANT</option>
+            </select>
+          </label>
+        </div>
+      ) : null}
       {records.length === 0 ? (
         <p role="status" className="empty-state">
           No representative records are available for this BACKTEST report.
+        </p>
+      ) : visibleRecords.length === 0 ? (
+        <p role="status" className="empty-state">
+          No representative records match the selected filters.
         </p>
       ) : (
         <div className="table-wrap">
@@ -288,7 +349,7 @@ function RecordsTable({ records }: { records: QualityInputRecord[] }) {
               </tr>
             </thead>
             <tbody>
-              {records.map((record) => (
+              {visibleRecords.map((record) => (
                 <tr key={record.record_id ?? `${record.event_timestamp}-${record.headline}`}>
                   <td>{formatTimestamp(record.event_timestamp)}</td>
                   <td>{record.headline}</td>
@@ -306,6 +367,39 @@ function RecordsTable({ records }: { records: QualityInputRecord[] }) {
       )}
     </section>
   );
+}
+
+function recordMatchesFilters(
+  record: QualityInputRecord,
+  filters: {
+    bias: DirectionalBias | "ALL";
+    relevance: RelevanceLabel | "ALL";
+    text: string;
+  },
+): boolean {
+  if (filters.bias !== "ALL" && record.directional_bias !== filters.bias) {
+    return false;
+  }
+  if (filters.relevance !== "ALL" && record.relevance !== filters.relevance) {
+    return false;
+  }
+
+  const query = filters.text.trim().toLowerCase();
+  if (!query) {
+    return true;
+  }
+
+  return [
+    record.event_timestamp,
+    record.headline,
+    record.source_id,
+    record.source_name,
+    record.sentiment_score.toFixed(2),
+    record.directional_bias,
+    record.later_return === null ? "missing" : formatReturn(record.later_return),
+    record.realized_direction ?? "missing",
+    record.relevance,
+  ].some((value) => value?.toLowerCase().includes(query));
 }
 
 function formatPercent(value: number | null): string {

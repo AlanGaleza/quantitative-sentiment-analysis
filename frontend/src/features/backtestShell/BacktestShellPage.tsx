@@ -412,7 +412,7 @@ function DatasetPreviewTable({ records }: { records: DatasetPreviewRecord[] }) {
         <h2>Preview records</h2>
         <span>{records.length}</span>
       </div>
-      <div className="table-wrap">
+      <div className="table-wrap dataset-preview-table-wrap">
         <table aria-label="Dataset preview records">
           <thead>
             <tr>

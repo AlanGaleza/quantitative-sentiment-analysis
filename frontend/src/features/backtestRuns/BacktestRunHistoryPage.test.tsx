@@ -135,6 +135,46 @@ describe("BacktestRunHistoryPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("filters workspace runs by text and status", async () => {
+    const loadRunHistory = vi
+      .fn()
+      .mockResolvedValue(historyResponse([completedRun(), providerLimitedRun()]));
+
+    render(
+      <BacktestRunHistoryPage
+        workspaceId="workspace-alpha"
+        loadRunHistory={loadRunHistory}
+      />,
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Config One" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Config Two" })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Status"), {
+      target: { value: "FAILED_PROVIDER_LIMITATION" },
+    });
+
+    expect(screen.queryByRole("heading", { name: "Config One" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Config Two" })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Filter runs"), {
+      target: { value: "fingerprint-alpha" },
+    });
+
+    expect(
+      screen.getByText("No BACKTEST runs match the selected filters."),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Status"), {
+      target: { value: "ALL" },
+    });
+
+    expect(screen.getByRole("heading", { name: "Config One" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Config Two" })).not.toBeInTheDocument();
+  });
+
   it("does not use forbidden product-facing wording", async () => {
     render(
       <BacktestRunHistoryPage

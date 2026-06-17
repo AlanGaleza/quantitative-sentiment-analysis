@@ -38,6 +38,14 @@ type ExportState =
   | { status: "downloading"; runId: string }
   | { status: "error"; runId: string; message: string };
 
+type RunStatusFilter =
+  | "ALL"
+  | "DRAFT"
+  | "READY_FOR_DATASET"
+  | "RUNNING"
+  | "COMPLETED"
+  | "FAILED_PROVIDER_LIMITATION";
+
 export function BacktestRunHistoryPage({
   workspaceId,
   loadRunHistory = fetchBacktestRunHistory,
@@ -47,6 +55,8 @@ export function BacktestRunHistoryPage({
   const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
   const [runState, setRunState] = useState<RunState>({ status: "idle" });
   const [exportState, setExportState] = useState<ExportState>({ status: "idle" });
+  const [filterText, setFilterText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<RunStatusFilter>("ALL");
 
   useEffect(() => {
     let isCurrent = true;
@@ -110,6 +120,16 @@ export function BacktestRunHistoryPage({
     }
   }
 
+  const visibleRuns =
+    loadState.status === "loaded"
+      ? loadState.history.runs.filter((run) =>
+          runMatchesFilters(run, {
+            status: statusFilter,
+            text: filterText,
+          }),
+        )
+      : [];
+
   return (
     <main className="quality-page run-history-page">
       <header className="quality-header">
@@ -133,9 +153,41 @@ export function BacktestRunHistoryPage({
         <div className="section-heading">
           <h2 id="run-history-heading">Workspace runs</h2>
           {loadState.status === "loaded" ? (
-            <span>{loadState.history.runs.length}</span>
+            <span>
+              {visibleRuns.length}/{loadState.history.runs.length}
+            </span>
           ) : null}
         </div>
+        {loadState.status === "loaded" && loadState.history.runs.length > 0 ? (
+          <div className="filter-bar" aria-label="Workspace runs filters">
+            <label>
+              Filter runs
+              <input
+                value={filterText}
+                onChange={(event) => setFilterText(event.currentTarget.value)}
+                placeholder="Run, config, provider, fingerprint"
+              />
+            </label>
+            <label>
+              Status
+              <select
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.currentTarget.value as RunStatusFilter)
+                }
+              >
+                <option value="ALL">All</option>
+                <option value="DRAFT">DRAFT</option>
+                <option value="READY_FOR_DATASET">READY_FOR_DATASET</option>
+                <option value="RUNNING">RUNNING</option>
+                <option value="COMPLETED">COMPLETED</option>
+                <option value="FAILED_PROVIDER_LIMITATION">
+                  FAILED_PROVIDER_LIMITATION
+                </option>
+              </select>
+            </label>
+          </div>
+        ) : null}
 
         {loadState.status === "loading" ? (
           <p role="status" className="loading-state">
@@ -152,9 +204,16 @@ export function BacktestRunHistoryPage({
             No BACKTEST runs exist for this workspace yet.
           </p>
         ) : null}
-        {loadState.status === "loaded" && loadState.history.runs.length > 0 ? (
+        {loadState.status === "loaded" &&
+        loadState.history.runs.length > 0 &&
+        visibleRuns.length === 0 ? (
+          <p role="status" className="empty-state">
+            No BACKTEST runs match the selected filters.
+          </p>
+        ) : null}
+        {loadState.status === "loaded" && visibleRuns.length > 0 ? (
           <div className="run-history-list">
-            {loadState.history.runs.map((run) => (
+            {visibleRuns.map((run) => (
               <RunHistoryCard
                 key={run.run_id}
                 run={run}
@@ -171,6 +230,35 @@ export function BacktestRunHistoryPage({
       </section>
     </main>
   );
+}
+
+function runMatchesFilters(
+  run: BacktestRunHistoryItem,
+  filters: { status: RunStatusFilter; text: string },
+): boolean {
+  const status = run.dataset_status ?? run.status;
+  if (filters.status !== "ALL" && status !== filters.status) {
+    return false;
+  }
+
+  const query = filters.text.trim().toLowerCase();
+  if (!query) {
+    return true;
+  }
+
+  return [
+    run.run_id,
+    run.config_name,
+    run.config_id,
+    run.timeframe_start,
+    run.timeframe_end,
+    run.created_at,
+    status,
+    run.provider_name,
+    run.model_version,
+    run.config_version,
+    run.input_fingerprint,
+  ].some((value) => value?.toLowerCase().includes(query));
 }
 
 function RunHistoryCard({
