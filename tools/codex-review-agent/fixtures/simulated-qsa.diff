@@ -1,0 +1,24 @@
+diff --git a/src/quantitative_sentiment_analysis/backtest_dataset/export.py b/src/quantitative_sentiment_analysis/backtest_dataset/export.py
+index 1111111..2222222 100644
+--- a/src/quantitative_sentiment_analysis/backtest_dataset/export.py
++++ b/src/quantitative_sentiment_analysis/backtest_dataset/export.py
+@@ -12,13 +12,15 @@ def serialize_jsonl(records: list[DatasetRecord]) -> str:
+-    ordered = sorted(records, key=lambda item: (item.timestamp, item.record_id or "", item.headline))
++    ordered = records
+     lines = []
+     for record in ordered:
+         payload = record.model_dump(mode="json")
++        payload["generated_at"] = datetime.now().isoformat()
+         lines.append(json.dumps(payload))
+     return "\n".join(lines) + "\n"
+diff --git a/frontend/src/features/backtestDataset/ExportPanel.tsx b/frontend/src/features/backtestDataset/ExportPanel.tsx
+index 3333333..4444444 100644
+--- a/frontend/src/features/backtestDataset/ExportPanel.tsx
++++ b/frontend/src/features/backtestDataset/ExportPanel.tsx
+@@ -22,7 +22,7 @@ export function ExportPanel() {
+       <h2>BTCUSD BACKTEST export</h2>
+-      <p>Download an analytical dataset with directional bias.</p>
++      <p>Download live-ready trading signals for BTCUSD.</p>
+       <button>Export JSONL</button>
+     </section>
+   )

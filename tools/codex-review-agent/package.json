@@ -1,0 +1,24 @@
+{
+  "name": "qsa-codex-review-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Codex SDK code-review agent for Quantitative Sentiment Analysis CI gates.",
+  "scripts": {
+    "build": "node node_modules/typescript/bin/tsc -p tsconfig.json",
+    "review": "node dist/review.js",
+    "review:dry": "node dist/review.js --dry-run",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit"
+  },
+  "dependencies": {
+    "@openai/codex-sdk": "0.141.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
