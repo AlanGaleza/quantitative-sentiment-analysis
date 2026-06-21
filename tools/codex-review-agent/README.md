@@ -82,9 +82,27 @@ The JSON contract includes five scored criteria:
 - `test_verification_discipline`;
 - `scope_maintainability_discipline`.
 
-GitHub Actions wiring and artifact upload live in the separate
-`ci-code-review-pipeline` change. Promptfoo/model comparison is handled by the
-separate `code-review-evals` change.
+## GitHub Actions
+
+The CI pipeline lives in `.github/workflows/ai-code-review.yml`. It runs as a
+separate `AI Code Review` workflow instead of modifying the main product CI.
+
+Triggers:
+
+- `pull_request` for pull requests from this repository;
+- `workflow_dispatch` for manual reviews, with optional `base_ref` defaulting to
+  `main`.
+
+The workflow skips fork pull requests automatically because non-`GITHUB_TOKEN`
+secrets are not passed to fork PR runs. Configure `OPENAI_API_KEY` as a GitHub
+repository or organization secret before using the workflow. The secret is scoped
+only to the review step.
+
+The workflow uploads `qsa-ai-code-review` as a JSON artifact. A failed review
+still writes the artifact before the job fails when the gate is violated.
+
+Promptfoo/model comparison is handled by the separate `code-review-evals`
+change.
 
 ## Notes
 

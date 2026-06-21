@@ -1,0 +1,98 @@
+name: AI Code Review
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: Base branch or ref for manual diff calculation
+        required: false
+        default: main
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  ai-code-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    steps:
+      - name: Checkout review target
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: tools/codex-review-agent/package-lock.json
+
+      - name: Install review agent dependencies
+        run: npm --prefix tools/codex-review-agent ci
+
+      - name: Build review agent
+        run: npm --prefix tools/codex-review-agent run build
+
+      - name: Prepare review inputs
+        id: review-inputs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_BASE_REF: ${{ github.event.inputs.base_ref || 'main' }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref || '' }}
+          PR_BODY: ${{ github.event.pull_request.body || '' }}
+        run: |
+          set -euo pipefail
+
+          diff_file="$RUNNER_TEMP/qsa-ai-review.diff"
+          pr_body_file="$RUNNER_TEMP/qsa-pr-body.md"
+          review_file="$RUNNER_TEMP/qsa-ai-review.json"
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            base_ref="$PR_BASE_REF"
+            printf '%s\n' "${PR_BODY:-}" > "$pr_body_file"
+          else
+            base_ref="${MANUAL_BASE_REF:-main}"
+            printf 'Workflow dispatch review against %s.\n' "$base_ref" > "$pr_body_file"
+          fi
+
+          git fetch --no-tags origin "$base_ref:refs/remotes/origin/$base_ref"
+          git diff --no-ext-diff --unified=3 "origin/$base_ref...HEAD" > "$diff_file"
+
+          echo "diff_file=$diff_file" >> "$GITHUB_OUTPUT"
+          echo "pr_body_file=$pr_body_file" >> "$GITHUB_OUTPUT"
+          echo "review_file=$review_file" >> "$GITHUB_OUTPUT"
+
+      - name: Run AI code review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          QSA_REVIEW_PR_TITLE: ${{ github.event.pull_request.title || 'Manual AI code review' }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${OPENAI_API_KEY:-}" ]; then
+            echo "OPENAI_API_KEY secret is required for AI Code Review." >&2
+            exit 1
+          fi
+
+          npm --prefix tools/codex-review-agent run review -- \
+            --diff-file "${{ steps.review-inputs.outputs.diff_file }}" \
+            --pr-title "$QSA_REVIEW_PR_TITLE" \
+            --pr-body-file "${{ steps.review-inputs.outputs.pr_body_file }}" \
+            --output-file "${{ steps.review-inputs.outputs.review_file }}"
+
+      - name: Upload AI review artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qsa-ai-code-review
+          path: ${{ steps.review-inputs.outputs.review_file }}
+          if-no-files-found: error
+          retention-days: 14

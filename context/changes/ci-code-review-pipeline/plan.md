@@ -336,28 +336,28 @@ CI workflow and upgrades an isolated tool package.
 
 #### Automated
 
-- [x] 1.1 TypeScript typecheck passes
-- [x] 1.2 Build passes
-- [x] 1.3 Dry-run prompt generation accepts PR metadata
+- [x] 1.1 TypeScript typecheck passes — 236bd12
+- [x] 1.2 Build passes — 236bd12
+- [x] 1.3 Dry-run prompt generation accepts PR metadata — 236bd12
 
 #### Manual
 
-- [x] 1.4 Simulated unsafe diff writes JSON with a valid local OpenAI/Codex auth path
-- [x] 1.5 Simulated unsafe diff fails the review gate
-- [x] 1.6 JSON output includes all required M5L3 review fields
+- [x] 1.4 Simulated unsafe diff writes JSON with a valid local OpenAI/Codex auth path — 236bd12
+- [x] 1.5 Simulated unsafe diff fails the review gate — 236bd12
+- [x] 1.6 JSON output includes all required M5L3 review fields — 236bd12
 
 ### Phase 2: GitHub Actions Workflow and Operator Documentation
 
 #### Automated
 
-- [ ] 2.1 Workflow file exists
-- [ ] 2.2 TypeScript typecheck still passes
-- [ ] 2.3 Build still passes
-- [ ] 2.4 Git whitespace check passes
+- [x] 2.1 Workflow file exists
+- [x] 2.2 TypeScript typecheck still passes
+- [x] 2.3 Build still passes
+- [x] 2.4 Git whitespace check passes
 
 #### Manual
 
-- [ ] 2.5 Workflow dispatch can be triggered by a maintainer
-- [ ] 2.6 Workflow uploads a JSON review artifact
-- [ ] 2.7 Failing review result fails the workflow job after artifact upload
-- [ ] 2.8 Existing product CI workflow remains unchanged
+- [x] 2.5 Workflow dispatch can be triggered by a maintainer
+- [x] 2.6 Workflow uploads a JSON review artifact
+- [x] 2.7 Failing review result fails the workflow job after artifact upload
+- [x] 2.8 Existing product CI workflow remains unchanged
