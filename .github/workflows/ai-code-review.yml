@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 env:
   NODE_VERSION: "24"
@@ -90,9 +91,104 @@ jobs:
 
       - name: Upload AI review artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qsa-ai-code-review
           path: ${{ steps.review-inputs.outputs.review_file }}
           if-no-files-found: error
           retention-days: 14
+
+      - name: Post AI review PR comment
+        if: ${{ always() && github.event_name == 'pull_request' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_FILE: ${{ runner.temp }}/qsa-ai-review-comment.md
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REVIEW_FILE: ${{ steps.review-inputs.outputs.review_file }}
+        run: |
+          set -euo pipefail
+
+          if [ ! -s "$REVIEW_FILE" ]; then
+            echo "Review JSON was not created; skipping PR comment."
+            exit 0
+          fi
+
+          node <<'NODE'
+          const fs = require("node:fs");
+
+          const review = JSON.parse(fs.readFileSync(process.env.REVIEW_FILE, "utf8"));
+          const marker = "<!-- qsa-ai-code-review -->";
+          const escapeCell = (value) =>
+            String(value ?? "")
+              .replace(/\r?\n/g, " ")
+              .replace(/\|/g, "\\|");
+          const titleCase = (value) =>
+            String(value).replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+          const lines = [
+            marker,
+            "## AI Code Review",
+            "",
+            `**Verdict:** ${String(review.verdict).toUpperCase()}`,
+            `**Risk:** ${review.risk_level} | **Overall score:** ${review.overall_score}/10`,
+            "",
+            "### Criteria",
+            "",
+            "| Criterion | Score |",
+            "| --- | ---: |"
+          ];
+
+          for (const [name, criterion] of Object.entries(review.criteria ?? {})) {
+            lines.push(`| ${escapeCell(titleCase(name))} | ${criterion.score}/10 |`);
+          }
+
+          lines.push("", "### Rationale", "", review.summary, "");
+          for (const [name, criterion] of Object.entries(review.criteria ?? {})) {
+            lines.push(
+              `- **${escapeCell(titleCase(name))} (${criterion.score}/10, ${escapeCell(criterion.status)}):** ${escapeCell(criterion.rationale)}`
+            );
+          }
+
+          lines.push("", "### Findings", "");
+          if (Array.isArray(review.findings) && review.findings.length > 0) {
+            for (const finding of review.findings) {
+              const location = finding.line == null ? finding.file : `${finding.file}:${finding.line}`;
+              lines.push(`- **${escapeCell(finding.severity)} - ${escapeCell(finding.title)}** (${escapeCell(location)}): ${escapeCell(finding.details)} Recommendation: ${escapeCell(finding.recommendation)}`);
+            }
+          } else {
+            lines.push("No findings.");
+          }
+
+          lines.push("", "### Tests To Run", "");
+          if (Array.isArray(review.tests_to_run) && review.tests_to_run.length > 0) {
+            for (const command of review.tests_to_run) {
+              lines.push(`- \`${String(command).replace(/`/g, "\\`")}\``);
+            }
+          } else {
+            lines.push("- No additional tests suggested.");
+          }
+
+          lines.push("", "### Cost Control", "", review.cost_control_note);
+
+          fs.writeFileSync(process.env.COMMENT_FILE, `${lines.join("\n")}\n`, "utf8");
+          NODE
+
+          existing_comment_id="$(
+            gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+              --paginate \
+              --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- qsa-ai-code-review -->"))) | .id' \
+              | tail -n 1
+          )"
+
+          if [ -n "$existing_comment_id" ]; then
+            gh api \
+              --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/issues/comments/${existing_comment_id}" \
+              -F "body=@$COMMENT_FILE" \
+              --silent
+          else
+            gh api \
+              "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+              -F "body=@$COMMENT_FILE" \
+              --silent
+          fi
