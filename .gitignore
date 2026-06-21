@@ -23,6 +23,7 @@ frontend/*.tsbuildinfo
 playwright/.auth/
 playwright-report/
 test-results/
+.qsa-ai-review-test.tmp
 
 # Test and coverage artifacts
 .pytest_cache/
