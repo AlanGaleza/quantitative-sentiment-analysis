@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: write
 
 env:
   NODE_VERSION: "24"
@@ -91,7 +92,8 @@ jobs:
 
       - name: Upload AI review artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        # v7.0.1 is the Node 24 upload-artifact line; v4 emits Node.js 20 deprecation warnings.
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: qsa-ai-code-review
           path: ${{ steps.review-inputs.outputs.review_file }}
@@ -101,7 +103,7 @@ jobs:
       - name: Post AI review PR comment
         if: ${{ always() && github.event_name == 'pull_request' }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_FILE: ${{ runner.temp }}/qsa-ai-review-comment.md
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REVIEW_FILE: ${{ steps.review-inputs.outputs.review_file }}
@@ -170,7 +172,11 @@ jobs:
 
           lines.push("", "### Cost Control", "", review.cost_control_note);
 
-          fs.writeFileSync(process.env.COMMENT_FILE, `${lines.join("\n")}\n`, "utf8");
+          const commentBody = `${lines.join("\n")}\n`;
+          fs.writeFileSync(process.env.COMMENT_FILE, commentBody, "utf8");
+          if (process.env.GITHUB_STEP_SUMMARY) {
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, commentBody, "utf8");
+          }
           NODE
 
           existing_comment_id="$(
