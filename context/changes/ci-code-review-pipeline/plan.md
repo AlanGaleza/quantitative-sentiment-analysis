@@ -350,14 +350,14 @@ CI workflow and upgrades an isolated tool package.
 
 #### Automated
 
-- [x] 2.1 Workflow file exists
-- [x] 2.2 TypeScript typecheck still passes
-- [x] 2.3 Build still passes
-- [x] 2.4 Git whitespace check passes
+- [x] 2.1 Workflow file exists — b20ef0d
+- [x] 2.2 TypeScript typecheck still passes — b20ef0d
+- [x] 2.3 Build still passes — b20ef0d
+- [x] 2.4 Git whitespace check passes — b20ef0d
 
 #### Manual
 
-- [x] 2.5 Workflow dispatch can be triggered by a maintainer
-- [x] 2.6 Workflow uploads a JSON review artifact
-- [x] 2.7 Failing review result fails the workflow job after artifact upload
-- [x] 2.8 Existing product CI workflow remains unchanged
+- [x] 2.5 Workflow dispatch can be triggered by a maintainer — b20ef0d
+- [x] 2.6 Workflow uploads a JSON review artifact — b20ef0d
+- [x] 2.7 Failing review result fails the workflow job after artifact upload — b20ef0d
+- [x] 2.8 Existing product CI workflow remains unchanged — b20ef0d
