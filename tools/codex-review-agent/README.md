@@ -98,8 +98,10 @@ secrets are not passed to fork PR runs. Configure `OPENAI_API_KEY` as a GitHub
 repository or organization secret before using the workflow. The secret is scoped
 only to the review step.
 
-The workflow uploads `qsa-ai-code-review` as a JSON artifact. A failed review
-still writes the artifact before the job fails when the gate is violated.
+The workflow uploads `qsa-ai-code-review` as a JSON artifact and posts the same
+review summary as a PR comment. Reruns update the existing AI review comment
+instead of creating duplicates. A failed review still writes the artifact and
+comment before the job fails when the gate is violated.
 
 Promptfoo/model comparison is handled by the separate `code-review-evals`
 change.
