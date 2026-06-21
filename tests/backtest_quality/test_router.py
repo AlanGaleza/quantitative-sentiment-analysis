@@ -101,6 +101,28 @@ class PartialWarningProvider:
         )
 
 
+class MismatchedIdentityProvider:
+    def get_quality_inputs(
+        self,
+        workspace_id: str,
+        run_id: str,
+        horizon: QualityHorizon,
+    ) -> QualityInputBatch:
+        return QualityInputBatch(
+            records=[
+                make_quality_record(
+                    1,
+                    workspace_id="workspace-beta",
+                    run_id="run-beta",
+                    sentiment_score=0.7,
+                    directional_bias=DirectionalBias.LONG,
+                    later_return=None,
+                    realized_direction=None,
+                )
+            ]
+        )
+
+
 @pytest.fixture(autouse=True)
 def clear_dependency_overrides() -> None:
     app.dependency_overrides.clear()
@@ -255,6 +277,18 @@ def test_quality_route_returns_partial_report_with_enrichment_warning() -> None:
     assert data["metrics"]["missing_movement_count"] == 1
     assert data["representative_records"][0]["later_return"] is None
     assert any("Price provider was unavailable" in warning for warning in data["warnings"])
+
+
+def test_quality_route_rejects_provider_records_for_different_workspace_run() -> None:
+    app.dependency_overrides[get_quality_input_provider] = lambda: (
+        MismatchedIdentityProvider()
+    )
+    client = TestClient(app)
+
+    response = client.get("/api/workspaces/workspace-alpha/backtests/run-001/quality")
+
+    assert response.status_code == 409
+    assert "different workspace/run" in response.json()["detail"]
 
 
 @pytest.mark.parametrize(
