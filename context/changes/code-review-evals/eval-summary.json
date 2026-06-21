@@ -1,0 +1,85 @@
+{
+  "eval_id": "eval-5xm-2026-06-21T09:50:51",
+  "compared_models": [
+    "openai:gpt-5-mini",
+    "openai:gpt-5"
+  ],
+  "diff_sources": [
+    {
+      "title": "Known-bad QSA export diff",
+      "path": "tools/codex-review-agent/fixtures/simulated-qsa.diff",
+      "expected_verdict": "fail"
+    },
+    {
+      "title": "test_ai_Agent PR diff",
+      "path": "tools/codex-review-agent/fixtures/test-ai-agent-pr.diff",
+      "source_range": "6ca6a01...e8adc17",
+      "expected_verdict": "pass"
+    }
+  ],
+  "aggregate": {
+    "passed": 1,
+    "failed": 3,
+    "total_cases": 4,
+    "total_tokens": 21884,
+    "total_cost_usd": 0.1002698
+  },
+  "rows": [
+    {
+      "title": "Known-bad QSA export diff",
+      "diff": "file://fixtures/simulated-qsa.diff",
+      "expected_verdict": "fail",
+      "provider": "openai:gpt-5-mini",
+      "pass": false,
+      "assertion_reason": "findings[2].file must be a non-empty string",
+      "cost_usd": 0.00529705,
+      "latency_ms": 28523,
+      "tokens_total": 3913,
+      "tokens_prompt": 1297,
+      "tokens_completion": 2616,
+      "reasoning_tokens": 1216
+    },
+    {
+      "title": "Known-bad QSA export diff",
+      "diff": "file://fixtures/simulated-qsa.diff",
+      "expected_verdict": "fail",
+      "provider": "openai:gpt-5",
+      "pass": false,
+      "assertion_reason": "missing expected evidence term from group: ordered = records | stable sorting | nondeterministic | input order",
+      "cost_usd": 0.02820125,
+      "latency_ms": 54064,
+      "tokens_total": 4099,
+      "tokens_prompt": 1297,
+      "tokens_completion": 2802,
+      "reasoning_tokens": 1856
+    },
+    {
+      "title": "test_ai_Agent PR diff",
+      "diff": "file://fixtures/test-ai-agent-pr.diff",
+      "expected_verdict": "pass",
+      "provider": "openai:gpt-5-mini",
+      "pass": false,
+      "assertion_reason": "expected verdict pass, got fail",
+      "cost_usd": 0.00690525,
+      "latency_ms": 30886,
+      "tokens_total": 5669,
+      "tokens_prompt": 2533,
+      "tokens_completion": 3136,
+      "reasoning_tokens": 1920
+    },
+    {
+      "title": "test_ai_Agent PR diff",
+      "diff": "file://fixtures/test-ai-agent-pr.diff",
+      "expected_verdict": "pass",
+      "provider": "openai:gpt-5",
+      "pass": true,
+      "assertion_reason": "All assertions passed",
+      "cost_usd": 0.05986625,
+      "latency_ms": 77465,
+      "tokens_total": 8203,
+      "tokens_prompt": 2533,
+      "tokens_completion": 5670,
+      "reasoning_tokens": 4736
+    }
+  ]
+}

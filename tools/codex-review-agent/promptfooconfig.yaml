@@ -1,0 +1,70 @@
+description: QSA code review prompt model comparison
+
+prompts:
+  - file://prompts/qsa-code-review.md
+
+providers:
+  - id: openai:gpt-5-mini
+    label: openai:gpt-5-mini
+    config:
+      temperature: 0
+  - id: openai:gpt-5
+    label: openai:gpt-5
+    config:
+      temperature: 0
+
+tests:
+  - description: Known-bad QSA export diff fails semantic-safety and determinism gates
+    vars:
+      TITLE: Known-bad QSA export diff
+      DESCRIPTION: Diff removes deterministic JSONL behavior and changes BACKTEST copy into live-ready trading-signal wording.
+      EXPECTED_VERDICT: fail
+      PR_TITLE: Simulated unsafe QSA export diff
+      PR_BODY: |
+        Evaluate a QSA review-agent fixture. The diff intentionally removes
+        stable JSONL ordering, adds wall-clock export metadata, and changes
+        BACKTEST directional-bias copy into live-ready trading signal wording.
+      DIFF: file://fixtures/simulated-qsa.diff
+    assert:
+      - type: javascript
+        value: file://evals/assert-qsa-review.cjs
+        config:
+          expectedVerdict: fail
+          minFindings: 1
+          maxScores:
+            qsa_semantic_safety: 6
+            deterministic_data_contracts: 6
+          requiredEvidence:
+            - - live-ready trading signals
+              - trading signals
+              - executable trading signal
+            - - datetime.now
+              - generated_at
+              - wall-clock
+              - current time
+            - - ordered = records
+              - stable sorting
+              - nondeterministic
+              - input order
+  - description: test_ai_Agent PR diff should pass QSA domain review gate
+    vars:
+      TITLE: test_ai_Agent PR diff
+      DESCRIPTION: Real PR diff from test_ai_Agent against main before merge; adds PR comment publishing for the AI review workflow.
+      EXPECTED_VERDICT: pass
+      PR_TITLE: Test AI Code Review workflow
+      PR_BODY: |
+        Evaluate the real PR diff from branch test_ai_Agent before it was
+        merged into main. The diff updates the AI review workflow, adds a
+        temporary test ignore entry, and documents PR comment behavior.
+      DIFF: file://fixtures/test-ai-agent-pr.diff
+    assert:
+      - type: javascript
+        value: file://evals/assert-qsa-review.cjs
+        config:
+          expectedVerdict: pass
+          minOverallScore: 7
+          minScores:
+            qsa_semantic_safety: 7
+            deterministic_data_contracts: 7
+            workspace_security_boundaries: 7
+            scope_maintainability_discipline: 7

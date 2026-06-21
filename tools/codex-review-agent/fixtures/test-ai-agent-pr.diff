@@ -1,0 +1,153 @@
+diff --git a/.github/workflows/ai-code-review.yml b/.github/workflows/ai-code-review.yml
+index 593d1e1..0a86e52 100644
+--- a/.github/workflows/ai-code-review.yml
++++ b/.github/workflows/ai-code-review.yml
+@@ -11,6 +11,8 @@ on:
+
+ permissions:
+   contents: read
++  issues: write
++  pull-requests: write
+
+ env:
+   NODE_VERSION: "24"
+@@ -90,9 +92,109 @@ jobs:
+
+       - name: Upload AI review artifact
+         if: always()
+-        uses: actions/upload-artifact@v4
++        # v7.0.1 is the Node 24 upload-artifact line; v4 emits Node.js 20 deprecation warnings.
++        uses: actions/upload-artifact@v7.0.1
+         with:
+           name: qsa-ai-code-review
+           path: ${{ steps.review-inputs.outputs.review_file }}
+           if-no-files-found: error
+           retention-days: 14
++
++      - name: Post AI review PR comment
++        if: ${{ always() && github.event_name == 'pull_request' }}
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++          COMMENT_FILE: ${{ runner.temp }}/qsa-ai-review-comment.md
++          PR_NUMBER: ${{ github.event.pull_request.number }}
++          REVIEW_FILE: ${{ steps.review-inputs.outputs.review_file }}
++        run: |
++          set -euo pipefail
++
++          if [ ! -s "$REVIEW_FILE" ]; then
++            echo "Review JSON was not created; skipping PR comment."
++            exit 0
++          fi
++
++          node <<'NODE'
++          const fs = require("node:fs");
++
++          const review = JSON.parse(fs.readFileSync(process.env.REVIEW_FILE, "utf8"));
++          const marker = "<!-- qsa-ai-code-review -->";
++          const escapeCell = (value) =>
++            String(value ?? "")
++              .replace(/\r?\n/g, " ")
++              .replace(/\|/g, "\\|");
++          const titleCase = (value) =>
++            String(value).replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
++
++          const lines = [
++            marker,
++            "## AI Code Review",
++            "",
++            `**Verdict:** ${String(review.verdict).toUpperCase()}`,
++            `**Risk:** ${review.risk_level} | **Overall score:** ${review.overall_score}/10`,
++            "",
++            "### Criteria",
++            "",
++            "| Criterion | Score |",
++            "| --- | ---: |"
++          ];
++
++          for (const [name, criterion] of Object.entries(review.criteria ?? {})) {
++            lines.push(`| ${escapeCell(titleCase(name))} | ${criterion.score}/10 |`);
++          }
++
++          lines.push("", "### Rationale", "", review.summary, "");
++          for (const [name, criterion] of Object.entries(review.criteria ?? {})) {
++            lines.push(
++              `- **${escapeCell(titleCase(name))} (${criterion.score}/10, ${escapeCell(criterion.status)}):** ${escapeCell(criterion.rationale)}`
++            );
++          }
++
++          lines.push("", "### Findings", "");
++          if (Array.isArray(review.findings) && review.findings.length > 0) {
++            for (const finding of review.findings) {
++              const location = finding.line == null ? finding.file : `${finding.file}:${finding.line}`;
++              lines.push(`- **${escapeCell(finding.severity)} - ${escapeCell(finding.title)}** (${escapeCell(location)}): ${escapeCell(finding.details)} Recommendation: ${escapeCell(finding.recommendation)}`);
++            }
++          } else {
++            lines.push("No findings.");
++          }
++
++          lines.push("", "### Tests To Run", "");
++          if (Array.isArray(review.tests_to_run) && review.tests_to_run.length > 0) {
++            for (const command of review.tests_to_run) {
++              lines.push(`- \`${String(command).replace(/`/g, "\\`")}\``);
++            }
++          } else {
++            lines.push("- No additional tests suggested.");
++          }
++
++          lines.push("", "### Cost Control", "", review.cost_control_note);
++
++          const commentBody = `${lines.join("\n")}\n`;
++          fs.writeFileSync(process.env.COMMENT_FILE, commentBody, "utf8");
++          if (process.env.GITHUB_STEP_SUMMARY) {
++            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, commentBody, "utf8");
++          }
++          NODE
++
++          existing_comment_id="$(
++            gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
++              --paginate \
++              --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- qsa-ai-code-review -->"))) | .id' \
++              | tail -n 1
++          )"
++
++          if [ -n "$existing_comment_id" ]; then
++            gh api \
++              --method PATCH \
++              "repos/${GITHUB_REPOSITORY}/issues/comments/${existing_comment_id}" \
++              -F "body=@$COMMENT_FILE" \
++              --silent
++          else
++            gh api \
++              "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
++              -F "body=@$COMMENT_FILE" \
++              --silent
++          fi
+diff --git a/.gitignore b/.gitignore
+index c62c6bd..d989065 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -23,6 +23,7 @@ frontend/*.tsbuildinfo
+ playwright/.auth/
+ playwright-report/
+ test-results/
++.qsa-ai-review-test.tmp
+
+ # Test and coverage artifacts
+ .pytest_cache/
+diff --git a/tools/codex-review-agent/README.md b/tools/codex-review-agent/README.md
+index 9990d01..a4858bd 100644
+--- a/tools/codex-review-agent/README.md
++++ b/tools/codex-review-agent/README.md
+@@ -98,8 +98,10 @@ secrets are not passed to fork PR runs. Configure `OPENAI_API_KEY` as a GitHub
+ repository or organization secret before using the workflow. The secret is scoped
+ only to the review step.
+
+-The workflow uploads `qsa-ai-code-review` as a JSON artifact. A failed review
+-still writes the artifact before the job fails when the gate is violated.
++The workflow uploads `qsa-ai-code-review` as a JSON artifact and posts the same
++review summary as a PR comment. Reruns update the existing AI review comment
++instead of creating duplicates. A failed review still writes the artifact and
++comment before the job fails when the gate is violated.
+
+ Promptfoo/model comparison is handled by the separate `code-review-evals`
+ change.

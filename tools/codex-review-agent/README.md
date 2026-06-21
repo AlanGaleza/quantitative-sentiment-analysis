@@ -106,6 +106,36 @@ comment before the job fails when the gate is violated.
 Promptfoo/model comparison is handled by the separate `code-review-evals`
 change.
 
+## Promptfoo evals
+
+The promptfoo suite compares the same QSA review prompt across OpenAI models.
+It uses the existing bad diff fixture and deterministic JavaScript assertions,
+not an LLM judge, so failures are tied to the review JSON contract.
+
+Run the no-cost assertion self-test:
+
+```bash
+npm run eval:assertions
+```
+
+Run the real model comparison:
+
+```bash
+export OPENAI_API_KEY=...
+npm run eval:review
+```
+
+The config lives in `promptfooconfig.yaml` and compares:
+
+- `openai:gpt-5-mini`;
+- `openai:gpt-5`.
+
+The known-bad fixture should produce `verdict: "fail"`, findings for the
+determinism and semantic-safety regressions, and sub-threshold scores for
+`qsa_semantic_safety` and `deterministic_data_contracts`. Promptfoo's matrix is
+the comparison artifact for pass/fail, timing, and cost. Do not commit generated
+eval outputs or API keys.
+
 ## Notes
 
 - Requires Node.js 18+ and a working local Codex CLI/session.
